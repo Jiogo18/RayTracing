@@ -92,6 +92,7 @@ public:
     Point3D getNextPoint() const;
     Pos3D getChildRot(doubli rXRelatif, doubli rZRelatif) const;
     Point3D changeRef(const Point3D &point) const;
+    bool operator ==(const Pos3D &pos) const;
 private:
     doubli rX;//en degré
     doubli rZ;//en degré

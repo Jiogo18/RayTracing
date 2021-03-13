@@ -171,6 +171,12 @@ Pos3D Pos3D::getChildRot(doubli rXRelatif, doubli rZRelatif) const
 }
 
 Point3D Pos3D::changeRef(const Point3D &point) const { return rotation(point + getPoint(), rX, rZ); }
+
+bool Pos3D::operator ==(const Pos3D &pos) const
+{
+    return Point3D::operator ==(static_cast<Point3D>(pos)) && rX == pos.rX && rZ == pos.rZ;
+}
+
 Point3D Pos3D::rotation(Point3D point, doubli rX, doubli rZ)
 {
     //inversé par rapport aux autres progs (entre y et z et entre 1ere et 2eme ligne)
