@@ -1,9 +1,10 @@
 #include "GUI.h"
 
 
-GUI::GUI(const map3D *map, QObject *parent) : QGraphicsScene(parent)
+GUI::GUI(const map3D *map, QWidget *parent) : QObject(parent)
 {
     this->map = map;
+    this->parent = parent;
 
     workerThread = new RayTracing(map);
     connect(workerThread, &RayTracing::resultReady, this, &GUI::handleWorkerResults);
@@ -18,18 +19,12 @@ GUI::~GUI()
     delete workerThread;
 }
 
-// changer la taille de l'image à l'écran
-void GUI::setSceneSize(const QSize &size)
+// garder l'image d'origine mais changer la taille de l'image à l'écran
+void GUI::paint(QPainter *painter, QPaintEvent *event)
 {
-    setSceneRect(QRect(0, 0, size.width()-2, size.height()-2));
-    updateGui();
+    painter->drawImage(event->rect(), lastImage.scaled(event->rect().size()));
 }
 
-// garder l'image d'origine mais changer la taille de l'image à l'écran
-void GUI::updateGui()
-{
-    setBackgroundBrush(lastImage.scaled(getSceneSize()));
-}
 
 // actualiser toute l'image (pour le GUIWorker)
 void GUI::refresh()
@@ -41,16 +36,16 @@ void GUI::refresh()
     workerThread->setSize(getRayTracingSize())->start();
 }
 
+
 // toute l'image a été actualisée (par le GUIWorker)
 void GUI::handleWorkerResults(const QImage &image)
 {
     lastImage = image;
-    updateGui();// actualise l'affichage
-    emit workFinished();
+    emit workReady();
 }
 
 //pourquoi je m'embete avec des ppp quand je peux juste faire un scale down ?
 QSize GUI::getRayTracingSize() const
 {
-    return QSize(width() * RAYTRACING::pppH, height() * RAYTRACING::pppV);
+    return QSize(parent->width() * RAYTRACING::pppH, parent->height() * RAYTRACING::pppV);
 }

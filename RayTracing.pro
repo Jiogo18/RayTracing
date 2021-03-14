@@ -1,4 +1,4 @@
-QT += widgets gui core #winextras
+QT += widgets opengl openglwidgets #winextras
 
 SOURCES += \
     DebugTime.cpp \

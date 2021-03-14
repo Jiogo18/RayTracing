@@ -3,8 +3,7 @@
 
 #include "GUI.h"
 #include "map3D.h"
-#include <QGraphicsView>
-#include <QGraphicsScene>
+#include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QTimer>
 #include <QDebug>
 #include <QKeyEvent>
@@ -14,7 +13,7 @@
 //#include <QWinTaskbarProgress>
 
 
-class fenetre : public QGraphicsView
+class fenetre : public QOpenGLWidget
 {
 public:
     fenetre(QWidget *parent = nullptr);
@@ -23,7 +22,6 @@ public:
 
     void keyPressEvent(QKeyEvent *event) override;
 //    void mouseMoveEvent(QMouseEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
     //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
 //    QPoint MidWindow();
 //    void moveMouseMidWindow();
@@ -33,6 +31,10 @@ public slots:
     void workFinished();
 //    void setPBMax(int max);
 //    void setPBValue(int value);
+
+protected:
+    void paintEvent(QPaintEvent *event) override;
+
 private:
     QTimer timerRefresh;
     qint64 lastRefreshTime;

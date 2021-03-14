@@ -3,34 +3,32 @@
 
 #include "map3D.h"
 #include "RayTracing.h"
-#include <QGraphicsScene>
 #include <QThread>
 #include <QRandomGenerator>
+#include <QWidget>
+#include <QPaintEvent>
 
 
-class GUI : public QGraphicsScene
+class GUI : public QObject
 {
     Q_OBJECT
 public:
-    GUI(const map3D *map, QObject *parent = nullptr);
+    GUI(const map3D *map, QWidget *parent = nullptr);
     ~GUI();
 
-
-    void setSceneSize(const QSize &size);
-    QSize getSceneSize() const { return QSize(qFloor(width()), qCeil(height())); }
-    void updateGui();
+    void paint(QPainter *painter, QPaintEvent *event);
     void refresh();
 
 
 signals:
     void workStarted();
-    void workFinished();
-    void resizeWorker(const QSize &size);
+    void workReady();
 
 private:
     void handleWorkerResults(const QImage &image);
     QSize getRayTracingSize() const;
 
+    QWidget *parent = nullptr;
     QImage lastImage;
     RayTracing *workerThread;
     const map3D *map;
