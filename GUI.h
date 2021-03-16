@@ -23,6 +23,7 @@ public:
 signals:
     void workStarted();
     void workReady();
+    void workFinished();
 
 private:
     void handleWorkerResults(const QImage &image);

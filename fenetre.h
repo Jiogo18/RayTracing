@@ -26,8 +26,9 @@ public:
 //    QPoint MidWindow();
 //    void moveMouseMidWindow();
 
-public slots:
+private slots:
     void workStarted();
+    inline void workReady() { repaint(); }
     void workFinished();
 //    void setPBMax(int max);
 //    void setPBValue(int value);
@@ -46,7 +47,7 @@ private:
     //QWinTaskbarButton *winTaskbarButt = nullptr;
 
 //    QPoint posMouse;
-    doubli MouseSensibility = 100;
+    doubli MouseSensibility = 2;
 };
 
 #endif // FENETRE_H

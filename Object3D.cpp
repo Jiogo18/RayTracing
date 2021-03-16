@@ -209,17 +209,17 @@ ColorLight Face::getColor(const QPointF &point, const QImage *img) const
 }
 
 
-doubli Face::boundRotX(const doubli &posRX) const
+radiant Face::boundRotX(const radiant &posRX) const
 {
     //petit fix pour les faces du dessus mais il faudrait faire un autre calcul pour celles penchées
     if(variations.first() == BLOCK::Variation::top || variations.first() == BLOCK::Variation::top) {
         return RX*4 + posRX;//4+0+
     }
-    return RX * 4 + 180 - posRX;//4+180-
+    return RX * 4 + M_PI - posRX;//4+M_PI-
 }
-doubli Face::boundRotZ(const doubli &posRZ) const
+radiant Face::boundRotZ(const radiant &posRZ) const
 {
-    return RZ * 4 - 180 + posRZ;//*4-180 marche pour left et pour top
+    return RZ * 4 - M_PI + posRZ;//*4-M_PI marche pour left et pour top
 }
 
 void Face::calcFace()
@@ -235,7 +235,7 @@ void Face::calcFace()
 
     if(-0.5 < deltaX && deltaX < 0.5) {
         doubli deltaXZ = sqrt(deltaX * deltaX + deltaZ * deltaZ);
-        RX = atan(deltaY / deltaXZ) + 45;
+        RX = atan(deltaY / deltaXZ) + M_PI / 4;
     }
     else {
         doubli deltaYZ = sqrt(deltaY * deltaY + deltaZ * deltaZ);

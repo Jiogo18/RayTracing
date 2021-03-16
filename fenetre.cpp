@@ -7,7 +7,8 @@ fenetre::fenetre(QWidget *parent) : QOpenGLWidget(parent)
     gui = new GUI(map, this);
 
     connect(gui, &GUI::workStarted, this, &fenetre::workStarted);
-    connect(gui, &GUI::workReady, this, &fenetre::workFinished);
+    connect(gui, &GUI::workReady, this, &fenetre::workReady);
+    connect(gui, &GUI::workFinished, this, &fenetre::workFinished);
 //    connect(map, &map3D::PBMax, this, &fenetre::setPBMax);
 //    connect(map, &map3D::PBValue, this, &fenetre::setPBValue);
 

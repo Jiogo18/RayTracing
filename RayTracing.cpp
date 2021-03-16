@@ -405,12 +405,12 @@ QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const int &x, const QSize &scen
     QList<Pos3D> raysPos(sceneSize.height());
     //pos en % de pixmap.width/2 * xMax
     doubli xPos = round(static_cast<doubli>(2.0L * x/sceneSize.width() - 1) * xMax);
-    doubli angleH = atan(xPos);
+    radiant angleH = atan(xPos);
     for(int y = 0; y < sceneSize.height(); y++) {
         //pos en % de pixmap.height/2 * yMax
         doubli yPos = yPosList.at(y);
         doubli d = sqrt(sqr(xPos) + sqr(yPos) + 1);
-        doubli angleV = asin(yPos / d);
+        radiant angleV = asin(yPos / d);
 
         raysPos.replace(y, clientPos.getChildRot(angleH, angleV));
     }
@@ -578,8 +578,8 @@ void RayTracing::paint()
 void RayTracing::onAllWorkersFinished()
 {
     qDebug() << "All ray workers has finished, processDone :" << processDone << "/" << processToStart;
+    workersInProcess = false;
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);
     qDebug() << "GUIWorker::run #end" << dt;
-    workersInProcess = false;
 }

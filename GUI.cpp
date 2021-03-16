@@ -42,6 +42,9 @@ void GUI::handleWorkerResults(const QImage &image)
 {
     lastImage = image;
     emit workReady();
+    if(!workerThread->isRunning()) {
+        emit workFinished();
+    }
 }
 
 //pourquoi je m'embete avec des ppp quand je peux juste faire un scale down ?

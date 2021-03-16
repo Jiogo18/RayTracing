@@ -1,15 +1,15 @@
 #include "Point3D.h"
 
 doubli sqr(const doubli &d) { return d*d; }
-doubli degreesToRadians(const doubli &deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
-doubli radiansToDegrees(const doubli &rad) { return rad * 180 / doubli(M_PI); }
-doubli sqrt(const doubli &d) { return (std::sqrt(d)); }
-doubli cos(const doubli &deg) { return (std::cos(degreesToRadians(deg))); }
-doubli sin(const doubli &deg) { return (std::sin(degreesToRadians(deg))); }
-doubli tan(const doubli &deg) { return (std::tan(degreesToRadians(deg))); }
-doubli acos(const doubli &d) { return (radiansToDegrees(std::acos(d))); }
-doubli asin(const doubli &d) { return (radiansToDegrees(std::asin(d))); }
-doubli atan(const doubli &d) { return (radiansToDegrees(std::atan(d))); }
+radiant degreesToRadians(const doubli &deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
+doubli radiansToDegrees(const radiant &rad) { return rad * 180 / doubli(M_PI); }
+doubli sqrt(const doubli &d) { return std::sqrt(d); }
+doubli cos(const radiant &deg) { return std::cos(deg); }
+doubli sin(const radiant &deg) { return std::sin(deg); }
+doubli tan(const radiant &deg) { return std::tan(deg); }
+radiant acos(const doubli &d) { return std::acos(d); }
+radiant asin(const doubli &d) { return std::asin(d); }
+radiant atan(const doubli &d) { return std::atan(d); }
 QDebug operator <<(QDebug debug, const doubli &d) { debug << static_cast<double>(d); return debug; }
 
 
@@ -112,9 +112,9 @@ Point3D qCeil(const Point3D &point)
 
 Pos3D::Pos3D() : Point3D(0, 0, 0)
 { setRX(0); setRZ(0); }
-Pos3D::Pos3D(doubli x, doubli y, doubli z, doubli rX, doubli rZ) : Point3D(x, y, z)
+Pos3D::Pos3D(doubli x, doubli y, doubli z, radiant rX, radiant rZ) : Point3D(x, y, z)
 { setRX(rX); setRZ(rZ); }
-Pos3D::Pos3D(const Point3D &point, doubli rX, doubli rZ) : Point3D(point)
+Pos3D::Pos3D(const Point3D &point, radiant rX, radiant rZ) : Point3D(point)
 { setRX(rX); setRZ(rZ); }
 Pos3D::Pos3D(const Pos3D &pos) : Point3D(pos)
 { setRX(pos.getRX()); setRZ(pos.getRZ()); }
@@ -127,14 +127,19 @@ Pos3D *Pos3D::operator=(const Pos3D &pos)
     return this;
 }
 
-void Pos3D::moveWithRot(doubli speed, doubli rot)
+Pos3D Pos3D::fromDegree(doubli x, doubli y, doubli z, radiant rX, radiant rZ)
 {
-    //trigo, on connait l'hypothénuse (speed) et l'angle et on veut coté a ou b => cos ou sin
-    addX(cos(rX+round(rot)) * speed);
-    addY(sin(rX+round(rot)) * speed);
+    return Pos3D(x, y, z, degreesToRadians(rX), degreesToRadians(rZ));
 }
 
-Point3D Pos3D::pointFromRot(doubli d, doubli rX, doubli rZ)
+void Pos3D::moveWithRot(doubli speed, radiant rot)
+{
+    //trigo, on connait l'hypothénuse (speed) et l'angle et on veut coté a ou b => cos ou sin
+    addX(cos(rX+rot) * speed);
+    addY(sin(rX+rot) * speed);
+}
+
+Point3D Pos3D::pointFromRot(doubli d, radiant rX, radiant rZ)
 {
     return Point3D(cos(rZ)*cos(rX),
                    cos(rZ)*sin(rX),
@@ -153,7 +158,7 @@ Point3D Pos3D::getNextPoint() const
     //opti mais == getNextPointRelatif() + getPoint()
 }
 
-Pos3D Pos3D::getChildRot(doubli rXRelatif, doubli rZRelatif) const
+Pos3D Pos3D::getChildRot(radiant rXRelatif, radiant rZRelatif) const
 {
     //changeRef de childNext
     doubli crZR = cos(rZRelatif),
@@ -162,9 +167,9 @@ Pos3D Pos3D::getChildRot(doubli rXRelatif, doubli rZRelatif) const
     doubli x1 = crZR*cos(rXRelatif), y1 = crZR*sin(rXRelatif), z1 = sin(rZRelatif);//z1==srZR
     doubli x2 = x1*crZ - z1*srZ, z2 = x1*srZ + z1*crZ;//y2==y1
     doubli x3 = x2*crX - y1*srX, y3 = x2*srX + y1*crX;//z3==z2
-    doubli rX = atan(y3/x3);
+    radiant rX = atan(y3/x3);
     if(x3 < 0) {//sinon on ne voit que tout ce qui est en x3>=0 (rotation de 180° du reste)
-        rX += 180;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
+        rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         //pas besoin de différentier y car on est à k360° de diff
     }
     return Pos3D(getPoint(), rX, asin(z2));
@@ -177,7 +182,7 @@ bool Pos3D::operator ==(const Pos3D &pos) const
     return Point3D::operator ==(static_cast<Point3D>(pos)) && rX == pos.rX && rZ == pos.rZ;
 }
 
-Point3D Pos3D::rotation(Point3D point, doubli rX, doubli rZ)
+Point3D Pos3D::rotation(Point3D point, radiant rX, radiant rZ)
 {
     //inversé par rapport aux autres progs (entre y et z et entre 1ere et 2eme ligne)
     doubli sR = sin(rZ), cR = cos(rZ);
@@ -189,13 +194,13 @@ doubli Pos3D::rotation1(doubli x, doubli y, doubli sR, doubli cR) { return x*cR 
 doubli Pos3D::rotation2(doubli x, doubli y, doubli sR, doubli cR) { return x*sR + y*cR; }
 Pos3D Pos3D::getRotAsVect(const Point3D &p1, const Point3D &p2)
 {
-    doubli rZ = asin((p2.getZ()-p1.getZ())/Point3D::distance(p1, p2));//formule getNextPos z inversée
-    doubli rX = atan((p2.getY()-p1.getY())/(p2.getX()-p1.getX()));
+    radiant rZ = asin((p2.getZ()-p1.getZ())/Point3D::distance(p1, p2));//formule getNextPos z inversée
+    radiant rX = atan((p2.getY()-p1.getY())/(p2.getX()-p1.getX()));
     if(p2.getX()-p1.getX() < 0) {
         if(p2.getY()-p1.getY() >= 0)
-            rX += 180;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
+            rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         else
-            rX -= 180;
+            rX -= M_PI;
     }
     return Pos3D(p1, rX, rZ);
 }
@@ -204,13 +209,13 @@ Pos3D Pos3D::getRotAsPoint(const Point3D &p)
 {
     //opti mais == getRotAsVect(Point3D(0,0,0),p)
     doubli d = Point3D::distance(Point3D(0,0,0), p);
-    doubli rZ = asin((p.getZ())/d);//formule getNextPos z inversée
-    doubli rX = atan((p.getY())/(p.getX()));
+    radiant rZ = asin((p.getZ())/d);//formule getNextPos z inversée
+    radiant rX = atan((p.getY())/(p.getX()));
     if(p.getX() < 0) {
         if(p.getY() >= 0)
-            rX += 180;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
+            rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         else
-            rX -= 180;
+            rX -= M_PI;
     }
     return Pos3D(0, 0, 0, rX, rZ);
 }

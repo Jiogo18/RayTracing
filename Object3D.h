@@ -95,8 +95,8 @@ public:
     ColorLight getColor(const QPointF &point, const QImage *img) const;
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const { return material; }
-    doubli boundRotX(const doubli &posRX) const;
-    doubli boundRotZ(const doubli &posRZ) const;
+    radiant boundRotX(const radiant &posRX) const;
+    radiant boundRotZ(const radiant &posRZ) const;
 private:
     Rect3D rect;
     Rect3D maxGeometry;
@@ -105,8 +105,8 @@ private:
     BLOCK::Material material;
     QList<BLOCK::Variation> variations;
     QString texture;
-    doubli RX = 0;
-    doubli RZ = 0;
+    radiant RX = 0;
+    radiant RZ = 0;
 };
 
 
@@ -193,13 +193,13 @@ public:
     void moveUp() { addZ(attribute.getSpeedU()); }
     void moveDown() { addZ(-attribute.getSpeedD()); }
     void moveFront() { moveWithRot(attribute.getSpeedF(), 0); }
-    void moveBack() { moveWithRot(attribute.getSpeedB(), 180); }
-    void moveLeft() { moveWithRot(attribute.getSpeedL(), -90); }
-    void moveRight() { moveWithRot(attribute.getSpeedR(), 90); }
+    void moveBack() { moveWithRot(attribute.getSpeedB(), M_PI); }
+    void moveLeft() { moveWithRot(attribute.getSpeedL(), -M_PI/2); }
+    void moveRight() { moveWithRot(attribute.getSpeedR(), M_PI/2); }
     void moveTo(const Point3D &point) { setPoint(point); }
     void moveTo(const Pos3D &pos) { setPoint(pos.getPoint()); setRX(pos.getRX()); setRZ(pos.getRZ()); }
-    void moveRX(doubli rX) { addRX(rX); }
-    void moveRZ(doubli rZ) { addRZ(rZ); }
+    void moveRX(radiant rX) { addRX(rX); }
+    void moveRZ(radiant rZ) { addRZ(rZ); }
 private:
     EntityAttribute attribute;
 };

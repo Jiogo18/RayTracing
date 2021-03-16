@@ -9,16 +9,17 @@
 
 typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
 static doubli round(const doubli &d) { return std::floor(d*1000000+0.5L)/1000000; }
+typedef float radiant;
 doubli sqr(const doubli &d);//easy
-doubli degreesToRadians(const doubli &deg);
-doubli radiansToDegrees(const doubli &rad);
+radiant degreesToRadians(const doubli &deg);
+doubli radiansToDegrees(const radiant &rad);
 doubli sqrt(const doubli &d);
-doubli cos(const doubli &deg);
-doubli sin(const doubli &deg);
-doubli tan(const doubli &deg);
-doubli acos(const doubli &d);
-doubli asin(const doubli &d);
-doubli atan(const doubli &d);
+doubli cos(const radiant &deg);
+doubli sin(const radiant &deg);
+doubli tan(const radiant &deg);
+radiant acos(const doubli &d);
+radiant asin(const doubli &d);
+radiant atan(const doubli &d);
 QDebug operator <<(QDebug debug, const doubli &d);
 
 class Point3D
@@ -72,32 +73,33 @@ Point3D qCeil(const Point3D &point);
 class Pos3D : public Point3D {
 public:
     Pos3D();
-    Pos3D(doubli x, doubli y, doubli z, doubli rX, doubli rZ);
-    Pos3D(const Point3D &point, doubli rX, doubli rZ);
+    Pos3D(doubli x, doubli y, doubli z, radiant rX, radiant rZ);
+    Pos3D(const Point3D &point, radiant rX, radiant rZ);
     Pos3D(const Pos3D &pos);
     Pos3D *operator=(const Pos3D &pos);
+    static Pos3D fromDegree(doubli x, doubli y, doubli z, radiant rX, radiant rZ);
 
-    doubli getRX() const { return rX; }//en degré
-    doubli getRZ() const { return rZ; }//en degré
+    radiant getRX() const { return rX; }
+    radiant getRZ() const { return rZ; }
     Pos3D getPos() const { return *this; }
-    void setRX(doubli rX) { this->rX = round(rX); }
-    void setRZ(doubli rZ) { this->rZ = round(rZ); }
+    void setRX(radiant rX) { this->rX = rX; }
+    void setRZ(radiant rZ) { this->rZ = rZ; }
     void setPos(const Pos3D &pos) { operator=(pos); }
-    void addRX(doubli rX) { this->rX = round(this->rX + rX); }
-    void addRZ(doubli rZ) { this->rZ = round(this->rZ + rZ); }
+    void addRX(radiant rX) { this->rX += rX; }
+    void addRZ(radiant rZ) { this->rZ += rZ; }
 
-    void moveWithRot(doubli speed, doubli rot);
-    static Point3D pointFromRot(doubli d, doubli rX, doubli rZ);
+    void moveWithRot(doubli speed, radiant rot);
+    static Point3D pointFromRot(doubli d, radiant rX, radiant rZ);
     Point3D getNextPointRelatif() const;
     Point3D getNextPoint() const;
-    Pos3D getChildRot(doubli rXRelatif, doubli rZRelatif) const;
+    Pos3D getChildRot(radiant rXRelatif, radiant rZRelatif) const;
     Point3D changeRef(const Point3D &point) const;
     bool operator ==(const Pos3D &pos) const;
 private:
-    doubli rX;//en degré
-    doubli rZ;//en degré
+    radiant rX;
+    radiant rZ;
 
-    static Point3D rotation(Point3D point, doubli rX, doubli rZ);
+    static Point3D rotation(Point3D point, radiant rX, radiant rZ);
     static doubli rotation1(doubli x, doubli y, doubli sR, doubli cR);
     static doubli rotation2(doubli x, doubli y, doubli sR, doubli cR);
     static Pos3D getRotAsVect(const Point3D &p1, const Point3D &p2);

@@ -3,15 +3,15 @@
 map3D::map3D() : QObject()
 {
     world = new World();
-    client = new Entity(Pos3D(-0.5L, 1.5L, 1.5L, -30, -20), ENTITY::Type::ghost);
+    client = new Entity(Pos3D::fromDegree(-0.5L, 1.5L, 1.5L, -30, -20), ENTITY::Type::ghost);
     world->addEntity(client);
-    //client->moveTo(Pos3D(1.8L, 2, 1.9L, -140, -30));//belle vue
-    //client->moveTo(Pos3D(1.5L, 1.1L, 0.9L, -140, -30));//vue green_glass
+    //client->moveTo(Pos3D::fromDegree(1.8L, 2, 1.9L, -140, -30));//belle vue
+    //client->moveTo(Pos3D::fromDegree(1.5L, 1.1L, 0.9L, -140, -30));//vue green_glass
 
-    //client->moveTo(Pos3D(0.5L, 1.5, 2.5L, -90, -30));//vue miroir verre blanc
-    //client->moveTo(Pos3D(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
-    //client->moveTo(Pos3D(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
-    client->moveTo(Pos3D(1, 3, 1.4L, -70, -10));//belle vue mirroir
+    //client->moveTo(Pos3D::fromDegree(0.5L, 1.5, 2.5L, -90, -30));//vue miroir verre blanc
+    //client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
+    //client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
+    client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10));//belle vue mirroir
 
 
     world->setBlock(new Block(Pos3D(0, 0, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::oak_log));

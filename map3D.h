@@ -24,8 +24,8 @@ public:
     void moveBack() { client->moveBack(); }
     void moveLeft() { client->moveLeft(); }
     void moveRight() { client->moveRight(); }
-    void moveRX(doubli rX) { client->moveRX(rX); }
-    void moveRZ(doubli rZ) { client->moveRZ(rZ); }
+    void moveRX(radiant rX) { client->moveRX(rX); }
+    void moveRZ(radiant rZ) { client->moveRZ(rZ); }
     void moveClient(const Pos3D &pos) { client->moveTo(pos); }
 
     int fillBlock(const Point3D &posMin, const Point3D &posMax, BLOCK::Type blockType, BLOCK::Material blockMaterial);
