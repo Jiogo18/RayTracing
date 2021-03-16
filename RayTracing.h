@@ -20,7 +20,7 @@ namespace RAYTRACING {
     const int pppH = 1;
     const int pppV = 1;
     const int ppp = pppV * pppH;
-    const int WorkerThread = 13;
+    const int WorkerThread = std::thread::hardware_concurrency() + 2;
     const int RefreshColumn = 100;
     const int gamma = 2;// TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
 }

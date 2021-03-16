@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+/BUILD
+
+# Local configuration
+*.pro.user

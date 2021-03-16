@@ -28,4 +28,6 @@ RC_ICONS = icone.ico
 RESOURCES += \
     ressourpack.qrc
 
-OTHER_FILES += bugs.txt
+DISTFILES += \
+    bugs.md \
+    README.md
