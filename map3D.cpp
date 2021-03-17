@@ -12,6 +12,7 @@ map3D::map3D() : QObject()
     //client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
     //client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
     client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10));//belle vue mirroir
+    client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
 
 
     world->setBlock(new Block(Pos3D(0, 0, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::oak_log));
@@ -27,6 +28,7 @@ map3D::map3D() : QObject()
     fillBlock(Point3D(2, 1, 0), Point3D(2, 1, 3), BLOCK::Type::cube, BLOCK::Material::mirror);
 
     world->setBlock(new Block(Pos3D(0, 3, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::mirror));
+    world->setBlock(new Block(Pos3D(1, 3, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::watter));
 
 }
 

@@ -20,6 +20,7 @@ namespace BLOCK {
         glass,
         green_glass,
         mirror,
+        watter,
     };
     enum Variation {
         front, back, left, right, top, bottom
@@ -39,6 +40,7 @@ namespace OBJECT3D {
     QString getFileTexture(BLOCK::Material material, QList<BLOCK::Variation> variations);
     QImage getTexture(QString file);
     int getLight(BLOCK::Material material, QList<BLOCK::Variation> variations);
+    float getSpeedOfLight(BLOCK::Material material);// fraction de C
 }
 using namespace OBJECT3D;
 
@@ -97,6 +99,8 @@ public:
     BLOCK::Material getMaterial() const { return material; }
     radiant boundRotX(const radiant &posRX) const;
     radiant boundRotZ(const radiant &posRZ) const;
+    radiant refractRotX(const radiant &posRX, float speedIn, float speedOut) const;
+    radiant refractRotZ(const radiant &posRZ, float speedIn, float speedOut) const;
 private:
     Rect3D rect;
     Rect3D maxGeometry;

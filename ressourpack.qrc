@@ -30,5 +30,6 @@
         <file>ressourcepacks/default/textures/blocks/stripped_spruce_log_top.png</file>
         <file>ressourcepacks/default/textures/blocks/air.png</file>
         <file>ressourcepacks/default/textures/blocks/mirror.png</file>
+        <file>ressourcepacks/default/textures/blocks/watter.png</file>
     </qresource>
 </RCC>

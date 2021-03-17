@@ -156,6 +156,7 @@ public:
 private:
     Point3D pointMin;
     Point3D pointMax;
+    //TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
 QDebug operator << (QDebug debug, const Rect3D &rect);
 

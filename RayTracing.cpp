@@ -260,11 +260,15 @@ void Ray::process(const World *world)
         pTexture -= pC;
         colors.append(face->getColor(pTexture, getTexture(face->getTexture())));
 
-        if(face->getMaterial() == BLOCK::Material::mirror) {
+        if (face->getMaterial() == BLOCK::Material::mirror) {
             moveTo(Pos3D(pInter, face->boundRotX(pos.getRX()), face->boundRotZ(pos.getRZ())));
         }
         else {
-            moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));//TODO calculer la rotation (et si miroir ou transparant)
+            float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
+            float previousSpeed = lastFaceIntersection ? OBJECT3D::getSpeedOfLight(lastFaceIntersection->getMaterial()) : 1;
+            // calcul de la réfraction
+            moveTo(Pos3D(pInter, face->refractRotX(pos.getRX(), previousSpeed, newSpeed), face->refractRotZ(pos.getRZ(), previousSpeed, newSpeed)));
+            //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
         }
 
         int alpha = colors.last().getColorA().alpha();
@@ -273,6 +277,7 @@ void Ray::process(const World *world)
             break;//on s'arrete la
         //break;//TODO empecher de calculer après pour les tests (avoir que la première face)
         //Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe :'(
+        lastFaceIntersection = face;
     }
 }
 

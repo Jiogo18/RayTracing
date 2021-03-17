@@ -44,6 +44,7 @@ QString OBJECT3D::getFileTexture(BLOCK::Material material, QList<BLOCK::Variatio
     case BLOCK::Material::glass: texture = "blocks/glass"; break;
     case BLOCK::Material::green_glass: texture = "blocks/green_stained_glass"; break;
     case BLOCK::Material::mirror: texture ="blocks/mirror"; break;
+    case BLOCK::Material::watter: texture ="blocks/watter"; break;
     }
     switch (material) {
     case BLOCK::Material::oak_log:
@@ -85,6 +86,27 @@ int OBJECT3D::getLight(BLOCK::Material material, QList<BLOCK::Variation> variati
         return 0;
     }
 }
+
+float OBJECT3D::getSpeedOfLight(BLOCK::Material material)
+{
+    switch(material) {
+    case BLOCK::Material::air:
+        return 1;
+    case BLOCK::Material::watter:
+        return 0.75;// 1/1.33
+    case BLOCK::Material::glass:
+    case BLOCK::Material::green_glass:
+    case BLOCK::Material::mirror:
+        return 0.667;// 1/1.5
+    case BLOCK::Material::none:
+    case BLOCK::Material::oak_log:
+    case BLOCK::Material::birch_log:
+    case BLOCK::Material::stone:
+    case BLOCK::Material::glowstone:
+        return 0;
+    }
+}
+
 
 
 ColorLight::ColorLight()
@@ -222,6 +244,20 @@ radiant Face::boundRotZ(const radiant &posRZ) const
     return RZ * 4 - M_PI + posRZ;//*4-M_PI marche pour left et pour top
 }
 
+radiant Face::refractRotX(const radiant &posRX, float speedIn, float speedOut) const
+{
+    if(speedIn == speedOut) return posRX;
+    // sin(angle in) / sin(angle out) = i out / i in
+    // sin(angle out) = sin(angle in) * i in / i out = sin(angle in) * speed out / speed in
+    return asin(sin(posRX + 2*RX) * speedOut / speedIn) - 2*RX; // +2RX : - 2RX
+}
+
+radiant Face::refractRotZ(const radiant &posRZ, float speedIn, float speedOut) const
+{
+    if(speedIn == speedOut) return posRZ;
+    return asin(sin(posRZ) * speedOut / speedIn);//+ RZ - M_PI/4 : +0
+}
+
 void Face::calcFace()
 {
     maxGeometry = rect + getPoint();
@@ -241,6 +277,8 @@ void Face::calcFace()
         doubli deltaYZ = sqrt(deltaY * deltaY + deltaZ * deltaZ);
         RX = atan(deltaX / deltaYZ);
     }
+    // TODO: RX = atan(deltaX / deltaY);
+
     doubli deltaXY = sqrt(deltaX * deltaX + deltaY * deltaY);
     if(-0.5 < deltaXY && deltaXY < 0.5) {
         qDebug() << "alerte deltaZ trop faible" << deltaXY << deltaZ;

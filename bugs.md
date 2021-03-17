@@ -77,3 +77,7 @@
 - [x] #22 arrondi : passé le sqrt(1+...) à sqrt(0.55+...) ça corrige un peu la distorsion, mais c'est toujours bizarre
   - (cf l'image des miroirs du 21/02/2021)
   - fix : comme #16
+
+- [ ] #23 Rect3D avec 2 points
+  - C'est une droite...
+  - Problème pour les miroirs et le verre/l'eau

@@ -113,6 +113,7 @@ private:
     //si un objet dans l'objet entré est touché alors on sort du premier objet au point P et on rentre ds le 2
     //puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre coté de 2)
     bool enter = false;
+    const Face* lastFaceIntersection = nullptr;
     RayTracingRessources *rtRess = nullptr;
     const Plan *getPlan(const Face *face) const;
     const QImage *getTexture(const QString &file) const;
