@@ -4,7 +4,7 @@ SOURCES += \
     DebugTime.cpp \
     GUI.cpp \
     Object3D.cpp \
-    Point3D.cpp \
+    3DObject/3DGeometry.cpp \
     RayTracing.cpp \
     Timestamp.cpp \
     Transfo.cpp \
@@ -16,7 +16,7 @@ HEADERS += \
     DebugTime.h \
     GUI.h \
     Object3D.h \
-    Point3D.h \
+    3DObject/3DGeometry.h \
     RayTracing.h \
     Timestamp.h \
     Transfo.h \

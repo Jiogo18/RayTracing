@@ -1,4 +1,4 @@
-#include "Point3D.h"
+#include "3DGeometry.h"
 
 doubli sqr(const doubli &d) { return d*d; }
 radiant degreesToRadians(const doubli &deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }

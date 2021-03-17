@@ -1,7 +1,7 @@
 #ifndef RAYTRACING_H
 #define RAYTRACING_H
 
-#include "Point3D.h"
+#include "3DObject/3DGeometry.h"
 #include "Object3D.h"
 #include <QVector>
 #include <QPainter>
