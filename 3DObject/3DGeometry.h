@@ -20,6 +20,7 @@ doubli tan(const radiant &deg);
 radiant acos(const doubli &d);
 radiant asin(const doubli &d);
 radiant atan(const doubli &d);
+doubli qIsInf(const doubli &d);
 QDebug operator <<(QDebug debug, const doubli &d);
 
 class Point3D
@@ -48,6 +49,8 @@ public:
     bool operator ==(const Point3D &point) const;
     bool isNull() const { return x==0.0L && y==0.0L && z==0.0L; }
     bool isValid() const { return defined; }
+    bool isInf() const { return qIsInf(x) || qIsInf(y) || qIsInf(z); }
+    static Point3D inifinite() { return Point3D(INFINITY, INFINITY, INFINITY); }
 
     Point3D operator +(const Point3D &point) const;
     Point3D operator -(const Point3D &point) const;
@@ -59,16 +62,16 @@ public:
     static doubli distance(const Point3D &pA, const Point3D &pB);
     static doubli distanceMax(const Point3D &pA, const Point3D &pB);
 
+    friend QDebug operator <<(QDebug debug, const Point3D& point);
+    friend Point3D qFloor(const Point3D& point);
+    friend Point3D qCeil(const Point3D& point);
+
 private:
     doubli x;
     doubli y;
     doubli z;
     bool defined = false;
 };
-QDebug operator << (QDebug debug, const Point3D &point);
-Point3D qFloor(const Point3D &point);
-Point3D qCeil(const Point3D &point);
-
 
 class Pos3D : public Point3D {
 public:
@@ -95,6 +98,8 @@ public:
     Pos3D getChildRot(radiant rXRelatif, radiant rZRelatif) const;
     Point3D changeRef(const Point3D &point) const;
     bool operator ==(const Pos3D &pos) const;
+
+    friend QDebug operator << (QDebug debug, const Pos3D &pos);
 private:
     radiant rX;
     radiant rZ;
@@ -106,7 +111,6 @@ private:
     static Pos3D getRotAsPoint(const Point3D &p);
 
 };
-QDebug operator << (QDebug debug, const Pos3D &pos);
 
 class Size3D
 {

@@ -10,6 +10,7 @@ doubli tan(const radiant &deg) { return std::tan(deg); }
 radiant acos(const doubli &d) { return std::acos(d); }
 radiant asin(const doubli &d) { return std::asin(d); }
 radiant atan(const doubli &d) { return std::atan(d); }
+doubli qIsInf(const doubli &d) { return qIsInf(static_cast<double>(d)); }
 QDebug operator <<(QDebug debug, const doubli &d) { debug << static_cast<double>(d); return debug; }
 
 
@@ -21,12 +22,18 @@ Point3D::Point3D(doubli x, doubli y, doubli z)
     this->z = round(z);
     defined = true;
 }
-Point3D::Point3D(const Point3D &point) { operator=(point); }
+Point3D::Point3D(const Point3D &point)
+{
+    x = point.x;
+    y = point.y;
+    z = point.z;
+    defined = point.defined;
+}
 Point3D *Point3D::operator =(const Point3D &point)
 {
-    x = point.getX();
-    y = point.getY();
-    z = point.getZ();
+    x = point.x;
+    y = point.y;
+    z = point.z;
     defined = point.defined;
     return this;
 }
@@ -71,59 +78,59 @@ Point3D Point3D::operator *(const Point3D &point) const
 Point3D Point3D::operator *(doubli n) const { return Point3D(x*n, y*n, z*n); }
 Point3D Point3D::operator /(const Point3D &point) const
 {
-    return Point3D(x/point.getX(),
-                   y/point.getY(),
-                   z/point.getZ());
+    return Point3D(x/point.x,
+                   y/point.y,
+                   z/point.z);
 }
 Point3D Point3D::operator /(doubli n) const { return Point3D(x/n, y/n, z/n); }
 
 doubli Point3D::distance(const Point3D &pA, const Point3D &pB)
 {
-    return sqrt(sqr(pB.getX()-pA.getX())+
-                sqr(pB.getY()-pA.getY())+
-                sqr(pB.getZ()-pA.getZ()));
+    return sqrt(sqr(pB.x - pA.x)+
+                sqr(pB.y - pA.y)+
+                sqr(pB.z - pA.z));
 }
 doubli Point3D::distanceMax(const Point3D &pA, const Point3D &pB)
 {
-    doubli dX = abs(pB.getX() - pA.getX()),
-           dY = abs(pB.getY() - pA.getY()),
-           dZ = abs(pB.getZ() - pA.getZ());
+    doubli dX = abs(pB.x - pA.x),
+           dY = abs(pB.y - pA.y),
+           dZ = abs(pB.z - pA.z);
     if(dX < dY)
         dX = dY;
-    if(dX < dZ)
-        return dZ;
-    return dX;//on prend le plus grand (ça forme un carré)
+    return dX < dZ ? dZ : dX;//on prend le plus grand (ça forme un carré)
 }
 
 QDebug operator <<(QDebug debug, const Point3D &point)
 {
-    debug << "Point3D(" << point.getX() << "," << point.getY() << "," << point.getZ() << ")";
+    debug << "Point3D(" << point.x << "," << point.y << "," << point.z << ")";
     return debug;
 }
 Point3D qFloor(const Point3D &point)
-{ return Point3D(std::floor(point.getX()), std::floor(point.getY()), std::floor(point.getZ())); }
+{ return Point3D(std::floor(point.x), std::floor(point.y), std::floor(point.z)); }
 Point3D qCeil(const Point3D &point)
-{ return Point3D(std::ceil(point.getX()), std::ceil(point.getY()), std::ceil(point.getZ())); }
+{ return Point3D(std::ceil(point.x), std::ceil(point.y), std::ceil(point.z)); }
 
 
 
 
 
 
-Pos3D::Pos3D() : Point3D(0, 0, 0)
-{ setRX(0); setRZ(0); }
+Pos3D::Pos3D() : Point3D(0, 0, 0) { rX = 0; rZ = 0; }
 Pos3D::Pos3D(doubli x, doubli y, doubli z, radiant rX, radiant rZ) : Point3D(x, y, z)
-{ setRX(rX); setRZ(rZ); }
-Pos3D::Pos3D(const Point3D &point, radiant rX, radiant rZ) : Point3D(point)
-{ setRX(rX); setRZ(rZ); }
-Pos3D::Pos3D(const Pos3D &pos) : Point3D(pos)
-{ setRX(pos.getRX()); setRZ(pos.getRZ()); }
+{
+    this->rX = rX; this->rZ = rZ;
+}
+Pos3D::Pos3D(const Point3D& point, radiant rX, radiant rZ) : Point3D(point)
+{
+    this->rX = rX; this->rZ = rZ;
+}
+Pos3D::Pos3D(const Pos3D &pos) : Point3D(pos) { rX = pos.rX; rZ = pos.rZ; }
 
 Pos3D *Pos3D::operator=(const Pos3D &pos)
 {
     Point3D::operator=(pos);
-    setRX(pos.getRX());
-    setRZ(pos.getRZ());
+    rX = pos.rX;
+    rZ = pos.rZ;
     return this;
 }
 
@@ -148,7 +155,8 @@ Point3D Pos3D::pointFromRot(doubli d, radiant rX, radiant rZ)
 Point3D Pos3D::getNextPointRelatif() const
 {
     //on s'avance de 1 t
-    return pointFromRot(1, getRX(), getRZ());
+    //équivalent à pointFromRot(1, rX, rZ);
+    return Point3D(cos(rZ)*cos(rX), cos(rZ)*sin(rX), sin(rZ));
 }
 Point3D Pos3D::getNextPoint() const
 {
