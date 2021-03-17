@@ -4,6 +4,7 @@
 
 #include <QDebug>
 #include <QtMath>
+#include <QPointF>
 #include "DebugTime.h"
 
 
@@ -21,6 +22,10 @@ radiant acos(const doubli& d);
 radiant asin(const doubli& d);
 radiant atan(const doubli& d);
 doubli qIsInf(const doubli& d);
+doubli max(const doubli& a, const doubli& b);
+doubli max(const doubli& a, const doubli& b, const doubli& c);
+doubli min(const doubli& a, const doubli& b);
+doubli min(const doubli& a, const doubli& b, const doubli& c);
 QDebug operator <<(QDebug debug, const doubli& d);
 
 class Point3D
@@ -136,12 +141,42 @@ protected:
 Point3D operator -(const Point3D& p, const Size3D& s);
 Point3D operator +(const Point3D& p, const Size3D& s);
 
-class Rect3D
+class HRect3D
+{
+public:
+    HRect3D();// a horizontal cuboid
+    HRect3D(const Point3D& pointA, const Point3D& pointB);
+    HRect3D(const Point3D& pointA, const Size3D& size);
+    HRect3D(const HRect3D& rect);
+    Size3D getSize() const { return Size3D(pointMin, pointMax); }
+    Point3D getPointMin() const { return pointMin; }
+    Point3D getPointMax() const { return pointMax; }
+    Point3D getMiddle() const { return (pointMin + pointMax) / 2; }
+
+    //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
+    //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
+    void scale(double scale);
+    HRect3D operator +(const Point3D& pointAdd) const { return HRect3D(pointMin + pointAdd, pointMax + pointAdd); }
+    HRect3D* operator =(const HRect3D& rect);
+    bool operator ==(const HRect3D& rect) const;
+
+    bool contains(const Point3D& point) const;
+
+    friend QDebug operator << (QDebug debug, const HRect3D& rect);
+
+private:
+    Point3D pointMax;
+    Point3D pointMin;
+    //TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
+};
+
+
+class Rect3D : public HRect3D
 {
 public:
     Rect3D();
-    Rect3D(const Point3D& pointA, const Point3D& pointB);
-    Rect3D(const Point3D& pointA, const Size3D& size);
+    Rect3D(const Point3D& pointA, const Point3D& pointB, const Point3D& pointC);
+    Rect3D(const Point3D& pointA, const Point3D& pointB, const Size3D& size);
     Rect3D(const Rect3D& rect);
     Size3D getSize() const { return Size3D(pointMin, pointMax); }
     Point3D getPointMin() const { return pointMin; }
@@ -151,18 +186,47 @@ public:
     //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(double scale);
-    Rect3D operator +(const Point3D& pointMinAdd) const { return Rect3D(pointMin + pointMinAdd, getSize()); }
-    Rect3D* operator =(const Rect3D& rect) { pointMin = rect.pointMin; pointMax = rect.pointMax; return this; }
-    bool operator ==(const Rect3D& rect) const { return pointMin == rect.pointMin && pointMax == rect.pointMax; }
+    Rect3D operator +(const Point3D& pointAdd) const { return Rect3D(pointA + pointAdd, pointB + pointAdd, pointC + pointAdd); }
+    Rect3D* operator =(const Rect3D& rect);
+    bool operator ==(const Rect3D& rect) const;
 
     bool contains(const Point3D& point) const;
 
+    friend QDebug operator << (QDebug debug, const Rect3D& rect);
+
 private:
-    Point3D pointMin;
+    Point3D pointA;
+    Point3D pointB;
+    Point3D pointC;
     Point3D pointMax;
+    Point3D pointMin;
+    void calcMinMax();
     //TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
-QDebug operator << (QDebug debug, const Rect3D& rect);
+
+
+
+
+class Plan
+{
+public:
+    Plan();
+    Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC);
+    Plan(const HRect3D &rect);
+    Plan(const Plan &plan);
+    void calcEquation();//ax + by + cz + d = 0
+    //mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
+    bool paralleleDroite(const Point3D &pA, const Point3D &pB) const;
+    Point3D intersection(const Point3D &pA, const Point3D &pB) const;
+    QPointF projeteOrtho(const Point3D &pA) const;
+    bool isValue() const { return a!=0.0L || b!=0.0L || c!=0.0L || d!=0.0L; }
+    Plan *operator =(const Plan &plan);
+private:
+    Point3D pA;
+    Point3D pB;
+    Point3D pC;
+    doubli a=0, b=0, c=0, d=0;
+};
 
 
 

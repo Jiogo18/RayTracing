@@ -28,29 +28,6 @@ using namespace RAYTRACING;
 
 
 
-class Plan
-{
-public:
-    Plan();
-    Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC);
-    Plan(const Rect3D &rect);
-    Plan(const Plan &plan);
-    void calcEquation();//ax + by + cz + d = 0
-    //mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
-    bool paralleleDroite(const Point3D &pA, const Point3D &pB) const;
-    Point3D intersection(const Point3D &pA, const Point3D &pB) const;
-    QPointF projeteOrtho(const Point3D &pA) const;
-    bool isValue() const { return a!=0.0L || b!=0.0L || c!=0.0L || d!=0.0L; }
-    Plan *operator =(const Plan &plan);
-private:
-    Point3D pA;
-    Point3D pB;
-    Point3D pC;
-    doubli a=0, b=0, c=0, d=0;
-};
-
-
-
 template<typename T>
 class PixScreen
 {

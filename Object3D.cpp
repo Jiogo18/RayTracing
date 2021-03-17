@@ -98,11 +98,7 @@ float OBJECT3D::getSpeedOfLight(BLOCK::Material material)
     case BLOCK::Material::green_glass:
     case BLOCK::Material::mirror:
         return 0.667;// 1/1.5
-    case BLOCK::Material::none:
-    case BLOCK::Material::oak_log:
-    case BLOCK::Material::birch_log:
-    case BLOCK::Material::stone:
-    case BLOCK::Material::glowstone:
+    default:
         return 0;
     }
 }
@@ -155,13 +151,13 @@ ColorLight ColorLight::operator +(const ColorLight &color) const
 
 Face::Face() : Object(Pos3D(0, 0, 0, 0, 0))
 {
-    rect = Rect3D(Point3D(0, 0, 0), Point3D(0, 0, 0));
+    rect = HRect3D(Point3D(0, 0, 0), Point3D(0, 0, 0));
     material = BLOCK::Material::none;
     variations.clear();
     variations.append(BLOCK::Variation::front);
     calcFace();
 }
-Face::Face(const Point3D &point, const Rect3D &rect, BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
+Face::Face(const Point3D &point, const HRect3D &rect, BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
 {
     this->rect = rect;
     this->material = material;
@@ -306,15 +302,15 @@ Block::~Block()
     while(!faces.isEmpty())
         deleteFace(faces.first());
 }
-Rect3D Block::getBlockGeometry(BLOCK::Type type)
+HRect3D Block::getBlockGeometry(BLOCK::Type type)
 {
     switch (type) {
     case BLOCK::Type::cube:
-        return Rect3D(Point3D(0, 0, 0), Point3D(1, 1, 1));
+        return HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 1));
     case BLOCK::Type::slab:
-        return Rect3D(Point3D(0, 0, 0), Point3D(1, 1, 0.5L));
+        return HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0.5L));
     }
-    return Rect3D();
+    return HRect3D();
 }
 
 void Block::deleteFace(Face *face)
@@ -338,21 +334,21 @@ QList<Face> Block::getFaces(Point3D posBlock, BLOCK::Type type, BLOCK::Material 
     switch (type) {
     case BLOCK::Type::cube:
         return {
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, Rect3D(Point3D(0, 0, 1), Point3D(1, 1, 1)), material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(0, 1, 1)), material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(1, 0, 1)), material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, Rect3D(Point3D(1, 0, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, Rect3D(Point3D(0, 1, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::left})//WEST
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
+            Face(posBlock, HRect3D(Point3D(0, 0, 1), Point3D(1, 1, 1)), material, {BLOCK::Variation::top}),//TOP
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 1)), material, {BLOCK::Variation::back}),//SOUTH
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 1)), material, {BLOCK::Variation::right}),//EAST
+            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::front}),//NORTH
+            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::left})//WEST
         };
     case BLOCK::Type::slab:
         return {
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, Rect3D(Point3D(0, 0, 0.5L), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(0, 1, 0.5L)), material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, Rect3D(Point3D(0, 0, 0), Point3D(1, 0, 0.5L)), material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, Rect3D(Point3D(1, 0, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, Rect3D(Point3D(0, 1, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::left})//WEST
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
+            Face(posBlock, HRect3D(Point3D(0, 0, 0.5L), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::top}),//TOP
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 0.5L)), material, {BLOCK::Variation::back}),//SOUTH
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 0.5L)), material, {BLOCK::Variation::right}),//EAST
+            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::front}),//NORTH
+            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::left})//WEST
         };
     }
     return {};
@@ -407,7 +403,7 @@ bool Chunk::contains(const Point3D &pos) const { return chunkOfPos(pos) == getPo
 void Chunk::calcMinMaxPoint()
 {
     if(blocks.size() == 0) {
-        maxGeometry = Rect3D(getPoint(), getPoint());
+        maxGeometry = HRect3D(getPoint(), getPoint());
         return;
     }
     maxGeometry = blocks.first()->getMaxGeometry();
@@ -419,7 +415,7 @@ void Chunk::calcMinMaxPoint()
     doubli maxZ = maxGeometry.getPointMax().getZ();
 
     for(int i=0; i<blocks.size(); i++) {
-        Rect3D currentMaxGeometry = blocks.at(i)->getMaxGeometry();
+        HRect3D currentMaxGeometry = blocks.at(i)->getMaxGeometry();
         if(currentMaxGeometry.getPointMin().getX() < minX)
             minX = currentMaxGeometry.getPointMin().getX();
         if(currentMaxGeometry.getPointMin().getY() < minY)
@@ -433,7 +429,7 @@ void Chunk::calcMinMaxPoint()
         if(maxZ < currentMaxGeometry.getPointMax().getZ())
             maxZ = currentMaxGeometry.getPointMax().getZ();
     }
-    maxGeometry = Rect3D(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
+    maxGeometry = HRect3D(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
     //middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);
     middleMinGeometry = maxGeometry.getMiddle();
 }

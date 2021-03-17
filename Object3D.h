@@ -79,7 +79,7 @@ public:
     Object(Pos3D pos);
     Object(const Object &obj);
     virtual ~Object();
-    virtual Rect3D getMaxGeometry() const { return Rect3D(getPoint(), getPoint()); }
+    virtual HRect3D getMaxGeometry() const { return HRect3D(getPoint(), getPoint()); }
     Object *operator =(const Object &obj);
 };
 
@@ -89,9 +89,9 @@ class Face : public Object
 {
 public:
     Face();
-    Face(const Point3D &point, const Rect3D &rect, BLOCK::Material material, QList<BLOCK::Variation> variations);
+    Face(const Point3D &point, const HRect3D &rect, BLOCK::Material material, QList<BLOCK::Variation> variations);
     Face(const Face &face);
-    Rect3D getMaxGeometry() const { return maxGeometry; }
+    HRect3D getMaxGeometry() const { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleGeometry; }
     bool isValid() const { return material != BLOCK::Material::none; }
     ColorLight getColor(const QPointF &point, const QImage *img) const;
@@ -102,8 +102,8 @@ public:
     radiant refractRotX(const radiant &posRX, float speedIn, float speedOut) const;
     radiant refractRotZ(const radiant &posRZ, float speedIn, float speedOut) const;
 private:
-    Rect3D rect;
-    Rect3D maxGeometry;
+    HRect3D rect;
+    HRect3D maxGeometry;
     Point3D middleGeometry;
     void calcFace();
     BLOCK::Material material;
@@ -121,8 +121,8 @@ public:
     Block(Pos3D pos, BLOCK::Type type, BLOCK::Material material);
     ~Block() override;
 
-    static Rect3D getBlockGeometry(BLOCK::Type type);
-    Rect3D getMaxGeometry() const override { return maxGeometry; }
+    static HRect3D getBlockGeometry(BLOCK::Type type);
+    HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
     const QList<Face*> *getFaces() const { return &faces; }
 
@@ -132,7 +132,7 @@ private:
     QList<Face*> faces;
     void deleteFace(Face *face);
     void calcFaces();
-    Rect3D maxGeometry;
+    HRect3D maxGeometry;
     Point3D middleMinGeometry;
     static QList<Face> getFaces(Point3D posBlock, BLOCK::Type type, BLOCK::Material material);
 };
@@ -154,13 +154,13 @@ public:
     static Point3D chunkOrigin(const Point3D &chunkPos) { return qFloor(chunkPos) * Chunk::chunkSize; }
     static Point3D relativePosOfPos(const Point3D &blockPos) { return blockPos - chunkOrigin(chunkOfPos(blockPos)); }
 
-    Rect3D getMaxGeometry() const override { return maxGeometry; }
+    HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
     const QList<Block*> *getBlocks() const { return &blocks; }
 private:
     QList<Block*> blocks;
     //indépendants de la taille du chunk (presque) mais dépendant de la taille des blocks :
-    Rect3D maxGeometry;
+    HRect3D maxGeometry;
     Point3D middleMinGeometry;
     void calcMinMaxPoint();
 
