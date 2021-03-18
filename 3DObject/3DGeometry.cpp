@@ -1,5 +1,8 @@
 #include "3DGeometry.h"
 
+bool isNull(const doubli& d) { return -0.000001 < d && d < 0.000001; }
+doubli roundNull(const doubli& d) { return isNull(d) ? 0 : d; }
+doubli round(const doubli& d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
 doubli sqr(const doubli& d) { return d * d; }
 radiant degreesToRadians(const doubli& deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
 doubli radiansToDegrees(const radiant& rad) { return rad * 180 / doubli(M_PI); }
@@ -244,27 +247,27 @@ QDebug operator <<(QDebug debug, const Pos3D& pos)
 
 
 
-Size3D::Size3D(doubli width, doubli height, doubli depth)
+Size3D::Size3D(doubli dX, doubli dY, doubli dZ)
 {
-    this->width = width; this->height = height; this->depth = depth;
+    this->dX = dX; this->dY = dY; this->dZ = dZ;
 }
 Size3D::Size3D(const Size3D& size)
 {
-    width = size.width; height = size.height; depth = size.depth;
+    dX = size.dX; dY = size.dY; dZ = size.dZ;
 }
 Size3D::Size3D(const Point3D& pA, const Point3D& pB)
 {
-    width = pB.getX() - pA.getX();
-    height = pB.getY() - pA.getY();
-    depth = pB.getZ() - pA.getZ();
+    dX = pB.getX() - pA.getX();
+    dY = pB.getY() - pA.getY();
+    dZ = pB.getZ() - pA.getZ();
 }
 Point3D operator -(const Point3D& p, const Size3D& s)
 {
-    return Point3D(p.getX() - s.getWidth(), p.getY() - s.getHeight(), p.getZ() - s.getDepth());
+    return Point3D(p.getX() - s.getDX(), p.getY() - s.getDY(), p.getZ() - s.getDZ());
 }
 Point3D operator +(const Point3D& p, const Size3D& s)
 {
-    return Point3D(p.getX() + s.getWidth(), p.getY() + s.getHeight(), p.getZ() + s.getDepth());
+    return Point3D(p.getX() + s.getDX(), p.getY() + s.getDY(), p.getZ() + s.getDZ());
 }
 
 
@@ -288,9 +291,9 @@ HRect3D::HRect3D(const HRect3D& rect)
     pointMin = rect.pointMin; pointMax = rect.pointMax;
 }
 
-void HRect3D::scale(double scale)
+void HRect3D::scale(doubli scale)
 {
-    Size3D demisizeScaled = getSize() / 2 * round(static_cast<doubli>(scale));//TODO: cast obligé?
+    Size3D demisizeScaled = getSize() / 2 * scale;
     const Point3D& middle = getMiddle();
     pointMin = middle - demisizeScaled;
     pointMax = middle + demisizeScaled;
@@ -343,7 +346,7 @@ Rect3D::Rect3D(const Rect3D& rect) : HRect3D(rect)
     pointMax = rect.pointMax;
 }
 
-void Rect3D::scale(double scale)
+void Rect3D::scale(doubli scale)
 {
     HRect3D::scale(scale);
     Size3D thirdSize = Size3D(getMiddle(), pointB) * scale;
@@ -396,163 +399,148 @@ void Rect3D::calcMinMax()
 
 
 Plan::Plan() {}
-Plan::Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC)
+Plan::Plan(const Point3D& pA, const Point3D& pB, const Point3D& pC)
 {
     this->pA = pA;
     this->pB = pB;
     this->pC = pC;
     calcEquation();
 }
-Plan::Plan(const HRect3D &rect)
+Plan::Plan(const HRect3D& rect)
 {
     this->pA = rect.getPointMin();
     //les points intermédiaires (B et C) sont à mis distance de A et de D sur Z
     //TODO: sauf si rotation...
     this->pB = Point3D(rect.getPointMin().getX(),
-                       (rect.getPointMin().getY()+rect.getPointMax().getY())/2,
-                       (rect.getPointMin().getZ()+rect.getPointMax().getZ())/2);
-    this->pC = Point3D((rect.getPointMin().getX()+rect.getPointMax().getX())/2,
-                       rect.getPointMin().getY(),
-                       (rect.getPointMin().getZ()+rect.getPointMax().getZ())/2);
+        (rect.getPointMin().getY() + rect.getPointMax().getY()) / 2,
+        (rect.getPointMin().getZ() + rect.getPointMax().getZ()) / 2);
+    this->pC = Point3D((rect.getPointMin().getX() + rect.getPointMax().getX()) / 2,
+        rect.getPointMin().getY(),
+        (rect.getPointMin().getZ() + rect.getPointMax().getZ()) / 2);
     calcEquation();
 }
-Plan::Plan(const Plan &plan) { operator=(plan); }
+Plan::Plan(const Plan& plan)
+{
+    pA = plan.pA; pB = plan.pB; pC = plan.pC;
+    a = plan.a; b = plan.b; c = plan.c; d = plan.d;
+}
+
+Plan* Plan::operator =(const Plan& plan)
+{
+    pA = plan.pA; pB = plan.pB; pC = plan.pC;
+    a = plan.a; b = plan.b; c = plan.c; d = plan.d;
+    return this;
+}
+
+bool Plan::paralleleDroite(const Size3D& vect) const
+{
+    //voir #Orthogonal
+    doubli scalaireAvecVectNormal = a * vect.getDX() +
+        b * vect.getDY() +
+        c * vect.getDZ();
+    return isNull(scalaireAvecVectNormal);
+}
+
+Point3D Plan::intersection(const Point3D& pA, const Point3D& pB) const
+{
+    //Voir #Intersection
+    Size3D ABs(pA, pB);
+    if (paralleleDroite(ABs))
+        return Point3D();
+    doubli t = -(a * pA.getX() + b * pA.getY() + c * pA.getZ() + d)
+        / (a * ABs.getDX() + b * ABs.getDY() + c * ABs.getDZ());
+    if (t < 0)//derriere
+        return Point3D();
+    return pA + ABs * t;
+}
+
+QPointF Plan::projeteOrtho(const Point3D& pA) const
+{
+    //donne un point de position relative au plan (à la texture...)
+    //un vecteur normal: m(a, b, c) donne la direction du vecteur MM'
+    //un vecteur normal donne la rotation du Plan: sin(rY) = b / distance, sin(rX) = z / distance
+    doubli distance = sqrt(a * a + b * b + c * c);
+    Point3D pR = Pos3D(this->pA, asin(b / distance), asin(c / distance)).changeRef(pA);
+    //on prend direct pA car si c'est pas un point du plan alors pR est son projeté dans l'autreref
+    //(si x != 0 alors pA n'est pas sur le plan)
+
+
+    return QPointF(pR.getY(), pR.getZ());
+    //ne prend pas en compte la rotation... ! (relative au point A)
+}
+
 void Plan::calcEquation()
 {
-    doubli xAB = round(pB.getX() - pA.getX()),
-            yAB = round(pB.getY() - pA.getY()),
-            zAB = round(pB.getZ() - pA.getZ()),
-            xAC = round(pC.getX() - pA.getX()),
-            yAC = round(pC.getY() - pA.getY()),
-            zAC = round(pC.getZ() - pA.getZ());
+    // same as Size but way more efficient
+    doubli xAB = roundNull(pB.getX() - pA.getX()),
+        yAB = roundNull(pB.getY() - pA.getY()),
+        zAB = roundNull(pB.getZ() - pA.getZ()),
+        xAC = roundNull(pC.getX() - pA.getX()),
+        yAC = roundNull(pC.getY() - pA.getY()),
+        zAC = roundNull(pC.getZ() - pA.getZ());
     //voir #EquationPlan
     a = 0; b = 0; c = 0; d = 0;
-    if((xAB == 0.0L && yAB == 0.0L && zAB == 0.0L) || (xAC == 0.0L && yAC == 0.0L && zAC == 0.0L)) {
+    if ((xAB == 0 && yAB == 0 && zAB == 0) || (xAC == 0 && yAC == 0 && zAC == 0)) {
         //qDebug() << "ERROR Plan vecteur nul";
         return;
     }
-    doubli nOfb=round(yAB/yAC), nOfc=round(zAB/zAC);
-    if(zAB == 0.0L && zAC == 0.0L) nOfc = 0.0L;
-    if(yAB == 0.0L && yAC == 0.0L) nOfb = 0.0L;
+    doubli nOfb = yAB / yAC, nOfc = zAB / zAC;
+    if (zAB == 0 && zAC == 0) nOfc = 0;
+    if (yAB == 0 && yAC == 0) nOfb = 0;
     //avec nOfb le coef qui permet à b d'être nul et nOfc pour qvoir c nul
 
     //bug équation du plan avec
     //A(0,0,0) B(0,2,0) C(1,0,0) => AB(0,2,0) AC(1,0,0)
     //P : z=0 => c=1 et le reste=0
     //si les 2 vecteurs sont sur le plan déssiné par 2 axes
-    if(zAB == 0.0L && zAC == 0.0L) {
+    if (zAB == 0 && zAC == 0) {
         c = 1;//z - d = 0
     }
-    else if(yAB == 0.0L && yAC == 0.0L) {
+    else if (yAB == 0 && yAC == 0) {
         b = 1;//y - d = 0
     }
-    else if(xAB == 0.0L && xAC == 0.0L) {
+    else if (xAB == 0 && xAC == 0) {
         a = 1;//x - d = 0
     }
     //si AB est un vecteur dir des axes
-    else if(xAB == 0.0L && yAB == 0.0L) {
+    else if (xAB == 0 && yAB == 0) {
         //zAC ne sert à rien puisqu'il dessine une droite // à AB
-        a = zAB*yAC;
-        b = -zAB*xAC;
-        c = 0;
+        a = zAB * yAC;
+        b = -zAB * xAC;
     }
-    else if(xAB == 0.0L && zAB == 0.0L) {
-        a = yAB*zAC;
-        b = 0;
-        c = -yAB*xAC;
+    else if (xAB == 0 && zAB == 0) {
+        a = yAB * zAC;
+        c = -yAB * xAC;
     }
-    else if(yAB == 0.0L && zAB == 0.0L) {
-        a = 0;
-        b = xAB*zAC;
-        c = -xAB*yAC;
+    else if (yAB == 0 && zAB == 0) {
+        b = xAB * zAC;
+        c = -xAB * yAC;
     }
     //si AC est un vecteur directeur d'un des axes
-    else if(xAC == 0.0L && yAC == 0.0L) {
-        a = zAC*yAB;
-        b = -zAC*xAB;
-        c = 0;
+    else if (xAC == 0 && yAC == 0) {
+        a = zAC * yAB;
+        b = -zAC * xAB;
     }
-    else if(xAC == 0.0L && zAC == 0.0L) {
-        a = yAC*zAB;
-        b = 0;
-        c = -yAC*xAB;
+    else if (xAC == 0 && zAC == 0) {
+        a = yAC * zAB;
+        c = -yAC * xAB;
     }
-    else if(yAC == 0.0L && zAC == 0.0L) {
-        a = 0;
-        b = xAC*zAB;
-        c = -xAC*yAB;
+    else if (yAC == 0 && zAC == 0) {
+        b = xAC * zAB;
+        c = -xAC * yAB;
     }
     //sinon
     else {
         a = 1;
-        if(yAC == 0.0L)
-            c = (xAC)*a/(-zAC);//nOfb == inf donc on retire et fait *0 pr l'autre
+        if (yAC == 0)
+            c = (xAC)*a / (-zAC);//nOfb == inf donc on retire et fait *0 pr l'autre
         else
-            c = (xAC*nOfb-xAB)*a/(zAB-zAC*nOfb);
-        if(zAC == 0.0L)
-            b = (xAC)*a/(-yAC);//nOfc == inf donc on retire et fait *0 pr l'autre
+            c = (xAC * nOfb - xAB) * a / (zAB - zAC * nOfb);
+        if (zAC == 0)
+            b = (xAC)*a / (-yAC);//nOfc == inf donc on retire et fait *0 pr l'autre
         else
-            b = (xAC*nOfc-xAB)*a/(yAB-yAC*nOfc);
+            b = (xAC * nOfc - xAB) * a / (yAB - yAC * nOfc);
     }
-    a = round(a); b = round(b); c = round(c);
-    d = - a*pA.getX() - b*pA.getY() - c*pA.getZ();
-    d = round(d);
+    d = roundNull(-a * pA.getX() - b * pA.getY() - c * pA.getZ());
     //si il y a 2 x, y ou z ==0 pr chaque vecteur alors vecteurs colinéaires => pas de plan
-}
-
-bool Plan::paralleleDroite(const Point3D &pA, const Point3D &pB) const
-{
-    //voir #Orthogonal
-    doubli scalaireAvecVectNormal = round(a*(pB.getX()-pA.getX())+
-                                          b*(pB.getY()-pA.getY())+
-                                          c*(pB.getZ()-pA.getZ()));
-    if(scalaireAvecVectNormal == 0.0L)
-        return true;
-    double precisionLog = log10(static_cast<double>(std::abs(scalaireAvecVectNormal)));
-    if(precisionLog < -10) {
-        //normaement n'arrive plus avec les doubli
-        //if(precisionLog > - 200)
-            qDebug() << "paralleleDroite avec precision de:" << precisionLog;
-        return true;
-    }
-    return false;
-}
-
-Point3D Plan::intersection(const Point3D &pA, const Point3D &pB) const
-{
-    if(paralleleDroite(pA, pB))
-        return Point3D();
-    //Voir #Intersection
-    doubli ABx = pB.getX()-pA.getX(),
-           ABy = pB.getY()-pA.getY(),
-           ABz = pB.getZ()-pA.getZ();
-    doubli t = -(a*pA.getX() + b*pA.getY() + c*pA.getZ() + d)
-               /(a*ABx + b*ABy + c*ABz);
-    if(t < 0)//derriere
-        return Point3D();
-    return Point3D(pA.getX() + t * ABx,
-                   pA.getY() + t * ABy,
-                   pA.getZ() + t * ABz);
-}
-
-QPointF Plan::projeteOrtho(const Point3D &pA) const
-{
-    //donne un point de position relative au plan (à la texture...)
-    //un vecteur normal: m(a, b, c) donne la direction du vecteur MM'
-    //un vecteur normal donne la rotation du Plan: sin(rY) = b / distance, sin(rX) = z / distance
-    doubli distance = sqrt(a*a + b*b + c*c);
-    Point3D pR = Pos3D(this->pA, asin(b/distance), asin(c/distance)).changeRef(pA);
-    //on prend direct pA car si c'est pas un point du plan alors pR est son projeté dans l'autreref
-    //(si x != 0 alors pA n'est pas sur le plan)
-
-
-    return QPointF(static_cast<double>(pR.getY()), static_cast<double>(pR.getZ()));
-    //ne prend pas en compte la rotation... ! (relative au point A)
-}
-
-Plan *Plan::operator =(const Plan &plan)
-{
-    pA = plan.pA; pB = plan.pB; pC = plan.pC;
-    a = plan.a; b = plan.b; c = plan.c; d = plan.d;
-    return this;
 }

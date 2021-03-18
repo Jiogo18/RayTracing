@@ -28,7 +28,7 @@ doubli ENTITY::baseSpeed(ENTITY::Type type, ENTITY::Direction dir)
     default:
         break;
     }
-    return round(speed);
+    return roundNull(speed);
 }
 
 QString OBJECT3D::getFileTexture(BLOCK::Material material, QList<BLOCK::Variation> variations)

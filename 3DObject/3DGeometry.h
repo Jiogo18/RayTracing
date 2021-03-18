@@ -9,7 +9,9 @@
 
 
 typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
-static doubli round(const doubli& d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
+bool isNull(const doubli& d);
+doubli roundNull(const doubli& d);//plus opti que round
+doubli round(const doubli& d);
 typedef float radiant;
 doubli sqr(const doubli& d);//easy
 radiant degreesToRadians(const doubli& deg);
@@ -121,22 +123,22 @@ class Size3D
 {
 public:
     Size3D();
-    Size3D(doubli width, doubli height, doubli depth);
+    Size3D(doubli dX, doubli dY, doubli dZ);
     Size3D(const Size3D& size);
     Size3D(const Point3D& pA, const Point3D& pB);
-    doubli getWidth() const { return width; }
-    doubli getHeight() const { return height; }
-    doubli getDepth() const { return depth; }
+    doubli getDX() const { return dX; }
+    doubli getDY() const { return dY; }
+    doubli getDZ() const { return dZ; }
     Size3D getSize() const { return *this; }
-    void setWidth(doubli width) { this->width = round(width); }
-    void setHeight(doubli height) { this->height = round(height); }
-    void setDepth(doubli depth) { this->depth = round(depth); }
-    Size3D operator *(doubli scale) const { return Size3D(width * scale, height * scale, depth * scale); }
-    Size3D operator /(doubli scale) const { return Size3D(width / scale, height / scale, depth / scale); }
+    void setDX(doubli dZ) { this->dZ = round(dZ); }
+    void setDY(doubli dY) { this->dY = round(dY); }
+    void setDZ(doubli dZ) { this->dZ = round(dZ); }
+    Size3D operator *(doubli scale) const { return Size3D(dX * scale, dY * scale, dZ * scale); }
+    Size3D operator /(doubli scale) const { return Size3D(dX / scale, dY / scale, dZ / scale); }
 protected:
-    doubli width;//X
-    doubli height;//Y
-    doubli depth;//Z
+    doubli dX;//delta X, width
+    doubli dY;//delta Y, height
+    doubli dZ;//delta Z, depth
 };
 Point3D operator -(const Point3D& p, const Size3D& s);
 Point3D operator +(const Point3D& p, const Size3D& s);
@@ -155,7 +157,7 @@ public:
 
     //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
-    void scale(double scale);
+    void scale(doubli scale);
     HRect3D operator +(const Point3D& pointAdd) const { return HRect3D(pointMin + pointAdd, pointMax + pointAdd); }
     HRect3D* operator =(const HRect3D& rect);
     bool operator ==(const HRect3D& rect) const;
@@ -185,7 +187,7 @@ public:
 
     //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
-    void scale(double scale);
+    void scale(doubli scale);
     Rect3D operator +(const Point3D& pointAdd) const { return Rect3D(pointA + pointAdd, pointB + pointAdd, pointC + pointAdd); }
     Rect3D* operator =(const Rect3D& rect);
     bool operator ==(const Rect3D& rect) const;
@@ -211,21 +213,21 @@ class Plan
 {
 public:
     Plan();
-    Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC);
-    Plan(const HRect3D &rect);
-    Plan(const Plan &plan);
-    void calcEquation();//ax + by + cz + d = 0
+    Plan(const Point3D& pA, const Point3D& pB, const Point3D& pC);
+    Plan(const HRect3D& rect);
+    Plan(const Plan& plan);
+    Plan* operator =(const Plan& plan);
     //mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
-    bool paralleleDroite(const Point3D &pA, const Point3D &pB) const;
-    Point3D intersection(const Point3D &pA, const Point3D &pB) const;
-    QPointF projeteOrtho(const Point3D &pA) const;
-    bool isValue() const { return a!=0.0L || b!=0.0L || c!=0.0L || d!=0.0L; }
-    Plan *operator =(const Plan &plan);
+    bool paralleleDroite(const Size3D& vect) const;
+    Point3D intersection(const Point3D& pA, const Point3D& pB) const;
+    QPointF projeteOrtho(const Point3D& pA) const;
+    inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
 private:
     Point3D pA;
     Point3D pB;
     Point3D pC;
-    doubli a=0, b=0, c=0, d=0;
+    doubli a = 0, b = 0, c = 0, d = 0;
+    void calcEquation();//ax + by + cz + d = 0
 };
 
 

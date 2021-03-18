@@ -2,11 +2,6 @@
 
 
 
-
-
-
-
-
 template<typename T>
 PixScreen<T>::PixScreen(const QSize &size)
 {
@@ -156,19 +151,19 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D *pInter) const
                     continue;
                 if(!enter && pInter == pos.getPoint() && !lastMoved)
                     continue;//on viens de sortir (ou par défaut) et on se retrouve sur le même point
-                doubli distanceInter = round(Point3D::distance(pos, pInter)),
+                doubli distanceInter = roundNull(Point3D::distance(pos, pInter)),
                         distanceBlock = 0;
                 if(faceMin != nullptr && faceMin->isValid()) {
                     if(distanceInter > distanceInterMin)
                         continue;
-                    distanceBlock = round(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceBlock = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
                     if(distanceInter == distanceInterMin) {
                         if(distanceBlock >= distanceBlockMin)
                             continue;
                     }
                 }
                 else {
-                    distanceBlock = round(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceBlock = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
                 }
                 //si il n'y a pas encore de face
                 //sinon si le pt d'intersection est plus proche
@@ -238,7 +233,7 @@ QList<doubli> RayTracingWorker::calcyPosList(const int &sceneHeight)
 {
     QList<doubli> yPosList(sceneHeight);
     for(int y = 0; y<sceneHeight; y++) {
-        yPosList.replace(y, round(static_cast<doubli>(1 - 2.0L*y/sceneHeight) * yMax));
+        yPosList.replace(y, roundNull(static_cast<doubli>(1 - 2.0L*y/sceneHeight) * yMax));
     }
     return yPosList;
 }
@@ -248,7 +243,7 @@ QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const int &x, const QSize &scen
 {
     QList<Pos3D> raysPos(sceneSize.height());
     //pos en % de pixmap.width/2 * xMax
-    doubli xPos = round(static_cast<doubli>(2.0L * x/sceneSize.width() - 1) * xMax);
+    doubli xPos = roundNull(static_cast<doubli>(2.0L * x/sceneSize.width() - 1) * xMax);
     radiant angleH = atan(xPos);
     for(int y = 0; y < sceneSize.height(); y++) {
         //pos en % de pixmap.height/2 * yMax
