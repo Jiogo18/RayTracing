@@ -2,7 +2,7 @@
 #define RAYTRACING_H
 
 #include "3DObject/3DGeometry.h"
-#include "Object3D.h"
+#include "3DObject/World3D.h"
 #include <QVector>
 #include <QPainter>
 #include <QPointer>

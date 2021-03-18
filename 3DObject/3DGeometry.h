@@ -1,5 +1,5 @@
-#ifndef POINT3D_H
-#define POINT3D_H
+#ifndef GEOMETRY3D_H
+#define GEOMETRY3D_H
 
 
 #include <QDebug>
@@ -232,4 +232,4 @@ private:
 
 
 
-#endif // POINT3D_H
+#endif // GEOMETRY3D_H

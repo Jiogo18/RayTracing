@@ -1,7 +1,7 @@
 #ifndef MAP3D_H
 #define MAP3D_H
 
-#include "Object3D.h"
+#include "3DObject/World3D.h"
 #include "Transfo.h"
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
