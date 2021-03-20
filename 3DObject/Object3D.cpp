@@ -174,6 +174,7 @@ Face::Face(const Face& face) : Object(face.getPos())
     texture = face.texture;
     RX = face.RX; RZ = face.RZ;
     plan = face.plan;
+    pC = face.pC;
 }
 ColorLight Face::getColor(const QPointF& point, const QImage* img) const
 {
@@ -283,6 +284,7 @@ void Face::calcFace()
     RZ = atan(deltaXY / deltaZ);
 
     plan = Plan(maxGeometry);
+    pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
 }
 
 

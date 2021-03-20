@@ -72,10 +72,7 @@ void Ray::process(const World* world)
         lastFace = face;
 
         const Plan* plan = face->getPlan();
-        QPointF pTexture = plan->projeteOrtho(pInter);
-        //TODO pas opti (on perd 7% à refaire le calcul...)
-        QPointF pC = plan->projeteOrtho(face->getMaxGeometry().getPointMax()) - QPointF(1, 1);
-        pTexture -= pC;
+        const QPointF pTexture = plan->projeteOrtho(pInter) - face->getPointC();
         colors.append(face->getColor(pTexture, getTexture(face->getTexture())));
 
         if (face->getMaterial() == BLOCK::Material::mirror) {
