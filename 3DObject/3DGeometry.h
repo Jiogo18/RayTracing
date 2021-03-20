@@ -54,6 +54,7 @@ public:
     bool operator <(const Point3D& point) const;
     bool operator >(const Point3D& point) const;
     bool operator ==(const Point3D& point) const;
+    bool operator !=(const Point3D& point) const;
     bool isNull() const { return x == 0.0L && y == 0.0L && z == 0.0L; }
     bool isValid() const { return defined; }
     bool isInf() const { return qIsInf(x) || qIsInf(y) || qIsInf(z); }
@@ -105,6 +106,7 @@ public:
     Pos3D getChildRot(radiant rXRelatif, radiant rZRelatif) const;
     Point3D changeRef(const Point3D& point) const;
     bool operator ==(const Pos3D& pos) const;
+    bool operator !=(const Pos3D& pos) const;
 
     friend QDebug operator << (QDebug debug, const Pos3D& pos);
 private:

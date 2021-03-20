@@ -3,49 +3,41 @@
 
 #include "GUI.h"
 #include "map3D.h"
-#include <QtOpenGLWidgets/QOpenGLWidget>
 #include <QTimer>
 #include <QDebug>
 #include <QKeyEvent>
 #include <QPoint>
-#include <QThread>
 //#include <QWinTaskbarButton>//need 'winextras' removed in Qt 6.0.0
 //#include <QWinTaskbarProgress>
 
+//classe pour controller le GUI
+//si un jour on veut retirer le contrôle sur le GUI (quand rafraichir, keyPress...) on aura juste à modifier cette classe
 
-class fenetre : public QOpenGLWidget
+class fenetre : public GUI
 {
 public:
-    fenetre(QWidget *parent = nullptr);
-    ~fenetre() override;
-    void actualise();
+    fenetre(map3D* map, QWidget* parent = nullptr);
+    ~fenetre();
 
-    void keyPressEvent(QKeyEvent *event) override;
-//    void mouseMoveEvent(QMouseEvent *event) override;
-    //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
-//    QPoint MidWindow();
-//    void moveMouseMidWindow();
+    void keyPressEvent(QKeyEvent* event) override;
+    //    void mouseMoveEvent(QMouseEvent *event) override;
+        //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
+    //    QPoint MidWindow();
+    //    void moveMouseMidWindow();
 
 private slots:
     void workStarted();
-    inline void workReady() { repaint(); }
     void workFinished();
-//    void setPBMax(int max);
-//    void setPBValue(int value);
-
-protected:
-    void paintEvent(QPaintEvent *event) override;
+    //    void setPBMax(int max);
+    //    void setPBValue(int value);
 
 private:
     QTimer timerRefresh;
     qint64 lastRefreshTime;
     qint64 lastRefreshDuration;
-    map3D *map = nullptr;
-    QThread GUIThread;
-    GUI *gui = nullptr;
+    map3D* map = nullptr;
 
     //QWinTaskbarButton *winTaskbarButt = nullptr;
-
 //    QPoint posMouse;
     doubli MouseSensibility = 2;
 };

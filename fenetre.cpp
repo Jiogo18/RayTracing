@@ -1,23 +1,20 @@
 #include "fenetre.h"
 
-fenetre::fenetre(QWidget *parent) : QOpenGLWidget(parent)
+fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
 {
-    map = new map3D();
+    this->map = map;
 
-    gui = new GUI(map, this);
+    connect(this, &GUI::workStarted, this, &fenetre::workStarted);
+    connect(this, &GUI::workFinished, this, &fenetre::workFinished);
+    //    connect(map, &map3D::PBMax, this, &fenetre::setPBMax);
+    //    connect(map, &map3D::PBValue, this, &fenetre::setPBValue);
 
-    connect(gui, &GUI::workStarted, this, &fenetre::workStarted);
-    connect(gui, &GUI::workReady, this, &fenetre::workReady);
-    connect(gui, &GUI::workFinished, this, &fenetre::workFinished);
-//    connect(map, &map3D::PBMax, this, &fenetre::setPBMax);
-//    connect(map, &map3D::PBValue, this, &fenetre::setPBValue);
+        //setCursor(Qt::BlankCursor);
 
-    //setCursor(Qt::BlankCursor);
-
-    //winTaskbarButt = new QWinTaskbarButton(this);
+        //winTaskbarButt = new QWinTaskbarButton(this);
 
     show();
-    setMinimumSize(50,50);
+    setMinimumSize(50, 50);
     setGeometry(QRect(geometry().topLeft(), QSize(150, 100)));
 
     //moveMouseMidWindow();
@@ -25,29 +22,21 @@ fenetre::fenetre(QWidget *parent) : QOpenGLWidget(parent)
 
 
     lastRefreshTime = 0;
-    actualise();
+    refresh();
 
     timerRefresh.setSingleShot(true);
-    QObject::connect(&timerRefresh, &QTimer::timeout, this, &fenetre::actualise);
+    QObject::connect(&timerRefresh, &QTimer::timeout, this, &GUI::refresh);
 }
 
 fenetre::~fenetre()
 {
-    if(gui != nullptr) delete gui;
-    if(map != nullptr) delete map;
     //if(button != nullptr) delete button;
 }
 
-void fenetre::actualise()
-{
-    lastRefreshTime = QDateTime::currentMSecsSinceEpoch();
-    gui->refresh();
-}
 
-
-void fenetre::keyPressEvent(QKeyEvent *event)
+void fenetre::keyPressEvent(QKeyEvent* event)
 {
-    const Pos3D &previousPos = map->getClient()->getPos();
+    const Pos3D& previousPos = map->getClient()->getPos();
     switch (event->key()) {
     case Qt::Key_Z:
         map->moveFront();
@@ -68,33 +57,30 @@ void fenetre::keyPressEvent(QKeyEvent *event)
         map->moveUp();
         break;
     case Qt::Key_Left:
-        map->moveRX(-MouseSensibility/10);
+        map->moveRX(-MouseSensibility / 10);
         break;
     case Qt::Key_Right:
-        map->moveRX(MouseSensibility/10);
+        map->moveRX(MouseSensibility / 10);
         break;
     case Qt::Key_Up:
-        map->moveRZ(MouseSensibility/10);
+        map->moveRZ(MouseSensibility / 10);
         break;
     case Qt::Key_Down:
-        map->moveRZ(-MouseSensibility/10);
+        map->moveRZ(-MouseSensibility / 10);
         break;
     case Qt::Key_F5:
-        actualise();
+        refresh();
         break;
     }
     qDebug() << "pos client" << map->getClient()->getPos();
-    if(!(map->getClient()->getPos() == previousPos) && lastRefreshDuration < 300) {
+    if (map->getClient()->getPos() != previousPos && lastRefreshDuration < 300) {
         //si on a bougé et que ça prend pas trop de temps
-        actualise();
-        if(lastRefreshTime + 200 < QDateTime::currentMSecsSinceEpoch() ) {
-            //si ça fait trop longtemps qu'on a pas update
-            timerRefresh.stop();
-            actualise();
+        if (isPainting()) {
+            //actu à la fin du repaint en cours
+            timerRefresh.start(lastRefreshDuration);
         }
         else {
-            //actu dans 40 msec ou plus si on reviens ici
-            timerRefresh.start(lastRefreshDuration / 4);
+            refresh();
         }
     }
 }
@@ -111,6 +97,7 @@ void fenetre::keyPressEvent(QKeyEvent *event)
 
 void fenetre::workStarted()
 {
+    lastRefreshTime = QDateTime::currentMSecsSinceEpoch();
     setCursor(Qt::WaitCursor);
     //button->progress()->setVisible(true);
 }
@@ -118,19 +105,10 @@ void fenetre::workFinished() {
     setCursor(Qt::ArrowCursor);
     //button->progress()->setVisible(false);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
-    repaint();
 }
 
 //void fenetre::setPBMax(int max) { /*button->progress()->setMaximum(max);*/ }
 //void fenetre::setPBValue(int value) { /*button->progress()->setValue(value);*/ }
 
-void fenetre::paintEvent(QPaintEvent *event)
-{
-    // see 2D Painting Example (with OpenGL)
-    Q_UNUSED(event);
-    QPainter painter;
-    painter.begin(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    gui->paint(&painter, event);
-    painter.end();
-}
+
+

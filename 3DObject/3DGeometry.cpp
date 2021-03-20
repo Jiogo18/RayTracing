@@ -66,6 +66,11 @@ bool Point3D::operator ==(const Point3D& point) const
     return (x == point.x) && (y == point.y) && (z == point.z);
 }
 
+bool Point3D::operator !=(const Point3D &point) const
+{
+    return (x != point.x) || (y != point.y) || (z != point.z);
+}
+
 Point3D Point3D::operator +(const Point3D& point) const
 {
     return Point3D(x + point.x,
@@ -196,7 +201,12 @@ Point3D Pos3D::changeRef(const Point3D& point) const { return rotation(point + g
 
 bool Pos3D::operator ==(const Pos3D& pos) const
 {
-    return Point3D::operator ==(static_cast<Point3D>(pos)) && rX == pos.rX && rZ == pos.rZ;
+    return Point3D::operator ==(pos) && rX == pos.rX && rZ == pos.rZ;
+}
+
+bool Pos3D::operator !=(const Pos3D &pos) const
+{
+    return Point3D::operator !=(pos) || rX != pos.rX || rZ != pos.rZ;
 }
 
 Point3D Pos3D::rotation(Point3D point, radiant rX, radiant rZ)
