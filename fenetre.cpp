@@ -6,12 +6,7 @@ fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
 
     connect(this, &GUI::workStarted, this, &fenetre::workStarted);
     connect(this, &GUI::workFinished, this, &fenetre::workFinished);
-    //    connect(map, &map3D::PBMax, this, &fenetre::setPBMax);
-    //    connect(map, &map3D::PBValue, this, &fenetre::setPBValue);
-
-        //setCursor(Qt::BlankCursor);
-
-        //winTaskbarButt = new QWinTaskbarButton(this);
+    //setCursor(Qt::BlankCursor);
 
     show();
     setMinimumSize(50, 50);
@@ -28,10 +23,7 @@ fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
     QObject::connect(&timerRefresh, &QTimer::timeout, this, &GUI::refresh);
 }
 
-fenetre::~fenetre()
-{
-    //if(button != nullptr) delete button;
-}
+fenetre::~fenetre() {}
 
 
 void fenetre::keyPressEvent(QKeyEvent* event)
@@ -99,16 +91,8 @@ void fenetre::workStarted()
 {
     lastRefreshTime = QDateTime::currentMSecsSinceEpoch();
     setCursor(Qt::WaitCursor);
-    //button->progress()->setVisible(true);
 }
 void fenetre::workFinished() {
     setCursor(Qt::ArrowCursor);
-    //button->progress()->setVisible(false);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
 }
-
-//void fenetre::setPBMax(int max) { /*button->progress()->setMaximum(max);*/ }
-//void fenetre::setPBValue(int value) { /*button->progress()->setValue(value);*/ }
-
-
-

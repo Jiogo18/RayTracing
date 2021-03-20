@@ -365,6 +365,11 @@ void RayTracing::run() {
         image = image.scaled(calcSize);
     }
 
+    for (int x = 0; x < image.width(); x++) {
+        image.setPixelColor(x, 0, Qt::white);
+        image.setPixelColor(x, 1, Qt::white);
+    }
+
     rtRess->clientPos = map->getClient()->getPos();
 
     processToStart = calcSize.width();

@@ -7,8 +7,6 @@
 #include <QDebug>
 #include <QKeyEvent>
 #include <QPoint>
-//#include <QWinTaskbarButton>//need 'winextras' removed in Qt 6.0.0
-//#include <QWinTaskbarProgress>
 
 //classe pour controller le GUI
 //si un jour on veut retirer le contrôle sur le GUI (quand rafraichir, keyPress...) on aura juste à modifier cette classe
@@ -28,8 +26,6 @@ public:
 private slots:
     void workStarted();
     void workFinished();
-    //    void setPBMax(int max);
-    //    void setPBValue(int value);
 
 private:
     QTimer timerRefresh;
@@ -37,8 +33,7 @@ private:
     qint64 lastRefreshDuration;
     map3D* map = nullptr;
 
-    //QWinTaskbarButton *winTaskbarButt = nullptr;
-//    QPoint posMouse;
+    //    QPoint posMouse;
     doubli MouseSensibility = 2;
 };
 
