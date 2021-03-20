@@ -15,21 +15,12 @@ PixScreen<T>::PixScreen(const QSize &size)
 RayTracingRessources::RayTracingRessources(const World *world, const Pos3D &clientPos, DebugTime *dt)
 {
     this->world = world; this->clientPos = clientPos;
-    facesPlan = new QMap<const Face*, const Plan*>;
     facesImg = new QMap<QString, const QImage*>;
     this->dt = dt;
 }
 
 RayTracingRessources::~RayTracingRessources()
 {
-    if(facesPlan != nullptr) {
-        QMapIterator<const Face*, const Plan*> i(*facesPlan);
-        while(i.hasNext()) {
-            i.next();
-            delete i.value();
-        }
-        delete facesPlan;
-    }
     if(facesImg != nullptr) {
         QMapIterator<QString, const QImage*> i(*facesImg);
         while(i.hasNext()) {
@@ -43,13 +34,6 @@ RayTracingRessources::~RayTracingRessources()
 
 void RayTracingRessources::worldChanged()
 {
-    QMapIterator<const Face*, const Plan*> i(*facesPlan);
-    while(i.hasNext()) {
-        i.next();
-        QPointer<const Face> pointer(i.key());
-        if(pointer.isNull())//if it's destroyed or undefined
-            facesPlan->remove(i.key());
-    }
 }
 
 
@@ -87,7 +71,7 @@ void Ray::process(const World *world)
         lastMoved = !(pInter == pos.getPoint());
         lastFace = face;
 
-        const Plan *plan(getPlan(face));
+        const Plan *plan = face->getPlan();
         QPointF pTexture = plan->projeteOrtho(pInter);
         //TODO pas opti (on perd 7% à refaire le calcul...)
         QPointF pC = plan->projeteOrtho(face->getMaxGeometry().getPointMax()) - QPointF(1,1);
@@ -141,9 +125,9 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D *pInter) const
                 const Face *face = block->getFaces()->at(i3);
                 if(face == lastFace)
                     continue;
-                const Plan *plan = getPlan(face);
+                const Plan* plan = face->getPlan();
 
-                if(!plan) continue;
+                if(!plan->isValid()) continue;
 
                 Point3D pInter = plan->intersection(pos, posNextPoint);
 
@@ -185,14 +169,6 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D *pInter) const
     }
     *pInter = pInterMin;
     return faceMin;
-}
-
-const Plan *Ray::getPlan(const Face *face) const
-{
-    if(!rtRess->facesPlan->contains(face)) {
-        rtRess->facesPlan->insert(face, new Plan(face->getMaxGeometry()));
-    }
-    return rtRess->facesPlan->value(face);
 }
 
 const QImage *Ray::getTexture(const QString &file) const

@@ -93,6 +93,7 @@ public:
     Face(const Face &face);
     HRect3D getMaxGeometry() const { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleGeometry; }
+    const Plan* getPlan() const { return &plan; }
     bool isValid() const { return material != BLOCK::Material::none; }
     ColorLight getColor(const QPointF &point, const QImage *img) const;
     QString getTexture() const { return texture; }
@@ -111,6 +112,8 @@ private:
     QString texture;
     radiant RX = 0;
     radiant RZ = 0;
+    Plan plan;
+    //plan avec des limites et mettre une orientation aussi
 };
 
 

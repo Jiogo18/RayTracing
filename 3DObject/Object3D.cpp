@@ -173,6 +173,7 @@ Face::Face(const Face &face) : Object(face.getPos())
     middleGeometry = face.middleGeometry;
     texture = face.texture;
     RX = face.RX; RZ = face.RZ;
+    plan = face.plan;
 }
 ColorLight Face::getColor(const QPointF &point, const QImage *img) const
 {
@@ -280,6 +281,8 @@ void Face::calcFace()
         qDebug() << "alerte deltaZ trop faible" << deltaXY << deltaZ;
     }
     RZ = atan(deltaXY / deltaZ);
+
+    plan = Plan(maxGeometry);
 }
 
 

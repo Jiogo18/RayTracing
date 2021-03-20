@@ -57,7 +57,6 @@ public:
     const World *world = nullptr;
     DebugTime *dt = nullptr;
     Pos3D clientPos;
-    QMap<const Face*, const Plan*> *facesPlan = nullptr;
     QMap<QString, const QImage*> *facesImg = nullptr;
     void worldChanged();
 };
@@ -92,7 +91,6 @@ private:
     bool enter = false;
     const Face* lastFaceIntersection = nullptr;
     RayTracingRessources *rtRess = nullptr;
-    const Plan *getPlan(const Face *face) const;
     const QImage *getTexture(const QString &file) const;
 };
 
