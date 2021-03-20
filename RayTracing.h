@@ -15,8 +15,8 @@ namespace RAYTRACING {
     const doubli viewDistance = 100;
     const radiant angleH = degreesToRadians(120);//de 156° à 172° max pour un Humain (1 oeil)
     const radiant angleV = degreesToRadians(100);//180° = inf, 0° = 0
-    const doubli xMax = tan(RAYTRACING::angleH/2);
-    const doubli yMax = tan(RAYTRACING::angleV/2);
+    const doubli xMax = tan(RAYTRACING::angleH / 2);
+    const doubli yMax = tan(RAYTRACING::angleV / 2);
     const int pppH = 1;
     const int pppV = 1;
     const int ppp = pppV * pppH;
@@ -33,11 +33,11 @@ class PixScreen
 {
 public://il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
     PixScreen() { screen = QList<QList<T>>(0); };
-    PixScreen(const QSize &size);
-    PixScreen(const PixScreen &ps) { screen = ps.screen; };
-    PixScreen *operator=(const PixScreen &ps) { screen = ps.screen; return this; };
-    void set(const int &x, const int &y, T pos) { screen[x][y] = pos; };
-    T at(const int &x, const int &y) const { return screen.at(x).at(y); };
+    PixScreen(const QSize& size);
+    PixScreen(const PixScreen& ps) { screen = ps.screen; };
+    PixScreen* operator=(const PixScreen& ps) { screen = ps.screen; return this; };
+    void set(const int& x, const int& y, T pos) { screen[x][y] = pos; };
+    T at(const int& x, const int& y) const { return screen.at(x).at(y); };
     int width() const { return screen.length(); };
     int height() const { return screen.length() ? screen.at(0).length() : 0; };
     QSize size() const { return QSize(width(), height()); }
@@ -52,12 +52,12 @@ private:
 class RayTracingRessources
 {
 public:
-    RayTracingRessources(const World *world, const Pos3D &clientPos, DebugTime *dt);
+    RayTracingRessources(const World* world, const Pos3D& clientPos, DebugTime* dt);
     ~RayTracingRessources();
-    const World *world = nullptr;
-    DebugTime *dt = nullptr;
+    const World* world = nullptr;
+    DebugTime* dt = nullptr;
     Pos3D clientPos;
-    QMap<QString, const QImage*> *facesImg = nullptr;
+    QMap<QString, const QImage*>* facesImg = nullptr;
     void worldChanged();
 };
 
@@ -66,22 +66,22 @@ public:
 class Ray
 {
 public:
-    Ray(Pos3D pos, RayTracingRessources *rtRess);
+    Ray(Pos3D pos, RayTracingRessources* rtRess);
     ColorLight getColor() const;
-    void process(const World *world);
+    void process(const World* world);
 private:
     Pos3D origin;
     Pos3D pos;
     Point3D posNextPoint;
     QList<ColorLight> colors;
-    const Face *lastFace = nullptr;
+    const Face* lastFace = nullptr;
     bool lastMoved = false;
     int opacity = 0;
     //vector objTraverse;
     doubli distParcouru;
-    void moveTo(const Pos3D &pos);
+    void moveTo(const Pos3D& pos);
     Pos3D getPos() const { return pos; }
-    const Face *getFirstIntersection(const World *world, Point3D *pInter) const;
+    const Face* getFirstIntersection(const World* world, Point3D* pInter) const;
     //black list (et white list pour transparence) du dernier objet traversé
     //par défaut: sortie du client (pour pas le retapper)
     //si rebond: dernier objet en mode "sortie"
@@ -90,8 +90,8 @@ private:
     //puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre coté de 2)
     bool enter = false;
     const Face* lastFaceIntersection = nullptr;
-    RayTracingRessources *rtRess = nullptr;
-    const QImage *getTexture(const QString &file) const;
+    RayTracingRessources* rtRess = nullptr;
+    const QImage* getTexture(const QString& file) const;
 };
 
 
@@ -100,23 +100,23 @@ class RayTracingWorker : public QThread
 {
     Q_OBJECT
 public:
-    RayTracingWorker(int workerId, RayTracingRessources *rtRess, QObject *parent = nullptr);
-    RayTracingWorker *setPrimaryWork(const QList<doubli> &yPosList, const QSize &sceneSize);
-    RayTracingWorker *setWork(int xScene) { this->xScene = xScene; return this; };
+    RayTracingWorker(int workerId, RayTracingRessources* rtRess, QObject* parent = nullptr);
+    RayTracingWorker* setPrimaryWork(const QList<doubli>& yPosList, const QSize& sceneSize);
+    RayTracingWorker* setWork(int xScene) { this->xScene = xScene; return this; };
     int getWorkerId() const { return workerId; };
-    static QList<doubli> calcyPosList(const int &sceneHeight);
+    static QList<doubli> calcyPosList(const int& sceneHeight);
 
 signals:
-    void resultReady(RayTracingWorker *worker, int y, const QList<ColorLight> &c, int totalLight);
+    void resultReady(RayTracingWorker* worker, int y, const QList<ColorLight>& c, int totalLight);
 private:
-    static QList<Pos3D> calcRaysPosColumn(const int &x, const QSize &sceneSize, const Pos3D &clientPos, const QList<doubli> &yPosList);
+    static QList<Pos3D> calcRaysPosColumn(const int& x, const QSize& sceneSize, const Pos3D& clientPos, const QList<doubli>& yPosList);
     void run() override;// process ONE column at a time
     int workerId;
     QList<doubli> yPosList;
     QSize sceneSize;
 
     int xScene;// just ONE column
-    RayTracingRessources *rtRess;
+    RayTracingRessources* rtRess;
 };
 
 
@@ -124,32 +124,32 @@ class RayTracing : public QThread
 {
     Q_OBJECT
 public:
-    RayTracing(const map3D *map);
+    RayTracing(const map3D* map);
     ~RayTracing();
 
-    RayTracing *setSize(const QSize &size) { if(!isRunning()) calcSize = size; return this; }
-    const QImage &getImage() const { return image; }
+    RayTracing* setSize(const QSize& size) { if (!isRunning()) calcSize = size; return this; }
+    const QImage& getImage() const { return image; }
     bool isRunning() { return QThread::isRunning() || workersInProcess; }
 
 private slots:
-    void worldChanged(const WorldChange &change);
-    void onRayWorkerReady(RayTracingWorker *worker, int x, const QList<ColorLight> &c, int totalLight);
+    void worldChanged(const WorldChange& change);
+    void onRayWorkerReady(RayTracingWorker* worker, int x, const QList<ColorLight>& c, int totalLight);
 
 signals:
-    void resultReady(const QImage &image);
+    void resultReady(const QImage& image);
 
 private:
     void run() override;
-    void assignNextRayWork(RayTracingWorker *worker);
+    void assignNextRayWork(RayTracingWorker* worker);
     double calcTotalLight() const;
     void paint();
     void onAllWorkersFinished();
 
-    RayTracingRessources *rtRess = nullptr;
+    RayTracingRessources* rtRess = nullptr;
     DebugTime dt;
     qint64 startRun;
 
-    const map3D *map;
+    const map3D* map;
     QSize calcSize;
 
     QList<doubli> yPosList; // calculs des yPos en fonction de y

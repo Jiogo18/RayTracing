@@ -34,22 +34,22 @@ map3D::map3D() : QObject()
 
 map3D::~map3D()
 {
-    if(world != nullptr) delete world;
+    if (world != nullptr) delete world;
     //client est delete par le world donc c'est bon
 }
 
 
-int map3D::fillBlock(const Point3D &posMin, const Point3D &posMax, BLOCK::Type blockType, BLOCK::Material blockMaterial)
+int map3D::fillBlock(const Point3D& posMin, const Point3D& posMax, BLOCK::Type blockType, BLOCK::Material blockMaterial)
 {
     doubli xMin = std::min(posMin.getX(), posMax.getX()), xMax = std::max(posMin.getX(), posMax.getX());
     doubli yMin = std::min(posMin.getY(), posMax.getY()), yMax = std::max(posMin.getY(), posMax.getY());
     doubli zMin = std::min(posMin.getZ(), posMax.getZ()), zMax = std::max(posMin.getZ(), posMax.getZ());
 
     int blockPlaced = 0;
-    for(int x = xMin; x <= xMax; x++) {
-        for(int y = yMin; y <= yMax; y++) {
-            for(int z = zMin; z <= zMax; z++) {
-                if(world->setBlock(new Block(Pos3D(x, y, z, 0, 0), blockType, blockMaterial)))
+    for (int x = xMin; x <= xMax; x++) {
+        for (int y = yMin; y <= yMax; y++) {
+            for (int z = zMin; z <= zMax; z++) {
+                if (world->setBlock(new Block(Pos3D(x, y, z, 0, 0), blockType, blockMaterial)))
                     blockPlaced++;
             }
         }

@@ -14,7 +14,7 @@ public:
     qint64 getMax() const { return max; }
     qint64 getNb() const { return nb; }
     qint64 getTotal() const { return total; }
-    qint64 getMoyenne() const { if(nb==0) return 0; return total / nb; }
+    qint64 getMoyenne() const { if (nb == 0) return 0; return total / nb; }
 private:
     qint64 min = 0;
     qint64 max = 0;
@@ -33,6 +33,6 @@ public:
 private:
     QMap<QString, DebugTimePart> values;
 };
-QDebug operator <<(QDebug debug, const DebugTime &d);
+QDebug operator <<(QDebug debug, const DebugTime& d);
 
 #endif // DEBUG_H

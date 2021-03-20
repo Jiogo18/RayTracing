@@ -13,10 +13,10 @@ Le projet est terminé, je souhaite continuer pour optimiser encore.
 
 ## Performances
 
-|Dimensions de l'écran|Temps de calcul moyen|
---- | ---
-|148*100 pixels | 100 msec, 10 fps|
-|1920*1080 pixels | 10 secondes|
+| Dimensions de l'écran | Temps de calcul moyen |
+| --------------------- | --------------------- |
+| 148*100 pixels        | 100 msec, 10 fps      |
+| 1920*1080 pixels      | 10 secondes           |
 
 - Chaque pixel correspond à 1 rayon mais il est possible d'en mettre plus.
 - Seul le processeur est utilisé pour générer l'image
