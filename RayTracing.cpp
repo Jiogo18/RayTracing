@@ -421,7 +421,7 @@ void RayTracing::paint()
 
 void RayTracing::onAllWorkersFinished()
 {
-    qDebug() << "All ray workers has finished, processDone :" << processDone << "/" << processToStart;
+    qDebug() << "All ray workers have finished, processDone :" << processDone << "/" << processToStart;
     workersInProcess = false;
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);

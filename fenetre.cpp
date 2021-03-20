@@ -21,6 +21,10 @@ fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
 
     timerRefresh.setSingleShot(true);
     QObject::connect(&timerRefresh, &QTimer::timeout, this, &GUI::refresh);
+
+    timerKeyPress.setInterval(40);
+    QObject::connect(&timerKeyPress, &QTimer::timeout, this, &fenetre::updatePressPosition);
+    grabKeyboard();
 }
 
 fenetre::~fenetre() {}
@@ -28,54 +32,29 @@ fenetre::~fenetre() {}
 
 void fenetre::keyPressEvent(QKeyEvent* event)
 {
-    const Pos3D& previousPos = map->getClient()->getPos();
-    switch (event->key()) {
-    case Qt::Key_Z:
-        map->moveFront();
-        break;
-    case Qt::Key_Q:
-        map->moveLeft();
-        break;
-    case Qt::Key_S:
-        map->moveBack();
-        break;
-    case Qt::Key_D:
-        map->moveRight();
-        break;
-    case Qt::Key_Shift:
-        map->moveDown();
-        break;
-    case Qt::Key_Space:
-        map->moveUp();
-        break;
-    case Qt::Key_Left:
-        map->moveRX(-MouseSensibility / 10);
-        break;
-    case Qt::Key_Right:
-        map->moveRX(MouseSensibility / 10);
-        break;
-    case Qt::Key_Up:
-        map->moveRZ(MouseSensibility / 10);
-        break;
-    case Qt::Key_Down:
-        map->moveRZ(-MouseSensibility / 10);
-        break;
-    case Qt::Key_F5:
-        refresh();
-        break;
+    if (KEY::keyConfig.contains(event->key())) {
+        keysPressed |= (1 << KEY::keyConfig.value(event->key()));//add the key
+        if (keysPressed && !timerKeyPress.isActive())
+            timerKeyPress.start();
     }
-    qDebug() << "pos client" << map->getClient()->getPos();
-    if (map->getClient()->getPos() != previousPos && lastRefreshDuration < 300) {
-        //si on a bougé et que ça prend pas trop de temps
-        if (isPainting()) {
-            //actu à la fin du repaint en cours
-            timerRefresh.start(lastRefreshDuration);
-        }
-        else {
+    else {
+        switch (event->key()) {
+        case Qt::Key_F5:
             refresh();
+            break;
         }
     }
 }
+
+void fenetre::keyReleaseEvent(QKeyEvent* event)
+{
+    if (KEY::keyConfig.contains(event->key())) {
+        keysPressed ^= (1 << KEY::keyConfig.value(event->key()));//remove the key
+        if (!keysPressed && timerKeyPress.isActive())
+            timerKeyPress.stop();
+    }
+}
+
 //void fenetre::mouseMoveEvent(QMouseEvent *event)
 //{
 //    Q_UNUSED(event)
@@ -95,4 +74,27 @@ void fenetre::workStarted()
 void fenetre::workFinished() {
     setCursor(Qt::ArrowCursor);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
+}
+
+void fenetre::updatePressPosition()
+{
+    if (keysPressed & (1 << KEY::keyAction::forward)) map->moveFront();
+    if (keysPressed & (1 << KEY::keyAction::back)) map->moveBack();
+    if (keysPressed & (1 << KEY::keyAction::left)) map->moveLeft();
+    if (keysPressed & (1 << KEY::keyAction::right)) map->moveRight();
+    if (keysPressed & (1 << KEY::keyAction::up)) map->moveUp();
+    if (keysPressed & (1 << KEY::keyAction::down)) map->moveDown();
+    if (keysPressed & (1 << KEY::keyAction::up_rot)) map->moveRZ(MouseSensibility / 30);
+    if (keysPressed & (1 << KEY::keyAction::down_rot)) map->moveRZ(-MouseSensibility / 30);
+    if (keysPressed & (1 << KEY::keyAction::left_rot)) map->moveRX(-MouseSensibility / 30);
+    if (keysPressed & (1 << KEY::keyAction::right_rot)) map->moveRX(MouseSensibility / 30);
+
+    qDebug() << "pos client" << map->getClient()->getPos();
+    if (isPainting()) {
+        //actu à la fin du repaint en cours
+        timerRefresh.start(lastRefreshDuration);
+    }
+    else {
+        refresh();
+    }
 }
