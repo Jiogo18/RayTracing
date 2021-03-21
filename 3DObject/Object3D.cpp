@@ -233,15 +233,16 @@ ColorLight Face::getColor(const QPointF& point, const QImage* img) const
 
 radian Face::boundRotX(const radian& posRX) const
 {
-    //petit fix pour les faces du dessus mais il faudrait faire un autre calcul pour celles penchées
-    if (variations.first() == BLOCK::Variation::top || variations.first() == BLOCK::Variation::top) {
-        return RX * 4 + posRX;//4+0+
+    //TODO: petit fix pour les faces du dessus mais il faudrait faire un autre calcul pour celles penchées
+    if (roundNull(cos(RZ)) != 1) {//top et bottom
+        return posRX;
     }
-    return RX * 4 + M_PI - posRX;//4+M_PI-
+    return 2 * RX - posRX;
 }
 radian Face::boundRotZ(const radian& posRZ) const
 {
-    return RZ * 4 - M_PI + posRZ;//*4-M_PI marche pour left et pour top
+    return M_PI - 2 * RZ - posRZ;
+    //TODO: ou alors (pour les faces penchées ?) return M_PI * cos(RZ) - posRZ;
 }
 
 radian Face::refractRotX(radian posRX, float speedIn, float speedOut) const
