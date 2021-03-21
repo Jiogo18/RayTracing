@@ -70,7 +70,9 @@
 
 - [ ] #19 les blocks en z=-1 sont pas affichés
 
-- [ ] #20 dans le miroir on a une ligne sur le plan xz
+- [x] #20 dans le miroir on a une ligne sur le plan xz
+  - il faut mettre un obstacle (en ghost on se voit pas donc c'est inifini)
+  - fix : opacité de 10 % au lieu de 0 %
 
 - [ ] #21 optimisation : on peut retirer les doubli ?
 
@@ -84,4 +86,4 @@
 
 - [x] #24 Réfraction : le changement pour #23 a cassé le calcul de réfraction
 
-- [ ] #24 Miroir : le changement pour #23 a cassé le calcul de réflexion
+- [x] #24 Miroir : le changement pour #23 a cassé le calcul de réflexion
