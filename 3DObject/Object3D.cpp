@@ -157,9 +157,10 @@ Face::Face() : Object(Pos3D(0, 0, 0, 0, 0))
     variations.append(BLOCK::Variation::front);
     calcFace();
 }
-Face::Face(const Point3D& point, const HRect3D& rect, BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
+Face::Face(const Point3D& point, const HRect3D& rect, bool orientation, BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
 {
     this->rect = rect;
+    this->orientation = orientation;
     this->material = material;
     this->variations = variations;
     calcFace();
@@ -174,6 +175,7 @@ Face::Face(const Face& face) : Object(face.getPos())
     texture = face.texture;
     RX = face.RX; RZ = face.RZ;
     plan = face.plan;
+    orientation = face.orientation;
     pC = face.pC;
 }
 ColorLight Face::getColor(const QPointF& point, const QImage* img) const
@@ -229,7 +231,7 @@ ColorLight Face::getColor(const QPointF& point, const QImage* img) const
 }
 
 
-radiant Face::boundRotX(const radiant& posRX) const
+radian Face::boundRotX(const radian& posRX) const
 {
     //petit fix pour les faces du dessus mais il faudrait faire un autre calcul pour celles penchées
     if (variations.first() == BLOCK::Variation::top || variations.first() == BLOCK::Variation::top) {
@@ -237,23 +239,32 @@ radiant Face::boundRotX(const radiant& posRX) const
     }
     return RX * 4 + M_PI - posRX;//4+M_PI-
 }
-radiant Face::boundRotZ(const radiant& posRZ) const
+radian Face::boundRotZ(const radian& posRZ) const
 {
     return RZ * 4 - M_PI + posRZ;//*4-M_PI marche pour left et pour top
 }
 
-radiant Face::refractRotX(const radiant& posRX, float speedIn, float speedOut) const
+radian Face::refractRotX(radian posRX, float speedIn, float speedOut) const
 {
-    if (speedIn == speedOut) return posRX;
+    if (speedIn == speedOut) return posRX;// shortcut
     // sin(angle in) / sin(angle out) = i out / i in
     // sin(angle out) = sin(angle in) * i in / i out = sin(angle in) * speed out / speed in
-    return asin(sin(posRX + 2 * RX) * speedOut / speedIn) - 2 * RX; // +2RX : - 2RX
+    if (roundNull(cos(RZ)) != 1) {
+        return posRX;// TODO
+    }
+    posRX = RX - posRX;
+    const float sign = signOf(posRX + static_cast<radian>(M_PI_2));
+    posRX = RX - asin(sin(posRX) * speedOut / speedIn);
+    return sign == 1 ? posRX : 2 * RX + M_PI - posRX;
 }
 
-radiant Face::refractRotZ(const radiant& posRZ, float speedIn, float speedOut) const
+radian Face::refractRotZ(radian posRZ, float speedIn, float speedOut) const
 {
-    if (speedIn == speedOut) return posRZ;
-    return asin(sin(posRZ) * speedOut / speedIn);//+ RZ - M_PI/4 : +0
+    if (speedIn == speedOut) return posRZ;// shortcut
+    posRZ = RZ - posRZ;
+    const float sign = signOf(posRZ + static_cast<radian>(M_PI_2));
+    posRZ = RZ - asin(sin(posRZ) * speedOut / speedIn);
+    return sign == 1 ? posRZ : 2 * RZ + M_PI - posRZ;
 }
 
 void Face::calcFace()
@@ -267,21 +278,21 @@ void Face::calcFace()
     doubli deltaY = rect.getPointMax().getY() - rect.getPointMin().getY();
     doubli deltaZ = rect.getPointMax().getZ() - rect.getPointMin().getZ();
 
-    if (-0.5 < deltaX && deltaX < 0.5) {
-        doubli deltaXZ = sqrt(deltaX * deltaX + deltaZ * deltaZ);
-        RX = atan(deltaY / deltaXZ) + M_PI / 4;
-    }
-    else {
-        doubli deltaYZ = sqrt(deltaY * deltaY + deltaZ * deltaZ);
-        RX = atan(deltaX / deltaYZ);
-    }
-    // TODO: RX = atan(deltaX / deltaY);
+    RX = atan(deltaX / deltaY);
 
     doubli deltaXY = sqrt(deltaX * deltaX + deltaY * deltaY);
     if (-0.5 < deltaXY && deltaXY < 0.5) {
         qDebug() << "alerte deltaZ trop faible" << deltaXY << deltaZ;
     }
-    RZ = atan(deltaXY / deltaZ);
+    RZ = 2 * (atan(deltaXY / deltaZ) - M_PI_4);
+
+
+    if (orientation == false) {
+        RX += M_PI;
+        RZ = -RZ;
+    }
+    RX = roundNull(RX);
+    RZ = roundNull(RZ);
 
     plan = Plan(maxGeometry);
     pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
@@ -339,21 +350,21 @@ QList<Face> Block::getFaces(Point3D posBlock, BLOCK::Type type, BLOCK::Material 
     switch (type) {
     case BLOCK::Type::cube:
         return {
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, HRect3D(Point3D(0, 0, 1), Point3D(1, 1, 1)), material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 1)), material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 1)), material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 1)), material, {BLOCK::Variation::left})//WEST
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), 0, material, {BLOCK::Variation::bottom}),//BOTTOM
+            Face(posBlock, HRect3D(Point3D(0, 0, 1), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::top}),//TOP
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 1)), 0, material, {BLOCK::Variation::back}),//SOUTH
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 1)), 0, material, {BLOCK::Variation::right}),//EAST
+            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::front}),//NORTH
+            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::left})//WEST
         };
     case BLOCK::Type::slab:
         return {
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, HRect3D(Point3D(0, 0, 0.5L), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 0.5L)), material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 0.5L)), material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 0.5L)), material, {BLOCK::Variation::left})//WEST
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), 0, material, {BLOCK::Variation::bottom}),//BOTTOM
+            Face(posBlock, HRect3D(Point3D(0, 0, 0.5L), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::top}),//TOP
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 0.5L)), 0, material, {BLOCK::Variation::back}),//SOUTH
+            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 0.5L)), 0, material, {BLOCK::Variation::right}),//EAST
+            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::front}),//NORTH
+            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::left})//WEST
         };
     }
     return {};

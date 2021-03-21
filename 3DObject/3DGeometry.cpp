@@ -3,21 +3,27 @@
 bool isNull(const doubli& d) { return -0.000001 < d && d < 0.000001; }
 doubli roundNull(const doubli& d) { return isNull(d) ? 0 : d; }
 doubli round(const doubli& d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
+doubli signOf(const doubli& d) { return d < 0 ? -1 : 1; }
 doubli sqr(const doubli& d) { return d * d; }
-radiant degreesToRadians(const doubli& deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
-doubli radiansToDegrees(const radiant& rad) { return rad * 180 / doubli(M_PI); }
+radian degreesToRadians(const doubli& deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
+doubli radiansToDegrees(const radian& rad) { return rad * 180 / doubli(M_PI); }
 doubli sqrt(const doubli& d) { return std::sqrt(d); }
-doubli cos(const radiant& deg) { return std::cos(deg); }
-doubli sin(const radiant& deg) { return std::sin(deg); }
-doubli tan(const radiant& deg) { return std::tan(deg); }
-radiant acos(const doubli& d) { return std::acos(d); }
-radiant asin(const doubli& d) { return std::asin(d); }
-radiant atan(const doubli& d) { return std::atan(d); }
+doubli cos(const radian& deg) { return std::cos(deg); }
+doubli sin(const radian& deg) { return std::sin(deg); }
+doubli tan(const radian& deg) { return std::tan(deg); }
+radian acos(const doubli& d) { return std::acos(d); }
+radian asin(const doubli& d) { return std::asin(d); }
+radian atan(const doubli& d) { return std::atan(d); }
 doubli qIsInf(const doubli& d) { return qIsInf(static_cast<double>(d)); }
 doubli max(const doubli& a, const doubli& b) { return a > b ? a : b; }
 doubli max(const doubli& a, const doubli& b, const doubli& c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
 doubli min(const doubli& a, const doubli& b) { return a < b ? a : b; }
 doubli min(const doubli& a, const doubli& b, const doubli& c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
+bool isNull(const radian& d) { return -0.000001 < d && d < 0.000001; }
+radian mod(const radian& n, const radian& d) { return (n - floor(n/d)*d); }
+radian modRad(radian d) { d = (d - floor(d/(2*M_PI))*2*M_PI); return d > M_PI ? d - 2*M_PI : d; }
+radian roundNull(radian d) { d = modRad(d); return isNull(d) ? 0 : d; }
+float signOf(radian d) { return roundNull(d) < 0 ? -1 : 1; }
 QDebug operator <<(QDebug debug, const doubli& d) { debug << static_cast<double>(d); return debug; }
 
 
@@ -66,7 +72,7 @@ bool Point3D::operator ==(const Point3D& point) const
     return (x == point.x) && (y == point.y) && (z == point.z);
 }
 
-bool Point3D::operator !=(const Point3D &point) const
+bool Point3D::operator !=(const Point3D& point) const
 {
     return (x != point.x) || (y != point.y) || (z != point.z);
 }
@@ -130,11 +136,11 @@ Point3D qCeil(const Point3D& point)
 
 
 Pos3D::Pos3D() : Point3D(0, 0, 0) { rX = 0; rZ = 0; }
-Pos3D::Pos3D(doubli x, doubli y, doubli z, radiant rX, radiant rZ) : Point3D(x, y, z)
+Pos3D::Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ) : Point3D(x, y, z)
 {
     this->rX = rX; this->rZ = rZ;
 }
-Pos3D::Pos3D(const Point3D& point, radiant rX, radiant rZ) : Point3D(point)
+Pos3D::Pos3D(const Point3D& point, radian rX, radian rZ) : Point3D(point)
 {
     this->rX = rX; this->rZ = rZ;
 }
@@ -148,19 +154,19 @@ Pos3D* Pos3D::operator=(const Pos3D& pos)
     return this;
 }
 
-Pos3D Pos3D::fromDegree(doubli x, doubli y, doubli z, radiant rX, radiant rZ)
+Pos3D Pos3D::fromDegree(doubli x, doubli y, doubli z, radian rX, radian rZ)
 {
     return Pos3D(x, y, z, degreesToRadians(rX), degreesToRadians(rZ));
 }
 
-void Pos3D::moveWithRot(doubli speed, radiant rot)
+void Pos3D::moveWithRot(doubli speed, radian rot)
 {
     //trigo, on connait l'hypothénuse (speed) et l'angle et on veut coté a ou b => cos ou sin
     addX(cos(rX + rot) * speed);
     addY(sin(rX + rot) * speed);
 }
 
-Point3D Pos3D::pointFromRot(doubli d, radiant rX, radiant rZ)
+Point3D Pos3D::pointFromRot(doubli d, radian rX, radian rZ)
 {
     return Point3D(cos(rZ) * cos(rX),
         cos(rZ) * sin(rX),
@@ -180,7 +186,7 @@ Point3D Pos3D::getNextPoint() const
     //opti mais == getNextPointRelatif() + getPoint()
 }
 
-Pos3D Pos3D::getChildRot(radiant rXRelatif, radiant rZRelatif) const
+Pos3D Pos3D::getChildRot(radian rXRelatif, radian rZRelatif) const
 {
     //changeRef de childNext
     doubli crZR = cos(rZRelatif),
@@ -189,7 +195,7 @@ Pos3D Pos3D::getChildRot(radiant rXRelatif, radiant rZRelatif) const
     doubli x1 = crZR * cos(rXRelatif), y1 = crZR * sin(rXRelatif), z1 = sin(rZRelatif);//z1==srZR
     doubli x2 = x1 * crZ - z1 * srZ, z2 = x1 * srZ + z1 * crZ;//y2==y1
     doubli x3 = x2 * crX - y1 * srX, y3 = x2 * srX + y1 * crX;//z3==z2
-    radiant rX = atan(y3 / x3);
+    radian rX = atan(y3 / x3);
     if (x3 < 0) {//sinon on ne voit que tout ce qui est en x3>=0 (rotation de 180° du reste)
         rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         //pas besoin de différentier y car on est à k360° de diff
@@ -204,12 +210,12 @@ bool Pos3D::operator ==(const Pos3D& pos) const
     return Point3D::operator ==(pos) && rX == pos.rX && rZ == pos.rZ;
 }
 
-bool Pos3D::operator !=(const Pos3D &pos) const
+bool Pos3D::operator !=(const Pos3D& pos) const
 {
     return Point3D::operator !=(pos) || rX != pos.rX || rZ != pos.rZ;
 }
 
-Point3D Pos3D::rotation(Point3D point, radiant rX, radiant rZ)
+Point3D Pos3D::rotation(Point3D point, radian rX, radian rZ)
 {
     //inversé par rapport aux autres progs (entre y et z et entre 1ere et 2eme ligne)
     doubli sR = sin(rZ), cR = cos(rZ);
@@ -221,8 +227,8 @@ doubli Pos3D::rotation1(doubli x, doubli y, doubli sR, doubli cR) { return x * c
 doubli Pos3D::rotation2(doubli x, doubli y, doubli sR, doubli cR) { return x * sR + y * cR; }
 Pos3D Pos3D::getRotAsVect(const Point3D& p1, const Point3D& p2)
 {
-    radiant rZ = asin((p2.getZ() - p1.getZ()) / Point3D::distance(p1, p2));//formule getNextPos z inversée
-    radiant rX = atan((p2.getY() - p1.getY()) / (p2.getX() - p1.getX()));
+    radian rZ = asin((p2.getZ() - p1.getZ()) / Point3D::distance(p1, p2));//formule getNextPos z inversée
+    radian rX = atan((p2.getY() - p1.getY()) / (p2.getX() - p1.getX()));
     if (p2.getX() - p1.getX() < 0) {
         if (p2.getY() - p1.getY() >= 0)
             rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
@@ -236,8 +242,8 @@ Pos3D Pos3D::getRotAsPoint(const Point3D& p)
 {
     //opti mais == getRotAsVect(Point3D(0,0,0),p)
     doubli d = Point3D::distance(Point3D(0, 0, 0), p);
-    radiant rZ = asin((p.getZ()) / d);//formule getNextPos z inversée
-    radiant rX = atan((p.getY()) / (p.getX()));
+    radian rZ = asin((p.getZ()) / d);//formule getNextPos z inversée
+    radian rX = atan((p.getY()) / (p.getX()));
     if (p.getX() < 0) {
         if (p.getY() >= 0)
             rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)

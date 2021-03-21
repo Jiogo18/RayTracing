@@ -81,3 +81,7 @@
 - [ ] #23 Rect3D avec 2 points
   - C'est une droite...
   - Problème pour les miroirs et le verre/l'eau
+
+- [x] #24 Réfraction : le changement pour #23 a cassé le calcul de réfraction
+
+- [ ] #24 Miroir : le changement pour #23 a cassé le calcul de réflexion

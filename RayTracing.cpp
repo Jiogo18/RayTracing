@@ -85,6 +85,7 @@ void Ray::process(const World* world)
             moveTo(Pos3D(pInter, face->refractRotX(pos.getRX(), previousSpeed, newSpeed), face->refractRotZ(pos.getRZ(), previousSpeed, newSpeed)));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
         }
+        //TODO: il faudrait considérer que l'oeil est dans l'air au départ mais il faudrait aussi trouver dans quel type de bloc (avoir la récration dans le verre)
 
         int alpha = colors.last().getColorA().alpha();
         opacity += alpha;
@@ -217,12 +218,12 @@ QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const int& x, const QSize& scen
     QList<Pos3D> raysPos(sceneSize.height());
     //pos en % de pixmap.width/2 * xMax
     doubli xPos = roundNull(static_cast<doubli>(2.0L * x / sceneSize.width() - 1) * xMax);
-    radiant angleH = atan(xPos);
+    radian angleH = atan(xPos);
     for (int y = 0; y < sceneSize.height(); y++) {
         //pos en % de pixmap.height/2 * yMax
         doubli yPos = yPosList.at(y);
         doubli d = sqrt(sqr(xPos) + sqr(yPos) + 1);
-        radiant angleV = asin(yPos / d);
+        radian angleV = asin(yPos / d);
 
         raysPos.replace(y, clientPos.getChildRot(angleH, angleV));
     }

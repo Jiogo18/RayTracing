@@ -89,20 +89,21 @@ class Face : public Object
 {
 public:
     Face();
-    Face(const Point3D& point, const HRect3D& rect, BLOCK::Material material, QList<BLOCK::Variation> variations);
+    Face(const Point3D& point, const HRect3D& rect, bool orientation, BLOCK::Material material, QList<BLOCK::Variation> variations);
     Face(const Face& face);
     HRect3D getMaxGeometry() const { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleGeometry; }
     const Plan* getPlan() const { return &plan; }
     const QPointF& getPointC() const { return pC; }
+    bool getOrientation() const { return orientation; }
     bool isValid() const { return material != BLOCK::Material::none; }
     ColorLight getColor(const QPointF& point, const QImage* img) const;
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const { return material; }
-    radiant boundRotX(const radiant& posRX) const;
-    radiant boundRotZ(const radiant& posRZ) const;
-    radiant refractRotX(const radiant& posRX, float speedIn, float speedOut) const;
-    radiant refractRotZ(const radiant& posRZ, float speedIn, float speedOut) const;
+    radian boundRotX(const radian& posRX) const;
+    radian boundRotZ(const radian& posRZ) const;
+    radian refractRotX(radian posRX, float speedIn, float speedOut) const;
+    radian refractRotZ(radian posRZ, float speedIn, float speedOut) const;
 private:
     HRect3D rect;
     HRect3D maxGeometry;
@@ -111,11 +112,11 @@ private:
     BLOCK::Material material;
     QList<BLOCK::Variation> variations;
     QString texture;
-    radiant RX = 0;
-    radiant RZ = 0;
+    radian RX = 0;
+    radian RZ = 0;
     Plan plan;
     QPointF pC;
-    //plan avec des limites et mettre une orientation aussi
+    bool orientation;//true dans le sens positif du plan
 };
 
 
@@ -179,8 +180,8 @@ public:
     void moveRight() { moveWithRot(attribute.getSpeedR(), M_PI / 2); }
     void moveTo(const Point3D& point) { setPoint(point); }
     void moveTo(const Pos3D& pos) { setPoint(pos.getPoint()); setRX(pos.getRX()); setRZ(pos.getRZ()); }
-    void moveRX(radiant rX) { addRX(rX); }
-    void moveRZ(radiant rZ) { addRZ(rZ); }
+    void moveRX(radian rX) { addRX(rX); }
+    void moveRZ(radian rZ) { addRZ(rZ); }
 private:
     EntityAttribute attribute;
 };

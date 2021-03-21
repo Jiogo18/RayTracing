@@ -13,8 +13,8 @@
 
 namespace RAYTRACING {
     const doubli viewDistance = 100;
-    const radiant angleH = degreesToRadians(120);//de 156° à 172° max pour un Humain (1 oeil)
-    const radiant angleV = degreesToRadians(100);//180° = inf, 0° = 0
+    const radian angleH = degreesToRadians(120);//de 156° à 172° max pour un Humain (1 oeil)
+    const radian angleV = degreesToRadians(100);//180° = inf, 0° = 0
     const doubli xMax = tan(RAYTRACING::angleH / 2);
     const doubli yMax = tan(RAYTRACING::angleV / 2);
     const int pppH = 1;

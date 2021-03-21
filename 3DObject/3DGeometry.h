@@ -12,22 +12,28 @@ typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
 bool isNull(const doubli& d);
 doubli roundNull(const doubli& d);//plus opti que round
 doubli round(const doubli& d);
-typedef float radiant;
+doubli signOf(const doubli& d);
+typedef float radian;
 doubli sqr(const doubli& d);//easy
-radiant degreesToRadians(const doubli& deg);
-doubli radiansToDegrees(const radiant& rad);
+radian degreesToRadians(const doubli& deg);
+doubli radiansToDegrees(const radian& rad);
 doubli sqrt(const doubli& d);
-doubli cos(const radiant& deg);
-doubli sin(const radiant& deg);
-doubli tan(const radiant& deg);
-radiant acos(const doubli& d);
-radiant asin(const doubli& d);
-radiant atan(const doubli& d);
+doubli cos(const radian& deg);
+doubli sin(const radian& deg);
+doubli tan(const radian& deg);
+radian acos(const doubli& d);
+radian asin(const doubli& d);
+radian atan(const doubli& d);
 doubli qIsInf(const doubli& d);
 doubli max(const doubli& a, const doubli& b);
 doubli max(const doubli& a, const doubli& b, const doubli& c);
 doubli min(const doubli& a, const doubli& b);
 doubli min(const doubli& a, const doubli& b, const doubli& c);
+bool isNull(const radian& d);
+radian mod(const radian& n, const radian& d);//perfect return : [0;d[ & 3 times faster
+radian modRad(radian d);//intervalle radian : ]-PI; PI]
+radian roundNull(radian d);//plus opti que round
+float signOf(radian d);// -1 or 1
 QDebug operator <<(QDebug debug, const doubli& d);
 
 class Point3D
@@ -84,36 +90,36 @@ private:
 class Pos3D : public Point3D {
 public:
     Pos3D();
-    Pos3D(doubli x, doubli y, doubli z, radiant rX, radiant rZ);
-    Pos3D(const Point3D& point, radiant rX, radiant rZ);
+    Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ);
+    Pos3D(const Point3D& point, radian rX, radian rZ);
     Pos3D(const Pos3D& pos);
     Pos3D* operator=(const Pos3D& pos);
-    static Pos3D fromDegree(doubli x, doubli y, doubli z, radiant rX, radiant rZ);
+    static Pos3D fromDegree(doubli x, doubli y, doubli z, radian rX, radian rZ);
 
-    radiant getRX() const { return rX; }
-    radiant getRZ() const { return rZ; }
+    radian getRX() const { return rX; }
+    radian getRZ() const { return rZ; }
     Pos3D getPos() const { return *this; }
-    void setRX(radiant rX) { this->rX = rX; }
-    void setRZ(radiant rZ) { this->rZ = rZ; }
+    void setRX(radian rX) { this->rX = rX; }
+    void setRZ(radian rZ) { this->rZ = rZ; }
     void setPos(const Pos3D& pos) { operator=(pos); }
-    void addRX(radiant rX) { this->rX += rX; }
-    void addRZ(radiant rZ) { this->rZ += rZ; }
+    void addRX(radian rX) { this->rX += rX; }
+    void addRZ(radian rZ) { this->rZ += rZ; }
 
-    void moveWithRot(doubli speed, radiant rot);
-    static Point3D pointFromRot(doubli d, radiant rX, radiant rZ);
+    void moveWithRot(doubli speed, radian rot);
+    static Point3D pointFromRot(doubli d, radian rX, radian rZ);
     Point3D getNextPointRelatif() const;
     Point3D getNextPoint() const;
-    Pos3D getChildRot(radiant rXRelatif, radiant rZRelatif) const;
+    Pos3D getChildRot(radian rXRelatif, radian rZRelatif) const;
     Point3D changeRef(const Point3D& point) const;
     bool operator ==(const Pos3D& pos) const;
     bool operator !=(const Pos3D& pos) const;
 
     friend QDebug operator << (QDebug debug, const Pos3D& pos);
 private:
-    radiant rX;
-    radiant rZ;
+    radian rX;
+    radian rZ;
 
-    static Point3D rotation(Point3D point, radiant rX, radiant rZ);
+    static Point3D rotation(Point3D point, radian rX, radian rZ);
     static doubli rotation1(doubli x, doubli y, doubli sR, doubli cR);
     static doubli rotation2(doubli x, doubli y, doubli sR, doubli cR);
     static Pos3D getRotAsVect(const Point3D& p1, const Point3D& p2);
