@@ -33,9 +33,11 @@ fenetre::~fenetre() {}
 void fenetre::keyPressEvent(QKeyEvent* event)
 {
     if (KEY::keyConfig.contains(event->key())) {
+        if (event->isAutoRepeat()) return;
         keysPressed |= (1 << KEY::keyConfig.value(event->key()));//add the key
-        if (keysPressed && !timerKeyPress.isActive())
+        if (keysPressed && !timerKeyPress.isActive()) {
             timerKeyPress.start();
+        }
     }
     else {
         switch (event->key()) {
@@ -49,9 +51,11 @@ void fenetre::keyPressEvent(QKeyEvent* event)
 void fenetre::keyReleaseEvent(QKeyEvent* event)
 {
     if (KEY::keyConfig.contains(event->key())) {
+        if (event->isAutoRepeat()) return;
         keysPressed ^= (1 << KEY::keyConfig.value(event->key()));//remove the key
-        if (!keysPressed && timerKeyPress.isActive())
+        if (!keysPressed && timerKeyPress.isActive()) {
             timerKeyPress.stop();
+        }
     }
 }
 
