@@ -245,27 +245,31 @@ radian Face::boundRotZ(const radian& posRZ) const
     //TODO: ou alors (pour les faces penchées ?) return M_PI * cos(RZ) - posRZ;
 }
 
-radian Face::refractRotX(radian posRX, float speedIn, float speedOut) const
+radian Face::refractRotX(const radian& posRX, float speedIn, float speedOut) const
 {
-    if (speedIn == speedOut) return posRX;// shortcut
     // sin(angle in) / sin(angle out) = i out / i in
     // sin(angle out) = sin(angle in) * i in / i out = sin(angle in) * speed out / speed in
     if (roundNull(cos(RZ)) != 1) {
         return posRX;// TODO
     }
-    posRX = RX - posRX;
-    const float sign = signOf(posRX + static_cast<radian>(M_PI_2));
-    posRX = RX - asin(sin(posRX) * speedOut / speedIn);
-    return sign == 1 ? posRX : 2 * RX + M_PI - posRX;
+    return RX - refractRot(RX - posRX, speedIn, speedOut);
 }
 
-radian Face::refractRotZ(radian posRZ, float speedIn, float speedOut) const
+radian Face::refractRotZ(const radian& posRZ, float speedIn, float speedOut) const
 {
-    if (speedIn == speedOut) return posRZ;// shortcut
-    posRZ = RZ - posRZ;
-    const float sign = signOf(posRZ + static_cast<radian>(M_PI_2));
-    posRZ = RZ - asin(sin(posRZ) * speedOut / speedIn);
-    return sign == 1 ? posRZ : 2 * RZ + M_PI - posRZ;
+    return RZ - refractRot(RZ - posRZ, speedIn, speedOut);
+}
+
+radian Face::refractRot(const radian& posR, float speedIn, float speedOut)
+{
+    if (speedIn == speedOut) return posR;// shortcut
+    const float sign = signOf(posR + static_cast<radian>(M_PI_2));
+    radian posR2 = asin(sin(posR) * speedOut / speedIn);
+    if (isnanf(posR2)) {
+        posR2 = posR >= 0 ? M_PI_2 : -M_PI_2;
+    }
+
+    return sign == 1 ? posR2 : M_PI - posR2;
 }
 
 void Face::calcFace()

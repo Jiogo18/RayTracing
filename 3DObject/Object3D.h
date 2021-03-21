@@ -102,9 +102,10 @@ public:
     BLOCK::Material getMaterial() const { return material; }
     radian boundRotX(const radian& posRX) const;
     radian boundRotZ(const radian& posRZ) const;
-    radian refractRotX(radian posRX, float speedIn, float speedOut) const;
-    radian refractRotZ(radian posRZ, float speedIn, float speedOut) const;
+    radian refractRotX(const radian& posRX, float speedIn, float speedOut) const;
+    radian refractRotZ(const radian& posRZ, float speedIn, float speedOut) const;
 private:
+    static radian refractRot(const radian& posR, float speedIn, float speedOut);
     HRect3D rect;
     HRect3D maxGeometry;
     Point3D middleGeometry;

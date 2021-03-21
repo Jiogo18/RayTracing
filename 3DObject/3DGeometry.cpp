@@ -20,8 +20,8 @@ doubli max(const doubli& a, const doubli& b, const doubli& c) { return a > b ? (
 doubli min(const doubli& a, const doubli& b) { return a < b ? a : b; }
 doubli min(const doubli& a, const doubli& b, const doubli& c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
 bool isNull(const radian& d) { return -0.000001 < d && d < 0.000001; }
-radian mod(const radian& n, const radian& d) { return (n - floor(n/d)*d); }
-radian modRad(radian d) { d = (d - floor(d/(2*M_PI))*2*M_PI); return d > M_PI ? d - 2*M_PI : d; }
+radian mod(const radian& n, const radian& d) { return (n - floor(n / d) * d); }
+radian modRad(radian d) { d = (d - floor(d / (2 * M_PI)) * 2 * M_PI); return d > M_PI ? d - 2 * M_PI : d; }
 radian roundNull(radian d) { d = modRad(d); return isNull(d) ? 0 : d; }
 float signOf(radian d) { return roundNull(d) < 0 ? -1 : 1; }
 QDebug operator <<(QDebug debug, const doubli& d) { debug << static_cast<double>(d); return debug; }
