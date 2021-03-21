@@ -266,7 +266,7 @@ radian Face::refractRot(const radian& posR, float speedIn, float speedOut)
     const float sign = signOf(posR + static_cast<radian>(M_PI_2));
     radian posR2 = asin(sin(posR) * speedOut / speedIn);
     if (isnanf(posR2)) {
-        posR2 = posR >= 0 ? M_PI_2 : -M_PI_2;
+        posR2 = 0;
     }
 
     return sign == 1 ? posR2 : M_PI - posR2;
