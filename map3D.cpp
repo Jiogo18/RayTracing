@@ -12,23 +12,23 @@ map3D::map3D() : QObject()
     //client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
     //client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
     client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10));//belle vue mirroir
-    client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
+    //client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
 
 
-    world->setBlock(new Block(Pos3D(0, 0, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::oak_log));
-    world->setBlock(new Block(Pos3D(0, 1, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::birch_log));
-    world->setBlock(new Block(Pos3D(0, 0, 1, 0, 0), BLOCK::Type::cube, BLOCK::Material::stone));
-    world->setBlock(new Block(Pos3D(0, 1, 1, 0, 0), BLOCK::Type::cube, BLOCK::Material::glass));
-    world->setBlock(new Block(Pos3D(1, 0, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::green_glass));
-    world->setBlock(new Block(Pos3D(0, 2, 0, 0, 0), BLOCK::Type::slab, BLOCK::Material::glowstone));
-    world->setBlock(new Block(Pos3D(0, 0, 2, 0, 0), BLOCK::Type::cube, BLOCK::Material::mirror));
+    world->addSolid(new Cube(Pos3D(0, 0, 0, 0, 0), BLOCK::Material::oak_log));
+    world->addSolid(new Cube(Pos3D(0, 1, 0, 0, 0), BLOCK::Material::birch_log));
+    world->addSolid(new Cube(Pos3D(0, 0, 1, 0, 0), BLOCK::Material::stone));
+    world->addSolid(new Cube(Pos3D(0, 1, 1, 0, 0), BLOCK::Material::glass));
+    world->addSolid(new Cube(Pos3D(1, 0, 0, 0, 0), BLOCK::Material::green_glass));
+    world->addSolid(new HalfCube(Pos3D(0, 2, 0, 0, 0), BLOCK::Material::glowstone));
+    world->addSolid(new Cube(Pos3D(0, 0, 2, 0, 0), BLOCK::Material::mirror));
 
     //mur de miroir entouré de stone
-    fillBlock(Point3D(2, 0, 0), Point3D(2, 2, 3), BLOCK::Type::cube, BLOCK::Material::stone);
-    fillBlock(Point3D(2, 1, 0), Point3D(2, 1, 3), BLOCK::Type::cube, BLOCK::Material::mirror);
+    fillCube(Point3D(2, 0, 0), Point3D(2, 2, 3), BLOCK::Material::stone);
+    fillCube(Point3D(2, 1, 0), Point3D(2, 1, 3), BLOCK::Material::mirror);
 
-    world->setBlock(new Block(Pos3D(0, 3, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::mirror));
-    world->setBlock(new Block(Pos3D(1, 3, 0, 0, 0), BLOCK::Type::cube, BLOCK::Material::watter));
+    world->addSolid(new Cube(Pos3D(0, 3, 0, 0, 0), BLOCK::Material::mirror));
+    world->addSolid(new Cube(Pos3D(1, 3, 0, 0, 0), BLOCK::Material::watter));
 
 }
 
@@ -39,18 +39,19 @@ map3D::~map3D()
 }
 
 
-int map3D::fillBlock(const Point3D& posMin, const Point3D& posMax, BLOCK::Type blockType, BLOCK::Material blockMaterial)
+int map3D::fillCube(const Point3D& posMin, const Point3D& posMax, BLOCK::Material blockMaterial)
 {
-    doubli xMin = std::min(posMin.getX(), posMax.getX()), xMax = std::max(posMin.getX(), posMax.getX());
-    doubli yMin = std::min(posMin.getY(), posMax.getY()), yMax = std::max(posMin.getY(), posMax.getY());
-    doubli zMin = std::min(posMin.getZ(), posMax.getZ()), zMax = std::max(posMin.getZ(), posMax.getZ());
+    HRect3D rect(posMin, posMax);
 
     int blockPlaced = 0;
-    for (int x = xMin; x <= xMax; x++) {
-        for (int y = yMin; y <= yMax; y++) {
-            for (int z = zMin; z <= zMax; z++) {
-                if (world->setBlock(new Block(Pos3D(x, y, z, 0, 0), blockType, blockMaterial)))
+    for (int x = rect.getPointMin().getX(); x <= rect.getPointMax().getX(); x++) {
+        for (int y = rect.getPointMin().getY(); y <= rect.getPointMax().getY(); y++) {
+            for (int z = rect.getPointMin().getZ(); z <= rect.getPointMax().getZ(); z++) {
+                Cube* c = new Cube(Pos3D(x, y, z, 0, 0), blockMaterial);
+                if (world->addSolid(c))
                     blockPlaced++;
+                else
+                    delete c;
             }
         }
     }

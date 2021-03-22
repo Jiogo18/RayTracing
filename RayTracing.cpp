@@ -109,18 +109,18 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
     const Face* faceMin = nullptr;
     Point3D pInterMin;
     doubli distanceInterMin = 0;//seront set car !faceMin.isValid() au début
-    doubli distanceBlockMin = 0;
+    doubli distanceSolidMin = 0;
     for (int i = 0; i < world->getChunks().size(); i++) {
         Chunk* chunk = world->getChunks().at(i);
         if (Point3D::distanceMax(chunk->getPoint(), pos) > viewDistance)
             continue;
         qint64 start1 = rtRess->dt->getCurrent();
-        for (int i2 = 0; i2 < chunk->getBlocks()->size(); i2++) {
-            Block* block = chunk->getBlocks()->at(i2);
+        for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
+            Solid* block = chunk->getSolids()->at(i2);
             if (Point3D::distanceMax(block->getPoint(), pos) > viewDistance)
                 continue;
             for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
-                const Face* face = block->getFaces()->at(i3);
+                const Face* face = &block->getFaces()->at(i3);
                 if (face == lastFace)
                     continue;
                 const Plan* plan = face->getPlan();
@@ -134,18 +134,18 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
                 if (!enter && pInter == pos.getPoint() && !lastMoved)
                     continue;//on viens de sortir (ou par défaut) et on se retrouve sur le même point
                 doubli distanceInter = roundNull(Point3D::distance(pos, pInter)),
-                    distanceBlock = 0;
+                    distanceSolid = 0;
                 if (faceMin != nullptr && faceMin->isValid()) {
                     if (distanceInter > distanceInterMin)
                         continue;
-                    distanceBlock = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceSolid = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
                     if (distanceInter == distanceInterMin) {
-                        if (distanceBlock >= distanceBlockMin)
+                        if (distanceSolid >= distanceSolidMin)
                             continue;
                     }
                 }
                 else {
-                    distanceBlock = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceSolid = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
                 }
                 //si il n'y a pas encore de face
                 //sinon si le pt d'intersection est plus proche
@@ -155,7 +155,7 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
                 faceMin = face;
                 pInterMin = pInter;
                 distanceInterMin = distanceInter;
-                distanceBlockMin = distanceBlock;
+                distanceSolidMin = distanceSolid;
                 //il est possible qu'un même distance soit pour le meme block, pour des faces diff (de meme distance)
                 //mais c'est pas grave car ça arrive quand c'est VRAIMENT indéterminant
                 //(on peu prendre l'un ou l'autre)

@@ -10,38 +10,38 @@ Chunk::Chunk(Point3D pos) : Object(Pos3D(pos* chunkSize, 0, 0))
 }
 Chunk::~Chunk()
 {
-    while (blocks.isEmpty())
-        deleteBlock(blocks.first());
+    while (solids.isEmpty())
+        deleteSolid(solids.first());
 }
 
-bool Chunk::setBlock(Block* block)
+bool Chunk::addSolid(Solid* block)
 {
     if (!contains(block->getPoint()))
         return false;
-    if (haveBlock(block->getPoint())) {
-        removeBlock(block->getPoint());
+    if (haveSolid(block->getPoint())) {
+        removeSolid(block->getPoint());
     }
-    blocks.append(block);
+    solids.append(block);
     calcMinMaxPoint();
     return true;
 }
-bool Chunk::haveBlock(const Point3D& pos) const
+bool Chunk::haveSolid(const Point3D& pos) const
 {
-    return getBlock(pos) != nullptr;
+    return getSolid(pos) != nullptr;
 }
-Block* Chunk::getBlock(const Point3D& pos) const
+Solid* Chunk::getSolid(const Point3D& pos) const
 {
-    for (int i = 0; i < blocks.size(); i++)
-        if (blocks.at(i)->getPoint() == pos)
-            return blocks.at(i);
+    for (int i = 0; i < solids.size(); i++)
+        if (solids.at(i)->getPoint() == pos)
+            return solids.at(i);
     return nullptr;
 }
 
-bool Chunk::removeBlock(const Point3D& pos)
+bool Chunk::removeSolid(const Point3D& pos)
 {
-    Block* block = getBlock(pos);
+    Solid* block = getSolid(pos);
     if (!block) return false;
-    blocks.removeAll(block);
+    solids.removeAll(block);
     delete block;
     return true;
 }
@@ -50,11 +50,11 @@ bool Chunk::contains(const Point3D& pos) const { return chunkOfPos(pos) == getPo
 
 void Chunk::calcMinMaxPoint()
 {
-    if (blocks.size() == 0) {
+    if (solids.size() == 0) {
         maxGeometry = HRect3D(getPoint(), getPoint());
         return;
     }
-    maxGeometry = blocks.first()->getMaxGeometry();
+    maxGeometry = solids.first()->getMaxGeometry();
     doubli minX = maxGeometry.getPointMin().getX();
     doubli minY = maxGeometry.getPointMin().getY();
     doubli minZ = maxGeometry.getPointMin().getZ();
@@ -62,8 +62,8 @@ void Chunk::calcMinMaxPoint()
     doubli maxY = maxGeometry.getPointMax().getY();
     doubli maxZ = maxGeometry.getPointMax().getZ();
 
-    for (int i = 0; i < blocks.size(); i++) {
-        HRect3D currentMaxGeometry = blocks.at(i)->getMaxGeometry();
+    for (int i = 0; i < solids.size(); i++) {
+        HRect3D currentMaxGeometry = solids.at(i)->getMaxGeometry();
         if (currentMaxGeometry.getPointMin().getX() < minX)
             minX = currentMaxGeometry.getPointMin().getX();
         if (currentMaxGeometry.getPointMin().getY() < minY)
@@ -82,11 +82,11 @@ void Chunk::calcMinMaxPoint()
     middleMinGeometry = maxGeometry.getMiddle();
 }
 
-bool Chunk::deleteBlock(Block* block)
+bool Chunk::deleteSolid(Solid* block)
 {
-    if (!blocks.contains(block))
+    if (!solids.contains(block))
         return false;
-    blocks.removeAll(block);
+    solids.removeAll(block);
     if (block != nullptr)
         delete block;
     return true;
@@ -114,18 +114,18 @@ World::~World()
         deleteEntity(entities.first());
 }
 
-bool World::setBlock(Block* block)
+bool World::addSolid(Solid* block)
 {
     Point3D posChunk = Chunk::chunkOfPos(block->getPoint());
     if (!haveChunk(posChunk))
         if (!createChunk(posChunk)) {
-            qDebug() << "ERROR Chunk::setBlock can't create a chunk";
+            qDebug() << "ERROR Chunk::setSolid can't create a chunk";
             return false;
         }
-    bool success = getChunk(posChunk)->setBlock(block);
+    bool success = getChunk(posChunk)->addSolid(block);
     if (success) {
         WorldChange change(WorldChange::Type::block, WorldChange::Action::created);
-        change.setBlock(block);
+        change.setSolid(block);
         change.setChunk(getChunk(posChunk));
         emit changed(change);
     }

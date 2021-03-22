@@ -11,10 +11,10 @@ public:
     static const int chunkSize = 8;
     Point3D getPoint() const { return Object::getPoint(); }
 
-    bool setBlock(Block* block);
-    bool haveBlock(const Point3D& pos) const;
-    Block* getBlock(const Point3D& pos) const;
-    bool removeBlock(const Point3D& pos);
+    bool addSolid(Solid* block);
+    bool haveSolid(const Point3D& pos) const;
+    Solid* getSolid(const Point3D& pos) const;
+    bool removeSolid(const Point3D& pos);
     bool contains(const Point3D& pos) const;
     static Point3D chunkOfPos(const Point3D& blockPos) { return qFloor(blockPos / Chunk::chunkSize); }
     static Point3D chunkOrigin(const Point3D& chunkPos) { return qFloor(chunkPos) * Chunk::chunkSize; }
@@ -22,15 +22,15 @@ public:
 
     HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
-    const QList<Block*>* getBlocks() const { return &blocks; }
+    const QList<Solid*>* getSolids() const { return &solids; }
 private:
-    QList<Block*> blocks;
+    QList<Solid*> solids;
     //indépendants de la taille du chunk (presque) mais dépendant de la taille des blocks :
     HRect3D maxGeometry;
     Point3D middleMinGeometry;
     void calcMinMaxPoint();
 
-    bool deleteBlock(Block* block);
+    bool deleteSolid(Solid* block);
 };
 
 
@@ -53,18 +53,18 @@ public:
     WorldChange(Type type, Action action);
     WorldChange(const WorldChange& change);
     void setChunk(Chunk* chunk) { tchunk = chunk; }
-    void setBlock(Block* block) { tblock = block; }
+    void setSolid(Solid* block) { tblock = block; }
     void setEntity(Entity* entity) { tentity = entity; }
     Type type() const { return t; }
     Action action() const { return act; }
     Chunk* getChunk() const { return tchunk; }
-    Block* getBlock() const { return tblock; }
+    Solid* getSolid() const { return tblock; }
     Entity* getEntity() const { return tentity; }
 private:
     Type t;
     Action act;
     Chunk* tchunk = nullptr;
-    Block* tblock = nullptr;
+    Solid* tblock = nullptr;
     Entity* tentity = nullptr;
 };
 
@@ -75,7 +75,7 @@ class World : public QObject
 public:
     World();
     ~World();
-    bool setBlock(Block* block);
+    bool addSolid(Solid* block);
     void addEntity(Entity* entity);
 
     QList<Chunk*> getChunks() const { return chunks; }

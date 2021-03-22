@@ -191,7 +191,7 @@ ColorLight Face::getColor(const QPointF& point, const QImage* img) const
                 y = img->height() - 1;
             QColor color = img->pixelColor(x, y);
             return ColorLight(color.red(), color.green(), color.blue(),
-                color.alpha(), OBJECT3D::getLight(material,
+                color.alpha(), OBJECT3D::getLight(getMaterial(),
                     variations));
         }
         else
@@ -260,6 +260,11 @@ radian Face::refractRotZ(const radian& posRZ, float speedIn, float speedOut) con
     return RZ - refractRot(RZ - posRZ, speedIn, speedOut);
 }
 
+bool Face::containsPoint(const Point3D& point) const
+{
+    return plan.containsPoint(point);//TODO: par rapport aux points ?
+}
+
 radian Face::refractRot(const radian& posR, float speedIn, float speedOut)
 {
     if (speedIn == speedOut) return posR;// shortcut
@@ -276,7 +281,7 @@ void Face::calcFace()
 {
     maxGeometry = rect + getPoint();
     middleGeometry = maxGeometry.getMiddle();
-    texture = OBJECT3D::getFileTexture(material, variations);
+    texture = OBJECT3D::getFileTexture(getMaterial(), variations);
 
 
     doubli deltaX = rect.getPointMax().getX() - rect.getPointMin().getX();
@@ -306,76 +311,54 @@ void Face::calcFace()
 
 
 Object::Object(Pos3D pos) : Pos3D(pos), QObject() {}
-Object::Object(const Object& obj) : Pos3D(obj.getPos()), QObject() { operator=(obj); }
+Object::Object(const Object& obj) : Pos3D(obj.getPos()), QObject() {}
 Object::~Object() {}
 Object* Object::operator =(const Object& obj) { setPos(obj.getPos()); return this; }
 
 
 
-Block::Block(Pos3D pos, BLOCK::Type type, BLOCK::Material material) : Object(pos)
+Solid::Solid(Pos3D pos, BLOCK::Material material, QList<Face> faces) : Object(pos)
 {
-    this->type = type;
     this->material = material;
-    calcFaces();
+    this->faces = faces;
 }
-Block::~Block()
+Solid::~Solid()
+{}
+
+
+
+
+Block::Block(Pos3D pos, Size3D size, BLOCK::Material material) :
+    Solid(pos, material, createDefaultFaces(pos, size, material)),
+    size(size) {}
+
+bool Block::containsPoint(const Point3D& point) const
 {
-    while (!faces.isEmpty())
-        deleteFace(faces.first());
-}
-HRect3D Block::getBlockGeometry(BLOCK::Type type)
-{
-    switch (type) {
-    case BLOCK::Type::cube:
-        return HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 1));
-    case BLOCK::Type::slab:
-        return HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0.5L));
-    }
-    return HRect3D();
+    return getPoint() <= point && point <= (getPoint() + size);
+    //TODO: prendre en compte la rotation
 }
 
-void Block::deleteFace(Face* face)
+QList<Face> Block::createDefaultFaces(Point3D posSolid, Size3D size, BLOCK::Material material)
 {
-    faces.removeAll(face);
-    if (face != nullptr)
-        delete face;
-}
-void Block::calcFaces()
-{
-    QList<Face> faces = getFaces(this->getPoint(), type, material);
-    while (!this->faces.isEmpty())
-        deleteFace(this->faces.first());
-    for (int i = 0; i < faces.size(); i++)
-        this->faces.append(new Face(faces.at(i)));
-    maxGeometry = getBlockGeometry(type) + getPoint();
-    middleMinGeometry = maxGeometry.getMiddle();
-}
-QList<Face> Block::getFaces(Point3D posBlock, BLOCK::Type type, BLOCK::Material material)
-{
-    switch (type) {
-    case BLOCK::Type::cube:
-        return {
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), 0, material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, HRect3D(Point3D(0, 0, 1), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 1)), 0, material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 1)), 0, material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 1)), 1, material, {BLOCK::Variation::left})//WEST
-        };
-    case BLOCK::Type::slab:
-        return {
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 1, 0)), 0, material, {BLOCK::Variation::bottom}),//BOTTOM
-            Face(posBlock, HRect3D(Point3D(0, 0, 0.5L), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::top}),//TOP
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(0, 1, 0.5L)), 0, material, {BLOCK::Variation::back}),//SOUTH
-            Face(posBlock, HRect3D(Point3D(0, 0, 0), Point3D(1, 0, 0.5L)), 0, material, {BLOCK::Variation::right}),//EAST
-            Face(posBlock, HRect3D(Point3D(1, 0, 0), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::front}),//NORTH
-            Face(posBlock, HRect3D(Point3D(0, 1, 0), Point3D(1, 1, 0.5L)), 1, material, {BLOCK::Variation::left})//WEST
-        };
-    }
-    return {};
+    return {
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.getDX(), size.getDY(), 0)), 0, material, {BLOCK::Variation::bottom}),//BOTTOM
+        Face(posSolid, HRect3D(Point3D(0, 0, size.getDZ()), size.toPoint()),              1, material, {BLOCK::Variation::top}),//TOP
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.getDY(), size.getDZ())), 0, material, {BLOCK::Variation::back}),//SOUTH
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.getDX(), 0, size.getDZ())), 0, material, {BLOCK::Variation::right}),//EAST
+        Face(posSolid, HRect3D(Point3D(size.getDX(), 0, 0), size.toPoint()),              1, material, {BLOCK::Variation::front}),//NORTH
+        Face(posSolid, HRect3D(Point3D(0, size.getDY(), 0), size.toPoint()),              1, material, {BLOCK::Variation::left})//WEST
+    };
 }
 
 
+Cube::Cube(Pos3D pos, BLOCK::Material material) : Block(pos, Size3D(1, 1, 1), material) {}
+
+Cube::Cube(Pos3D pos, BLOCK::Material material, doubli scale) : Block(pos, Size3D(scale, scale, scale), material) {}
+
+
+HalfCube::HalfCube(Pos3D pos, BLOCK::Material material) : Block(pos, Size3D(1, 1, 0.5), material) {}
+
+HalfCube::HalfCube(Pos3D pos, BLOCK::Material material, doubli scale) : Block(pos, Size3D(scale, scale, scale * 0.5), material) {}
 
 
 

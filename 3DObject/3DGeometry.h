@@ -61,6 +61,8 @@ public:
     bool operator >(const Point3D& point) const;
     bool operator ==(const Point3D& point) const;
     bool operator !=(const Point3D& point) const;
+    bool operator <=(const Point3D& point) const;
+    bool operator >=(const Point3D& point) const;
     bool isNull() const { return x == 0.0L && y == 0.0L && z == 0.0L; }
     bool isValid() const { return defined; }
     bool isInf() const { return qIsInf(x) || qIsInf(y) || qIsInf(z); }
@@ -138,6 +140,7 @@ public:
     doubli getDY() const { return dY; }
     doubli getDZ() const { return dZ; }
     Size3D getSize() const { return *this; }
+    Point3D toPoint() const { return Point3D(dX, dY, dZ); }//relative to (0,0,0)
     void setDX(doubli dZ) { this->dZ = round(dZ); }
     void setDY(doubli dY) { this->dY = round(dY); }
     void setDZ(doubli dZ) { this->dZ = round(dZ); }
@@ -230,6 +233,7 @@ public:
     Point3D intersection(const Point3D& pA, const Point3D& pB) const;
     QPointF projeteOrtho(const Point3D& pA) const;
     inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
+    bool containsPoint(const Point3D& point) const;
 private:
     Point3D pA;
     Point3D pB;

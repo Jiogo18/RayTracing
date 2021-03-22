@@ -6,10 +6,6 @@
 #include <QMap>
 
 namespace BLOCK {
-    enum Type {
-        cube,
-        slab
-    };
     enum Material {
         none,
         air,
@@ -79,8 +75,10 @@ public:
     Object(Pos3D pos);
     Object(const Object& obj);
     virtual ~Object();
-    virtual HRect3D getMaxGeometry() const { return HRect3D(getPoint(), getPoint()); }
     Object* operator =(const Object& obj);
+    virtual HRect3D getMaxGeometry() const { return HRect3D(getPoint(), getPoint()); }
+    virtual bool containsPoint(const Point3D& point) const { return point == getPoint(); }
+    virtual BLOCK::Material getMaterial() const { return BLOCK::Material::none; }
 };
 
 
@@ -91,19 +89,20 @@ public:
     Face();
     Face(const Point3D& point, const HRect3D& rect, bool orientation, BLOCK::Material material, QList<BLOCK::Variation> variations);
     Face(const Face& face);
-    HRect3D getMaxGeometry() const { return maxGeometry; }
+    HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleGeometry; }
     const Plan* getPlan() const { return &plan; }
     const QPointF& getPointC() const { return pC; }
     bool getOrientation() const { return orientation; }
-    bool isValid() const { return material != BLOCK::Material::none; }
+    bool isValid() const { return getMaterial() != BLOCK::Material::none; }
     ColorLight getColor(const QPointF& point, const QImage* img) const;
     QString getTexture() const { return texture; }
-    BLOCK::Material getMaterial() const { return material; }
+    BLOCK::Material getMaterial() const override { return material; }
     radian boundRotX(const radian& posRX) const;
     radian boundRotZ(const radian& posRZ) const;
     radian refractRotX(const radian& posRX, float speedIn, float speedOut) const;
     radian refractRotZ(const radian& posRZ, float speedIn, float speedOut) const;
+    bool containsPoint(const Point3D& point) const override;
 private:
     static radian refractRot(const radian& posR, float speedIn, float speedOut);
     HRect3D rect;
@@ -122,26 +121,56 @@ private:
 
 
 
-class Block : public Object
+class Solid : public Object
 {
 public:
-    Block(Pos3D pos, BLOCK::Type type, BLOCK::Material material);
-    ~Block() override;
+    Solid(Pos3D pos, BLOCK::Material material, QList<Face>);
+    ~Solid() override;
 
-    static HRect3D getBlockGeometry(BLOCK::Type type);
-    HRect3D getMaxGeometry() const override { return maxGeometry; }
-    Point3D getMiddleGeometry() const { return middleMinGeometry; }
-    const QList<Face*>* getFaces() const { return &faces; }
+    virtual HRect3D getSolidGeometry() const { return HRect3D(); }
+    HRect3D getMaxGeometry() const override { return getSolidGeometry() + getPoint(); }
+    Point3D getMiddleGeometry() const { return getMaxGeometry().getMiddle(); }
+    const QList<Face>* getFaces() const { return &faces; }
+
+    BLOCK::Material getMaterial() const override { return material; }
+
+    bool containsPoint(const Point3D& point) const override { return getMaxGeometry().contains(point); }
 
 private:
-    BLOCK::Type type;
     BLOCK::Material material;
-    QList<Face*> faces;
-    void deleteFace(Face* face);
-    void calcFaces();
-    HRect3D maxGeometry;
-    Point3D middleMinGeometry;
-    static QList<Face> getFaces(Point3D posBlock, BLOCK::Type type, BLOCK::Material material);
+    QList<Face> faces;
+};
+
+
+class Block : public Solid
+{
+    //any Cuboid (pavé droit)
+public:
+    Block(Pos3D pos, Size3D size, BLOCK::Material material);
+    HRect3D getMaxGeometry() const override { return HRect3D(getPoint(), size); }
+    HRect3D getSolidGeometry() const override { return HRect3D(Point3D(0, 0, 0), size); }
+    bool containsPoint(const Point3D& point) const override;
+
+private:
+    Size3D size;
+    static QList<Face> createDefaultFaces(Point3D posSolid, Size3D size, BLOCK::Material material);
+};
+
+
+class Cube : public Block
+{
+public:
+    Cube(Pos3D pos, BLOCK::Material material);
+    Cube(Pos3D pos, BLOCK::Material material, doubli scale);
+};
+
+
+class HalfCube : public Block
+{
+public:
+    HalfCube(Pos3D pos, BLOCK::Material material);
+    HalfCube(Pos3D pos, BLOCK::Material material, doubli scale);
+    HRect3D getMaxGeometry() const override { return HRect3D(getPoint(), Size3D(1, 1, 0.5)); }
 };
 
 

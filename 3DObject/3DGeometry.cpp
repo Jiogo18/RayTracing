@@ -77,6 +77,16 @@ bool Point3D::operator !=(const Point3D& point) const
     return (x != point.x) || (y != point.y) || (z != point.z);
 }
 
+bool Point3D::operator <=(const Point3D& point) const
+{
+    return operator <(point) || operator ==(point);
+}
+
+bool Point3D::operator >=(const Point3D& point) const
+{
+    return operator >(point) || operator ==(point);
+}
+
 Point3D Point3D::operator +(const Point3D& point) const
 {
     return Point3D(x + point.x,
@@ -483,6 +493,11 @@ QPointF Plan::projeteOrtho(const Point3D& pA) const
 
     return QPointF(pR.getY(), pR.getZ());
     //ne prend pas en compte la rotation... ! (relative au point A)
+}
+
+bool Plan::containsPoint(const Point3D& point) const
+{
+    return isNull(a * point.getX() + b * point.getY() + c * point.getZ() + d);
 }
 
 void Plan::calcEquation()
