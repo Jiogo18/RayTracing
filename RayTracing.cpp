@@ -51,10 +51,25 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
 {
     this->rtRess = rtRess;
     origin = pos;
-    distParcouru = 0;
-    moveTo(pos);
+
     distParcouru = 0;
     insideMaterial = rtRess->insideMaterial;
+    float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
+    float previousSpeed = OBJECT3D::getSpeedOfLight(BLOCK::Material::air);//matériau du cristallin
+    if (newSpeed != previousSpeed) {
+        // calcul de la réfraction (le regard est normal au plan)
+        radian cristallinRX = rtRess->clientPos.getRX();
+        radian cristallinRZ = rtRess->clientPos.getRZ();
+
+        if (abs(cos(cristallinRZ)) <= 0.5) {
+            // TODO: 0.5 c'est parce que je sais pas quels calculs faire dans ces cas (regarde vers le haut)
+        }
+        else {
+            pos.setRX(cristallinRX - Transfo3D::refractRot(cristallinRX - pos.getRX(), previousSpeed, newSpeed));
+            pos.setRZ(cristallinRZ - Transfo3D::refractRot(cristallinRZ - pos.getRZ(), previousSpeed, newSpeed));
+        }
+    }
+    setPos(pos);
 }
 
 ColorLight Ray::getColor() const
@@ -110,6 +125,11 @@ void Ray::process(const World* world)
 void Ray::moveTo(const Pos3D& pos)
 {
     distParcouru += Point3D::distance(this->pos, pos);
+    setPos(pos);
+}
+
+void Ray::setPos(const Pos3D& pos)
+{
     this->pos = pos;
     posNextPoint = pos.getNextPoint();//pour pas le recalculer pour toutes les faces
 }

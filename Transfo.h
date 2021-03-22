@@ -11,6 +11,8 @@ namespace Transfo3D {
     //pas besion de perspective si il y a le ray tracing
     //void addPerspective(World *world, double persp, double zoom);
     //Point3D pointPerspective(Point3D point, double perspective, double zoom);
+
+    radian refractRot(const radian& posR, float speedIn, float speedOut);
 }
 
 #endif // TRANSFO_H

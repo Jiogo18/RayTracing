@@ -82,6 +82,7 @@ private:
     //vector objTraverse;
     doubli distParcouru;
     void moveTo(const Pos3D& pos);
+    void setPos(const Pos3D& pos);
     Pos3D getPos() const { return pos; }
     const Face* getFirstIntersection(const World* world, Point3D* pInter) const;
     //black list (et white list pour transparence) du dernier objet traversé
