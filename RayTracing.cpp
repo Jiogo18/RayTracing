@@ -77,7 +77,7 @@ void Ray::process(const World* world)
         if (face == nullptr || !face->isValid())
             break;//c'est normal si on va dans le vide
 
-        lastMoved = !(pInter == pos.getPoint());
+        lastMoved = !(pInter == pos);
         lastFace = face;
 
         const Plan* plan = face->getPlan();
@@ -141,7 +141,7 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
 
                 if (!pInter.isValid() || !face->getMaxGeometry().contains(pInter))
                     continue;
-                if (!enter && pInter == pos.getPoint() && !lastMoved)
+                if (!enter && pInter == pos && !lastMoved)
                     continue;//on viens de sortir (ou par défaut) et on se retrouve sur le même point
                 doubli distanceInter = roundNull(Point3D::distance(pos, pInter)),
                     distanceSolid = 0;

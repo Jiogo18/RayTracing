@@ -47,11 +47,9 @@ public:
     doubli getX() const { return x; }
     doubli getY() const { return y; }
     doubli getZ() const { return z; }
-    Point3D getPoint() const { return *this; }
     void setX(doubli x) { this->x = round(x); }
     void setY(doubli y) { this->y = round(y); }
     void setZ(doubli z) { this->z = round(z); }
-    void setPoint(const Point3D& point) { operator=(point); }
     void addX(doubli x) { this->x = round(this->x + x); }
     void addY(doubli y) { this->y = round(this->y + y); }
     void addZ(doubli z) { this->z = round(this->z + z); }
@@ -100,10 +98,8 @@ public:
 
     radian getRX() const { return rX; }
     radian getRZ() const { return rZ; }
-    Pos3D getPos() const { return *this; }
     void setRX(radian rX) { this->rX = rX; }
     void setRZ(radian rZ) { this->rZ = rZ; }
-    void setPos(const Pos3D& pos) { operator=(pos); }
     void addRX(radian rX) { this->rX += rX; }
     void addRZ(radian rZ) { this->rZ += rZ; }
 

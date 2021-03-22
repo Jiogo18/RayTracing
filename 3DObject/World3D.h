@@ -3,28 +3,40 @@
 
 #include "Object3D.h"
 
-class Chunk : private Object
+class ChunkPos : public Point3D
 {
 public:
-    Chunk(Point3D pos);
-    ~Chunk() override;
     static const int chunkSize = 8;
-    Point3D getPoint() const { return Object::getPoint(); }
+
+    static ChunkPos fromBlockPos(const Point3D& blockPos) { return Point3D(qFloor(blockPos / ChunkPos::chunkSize)); }
+    Point3D chunkOrigin() const { return qFloor(static_cast<Point3D>(*this) * ChunkPos::chunkSize); }
+    ChunkPos(const ChunkPos& pos) : Point3D(pos) {}
+
+private:
+    ChunkPos(const Point3D& pos) : Point3D(pos) {}
+};
+
+
+class Chunk : public ChunkPos
+{
+public:
+    Chunk(ChunkPos pos);
+    ~Chunk();
+    ChunkPos getPoint() const { return *this; }
 
     bool addSolid(Solid* block);
-    bool haveSolid(const Point3D& pos) const;
-    Solid* getSolid(const Point3D& pos) const;
-    bool removeSolid(const Point3D& pos);
-    bool contains(const Point3D& pos) const;
-    static Point3D chunkOfPos(const Point3D& blockPos) { return qFloor(blockPos / Chunk::chunkSize); }
-    static Point3D chunkOrigin(const Point3D& chunkPos) { return qFloor(chunkPos) * Chunk::chunkSize; }
-    static Point3D relativePosOfPos(const Point3D& blockPos) { return blockPos - chunkOrigin(chunkOfPos(blockPos)); }
+    bool haveSolid(const Point3D& blockPos) const;
+    Solid* getSolidAt(const Point3D& blockPos) const;
+    Solid* getSolid(const Point3D& blockPos) const;
+    bool removeSolid(const Point3D& blockPos);
+    bool containsPoint(const Point3D& blockPos) const;
+    static Point3D relativePosOfPos(const Point3D& blockPos) { return blockPos - ChunkPos::fromBlockPos(blockPos).chunkOrigin(); }
 
-    HRect3D getMaxGeometry() const override { return maxGeometry; }
+    HRect3D getMaxGeometry() const { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
     const QList<Solid*>* getSolids() const { return &solids; }
-    static Size3D getSize() { return Size3D(Chunk::chunkSize, Chunk::chunkSize, Chunk::chunkSize); }
-    bool containsPoint(const Point3D& point) const override;
+    static Size3D getSize() { return Size3D(ChunkPos::chunkSize, ChunkPos::chunkSize, ChunkPos::chunkSize); }
+
 private:
     QList<Solid*> solids;
     //indépendants de la taille du chunk (presque) mais dépendant de la taille des blocks :
@@ -91,10 +103,10 @@ signals:
 private:
     QList<Chunk*> chunks;
     QList<Entity*> entities;
-    bool createChunk(Point3D pos);
+    bool createChunk(ChunkPos posChunk);
     void deleteChunk(Chunk* chunk);
-    Chunk* getChunk(Point3D pos) const;
-    bool haveChunk(Point3D pos) const;
+    Chunk* getChunk(ChunkPos posChunk) const;
+    bool haveChunk(ChunkPos posChunk) const;
 
     bool deleteEntity(Entity* entity);
 };

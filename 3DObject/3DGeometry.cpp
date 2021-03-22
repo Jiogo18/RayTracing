@@ -210,10 +210,10 @@ Pos3D Pos3D::getChildRot(radian rXRelatif, radian rZRelatif) const
         rX += M_PI;//atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         //pas besoin de différentier y car on est à k360° de diff
     }
-    return Pos3D(getPoint(), rX, asin(z2));
+    return Pos3D(static_cast<Point3D>(*this), rX, asin(z2));
 }
 
-Point3D Pos3D::changeRef(const Point3D& point) const { return rotation(point + getPoint(), rX, rZ); }
+Point3D Pos3D::changeRef(const Point3D& point) const { return rotation(point + static_cast<Point3D>(*this), rX, rZ); }
 
 bool Pos3D::operator ==(const Pos3D& pos) const
 {

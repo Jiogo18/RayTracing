@@ -4,7 +4,7 @@
 
 
 
-Chunk::Chunk(Point3D pos) : Object(Pos3D(pos* chunkSize, 0, 0))
+Chunk::Chunk(ChunkPos pos) : ChunkPos(pos)
 {
     calcMinMaxPoint();
 }
@@ -16,7 +16,7 @@ Chunk::~Chunk()
 
 bool Chunk::addSolid(Solid* block)
 {
-    if (!contains(block->getPoint()))
+    if (!containsPoint(block->getPoint()))
         return false;
     if (haveSolid(block->getPoint())) {
         removeSolid(block->getPoint());
@@ -25,33 +25,36 @@ bool Chunk::addSolid(Solid* block)
     calcMinMaxPoint();
     return true;
 }
-bool Chunk::haveSolid(const Point3D& pos) const
+bool Chunk::haveSolid(const Point3D& blockPos) const
 {
-    return getSolid(pos) != nullptr;
+    return getSolidAt(blockPos) != nullptr;
 }
-Solid* Chunk::getSolid(const Point3D& pos) const
+Solid* Chunk::getSolidAt(const Point3D& blockPos) const
 {
     for (int i = 0; i < solids.size(); i++)
-        if (solids.at(i)->getPoint() == pos)
+        if (solids.at(i)->getPoint() == blockPos)
             return solids.at(i);
     return nullptr;
 }
 
-bool Chunk::removeSolid(const Point3D& pos)
+Solid* Chunk::getSolid(const Point3D& blockPos) const
 {
-    Solid* block = getSolid(pos);
+    for (int i = 0; i < solids.size(); i++)
+        if (solids.at(i)->containsPoint(blockPos))
+            return solids.at(i);
+    return nullptr;
+}
+
+bool Chunk::removeSolid(const Point3D& blockPos)
+{
+    Solid* block = getSolidAt(blockPos);
     if (!block) return false;
     solids.removeAll(block);
     delete block;
     return true;
 }
 
-bool Chunk::contains(const Point3D& pos) const { return chunkOfPos(pos) == getPoint(); }
-
-bool Chunk::containsPoint(const Point3D& point) const
-{
-    return getPoint() <= point && point < (getPoint() + getSize());
-}
+bool Chunk::containsPoint(const Point3D& blockPos) const { return ChunkPos::fromBlockPos(blockPos) == getPoint(); }
 
 void Chunk::calcMinMaxPoint()
 {
@@ -121,7 +124,7 @@ World::~World()
 
 bool World::addSolid(Solid* block)
 {
-    Point3D posChunk = Chunk::chunkOfPos(block->getPoint());
+    ChunkPos posChunk = ChunkPos::fromBlockPos(block->getPoint());
     if (!haveChunk(posChunk))
         if (!createChunk(posChunk)) {
             qDebug() << "ERROR Chunk::setSolid can't create a chunk";
@@ -148,21 +151,21 @@ void World::addEntity(Entity* entity)
 
 Solid* World::getSolid(const Point3D& point) const
 {
-    Chunk* chunk = getChunk(point);
+    const Chunk* chunk = getChunk(ChunkPos::fromBlockPos(point));
     return chunk ? chunk->getSolid(point) : nullptr;
 }
 
 
-bool World::createChunk(Point3D pos)
+bool World::createChunk(ChunkPos posChunk)
 {
-    if (haveChunk(Chunk::chunkOfPos(pos)))
+    if (haveChunk(posChunk))
         return false;
-    chunks.append(new Chunk(pos));
+    chunks.append(new Chunk(posChunk));
     WorldChange change(WorldChange::Type::chunk, WorldChange::Action::created);
-    change.setChunk(getChunk(pos));
+    change.setChunk(getChunk(posChunk));
     emit changed(change);
 
-    return haveChunk(Chunk::chunkOfPos(pos));
+    return haveChunk(posChunk);
 }
 void World::deleteChunk(Chunk* chunk)
 {
@@ -173,16 +176,16 @@ void World::deleteChunk(Chunk* chunk)
     change.setChunk(chunk);
     emit changed(change);
 }
-Chunk* World::getChunk(Point3D pos) const
+Chunk* World::getChunk(ChunkPos posChunk) const
 {
     for (int i = 0; i < chunks.size(); i++)
-        if (chunks.at(i)->getPoint() == pos)
+        if (chunks.at(i)->getPoint() == posChunk)
             return chunks.at(i);
     return nullptr;
 }
-bool World::haveChunk(Point3D pos) const
+bool World::haveChunk(ChunkPos posChunk) const
 {
-    return getChunk(pos) != nullptr;
+    return getChunk(posChunk) != nullptr;
 }
 
 bool World::deleteEntity(Entity* entity)

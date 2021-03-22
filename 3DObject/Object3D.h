@@ -76,6 +76,12 @@ public:
     Object(const Object& obj);
     virtual ~Object();
     Object* operator =(const Object& obj);
+
+    Point3D getPoint() const { return static_cast<Point3D>(*this); }
+    Pos3D getPos() const { return static_cast<Pos3D>(*this); }
+    void setPoint(const Point3D& point) { Point3D::operator=(point); }
+    void setPos(const Pos3D& pos) { Pos3D::operator=(pos); }
+
     virtual HRect3D getMaxGeometry() const { return HRect3D(getPoint(), getPoint()); }
     virtual bool containsPoint(const Point3D& point) const { return point == getPoint(); }
     virtual BLOCK::Material getMaterial() const { return BLOCK::Material::none; }
@@ -209,7 +215,7 @@ public:
     void moveLeft() { moveWithRot(attribute.getSpeedL(), -M_PI / 2); }
     void moveRight() { moveWithRot(attribute.getSpeedR(), M_PI / 2); }
     void moveTo(const Point3D& point) { setPoint(point); }
-    void moveTo(const Pos3D& pos) { setPoint(pos.getPoint()); setRX(pos.getRX()); setRZ(pos.getRZ()); }
+    void moveTo(const Pos3D& pos) { moveTo(static_cast<Point3D>(pos)); setRX(pos.getRX()); setRZ(pos.getRZ()); }
     void moveRX(radian rX) { addRX(rX); }
     void moveRZ(radian rZ) { addRZ(rZ); }
 private:
