@@ -12,11 +12,12 @@ PixScreen<T>::PixScreen(const QSize& size)
 }
 
 
-RayTracingRessources::RayTracingRessources(const World* world, const Pos3D& clientPos, DebugTime* dt)
+RayTracingRessources::RayTracingRessources(const World* world, const Entity* client, DebugTime* dt)
 {
-    this->world = world; this->clientPos = clientPos;
+    this->world = world;
     facesImg = new QMap<QString, const QImage*>;
     this->dt = dt;
+    resetRessources(client);
 }
 
 RayTracingRessources::~RayTracingRessources()
@@ -36,6 +37,13 @@ void RayTracingRessources::worldChanged()
 {
 }
 
+void RayTracingRessources::resetRessources(const Entity* client)
+{
+    clientPos = client->getPos();
+    const Solid* solid = world->getSolid(clientPos);
+    insideMaterial = solid ? solid->getMaterial() : BLOCK::Material::air;// par défaut on est dans l'air
+}
+
 
 
 
@@ -46,6 +54,7 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
     distParcouru = 0;
     moveTo(pos);
     distParcouru = 0;
+    insideMaterial = rtRess->insideMaterial;
 }
 
 ColorLight Ray::getColor() const
@@ -80,12 +89,13 @@ void Ray::process(const World* world)
         }
         else {
             float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
-            float previousSpeed = lastFaceIntersection ? OBJECT3D::getSpeedOfLight(lastFaceIntersection->getMaterial()) : 1;
+            float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
             moveTo(Pos3D(pInter, face->refractRotX(pos.getRX(), previousSpeed, newSpeed), face->refractRotZ(pos.getRZ(), previousSpeed, newSpeed)));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
+            insideMaterial = face->getMaterial();
+            // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
         }
-        //TODO: il faudrait considérer que l'oeil est dans l'air au départ mais il faudrait aussi trouver dans quel type de bloc (avoir la récration dans le verre)
 
         int alpha = colors.last().getColorA().alpha();
         opacity += alpha;
@@ -274,7 +284,7 @@ void RayTracingWorker::run() {
 RayTracing::RayTracing(const map3D* map) : QThread()
 {
     this->map = map;
-    rtRess = new RayTracingRessources(map->getWorld(), map->getClient()->getPos(), &dt);
+    rtRess = new RayTracingRessources(map->getWorld(), map->getClient(), &dt);
 
     connect(map->getWorld(), &World::changed, this, &RayTracing::worldChanged);
 
@@ -344,7 +354,7 @@ void RayTracing::run() {
         image.setPixelColor(x, 1, Qt::white);
     }
 
-    rtRess->clientPos = map->getClient()->getPos();
+    rtRess->resetRessources(map->getClient());// reset the pos
 
     processToStart = calcSize.width();
     processDone = 0;

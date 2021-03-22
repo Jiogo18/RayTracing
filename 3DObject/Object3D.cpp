@@ -334,7 +334,7 @@ Block::Block(Pos3D pos, Size3D size, BLOCK::Material material) :
 
 bool Block::containsPoint(const Point3D& point) const
 {
-    return getPoint() <= point && point <= (getPoint() + size);
+    return HRect3D(getPoint(), size).contains(point);
     //TODO: prendre en compte la rotation
 }
 

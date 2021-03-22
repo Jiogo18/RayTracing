@@ -52,13 +52,15 @@ private:
 class RayTracingRessources
 {
 public:
-    RayTracingRessources(const World* world, const Pos3D& clientPos, DebugTime* dt);
+    RayTracingRessources(const World* world, const Entity* client, DebugTime* dt);
     ~RayTracingRessources();
     const World* world = nullptr;
     DebugTime* dt = nullptr;
     Pos3D clientPos;
     QMap<QString, const QImage*>* facesImg = nullptr;
     void worldChanged();
+    BLOCK::Material insideMaterial;
+    void resetRessources(const Entity* client);
 };
 
 
@@ -90,6 +92,7 @@ private:
     //puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre coté de 2)
     bool enter = false;
     const Face* lastFaceIntersection = nullptr;
+    BLOCK::Material insideMaterial = BLOCK::Material::none;
     RayTracingRessources* rtRess = nullptr;
     const QImage* getTexture(const QString& file) const;
 };

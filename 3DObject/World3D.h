@@ -23,6 +23,8 @@ public:
     HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
     const QList<Solid*>* getSolids() const { return &solids; }
+    static Size3D getSize() { return Size3D(Chunk::chunkSize, Chunk::chunkSize, Chunk::chunkSize); }
+    bool containsPoint(const Point3D& point) const override;
 private:
     QList<Solid*> solids;
     //indépendants de la taille du chunk (presque) mais dépendant de la taille des blocks :
@@ -80,6 +82,9 @@ public:
 
     QList<Chunk*> getChunks() const { return chunks; }
     QList<Entity*> getEntities() const { return entities; }
+
+    Solid* getSolid(const Point3D& point) const;
+
 signals:
     void changed(const WorldChange& change);
 

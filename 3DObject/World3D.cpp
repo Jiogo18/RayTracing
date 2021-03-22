@@ -48,6 +48,11 @@ bool Chunk::removeSolid(const Point3D& pos)
 
 bool Chunk::contains(const Point3D& pos) const { return chunkOfPos(pos) == getPoint(); }
 
+bool Chunk::containsPoint(const Point3D& point) const
+{
+    return getPoint() <= point && point < (getPoint() + getSize());
+}
+
 void Chunk::calcMinMaxPoint()
 {
     if (solids.size() == 0) {
@@ -140,6 +145,13 @@ void World::addEntity(Entity* entity)
     change.setEntity(entity);
     emit changed(change);
 }
+
+Solid* World::getSolid(const Point3D& point) const
+{
+    Chunk* chunk = getChunk(point);
+    return chunk ? chunk->getSolid(point) : nullptr;
+}
+
 
 bool World::createChunk(Point3D pos)
 {

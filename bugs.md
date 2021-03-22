@@ -87,3 +87,7 @@
 - [x] #24 Réfraction : le changement pour #23 a cassé le calcul de réfraction
 
 - [x] #24 Miroir : le changement pour #23 a cassé le calcul de réflexion
+
+- [x] #25 Miroir speed of light : même si lastFaceIntersection est un miroir on ne doit pas considérer le matériaux du miroir mais celui d'avant
+  - Exemple : watter => mirror => watter, pour l'instant le miroir est plat donc c'est comme si on faisait watter => watter
+  - Fix: insideMaterial, permet aussi de choisir entre démarrer dans l'air ou dans l'eau
