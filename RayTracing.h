@@ -20,8 +20,8 @@ namespace RAYTRACING {
     const int pppH = 1;
     const int pppV = 1;
     const int ppp = pppV * pppH;
-    const int WorkerThread = std::thread::hardware_concurrency() + 2;
-    const int RefreshColumn = 100;
+    const int WorkerThread = std::thread::hardware_concurrency() * 2;
+    const int RefreshColumn = 200;
     const int gamma = 2;// TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
 }
 using namespace RAYTRACING;
@@ -72,7 +72,6 @@ public:
     ColorLight getColor() const;
     void process(const World* world);
 private:
-    Pos3D origin;
     Pos3D pos;
     QList<ColorLight> colors;
     const Face* lastFace = nullptr;
@@ -84,7 +83,7 @@ private:
     void setPos(const Pos3D& pos) { this->pos = pos; }
     void setPoint(const Point3D& point) { pos.setPoint(point); }
     void setRot(radian rX, radian rZ);
-    void setRot(const Pos3D& rot);
+    void setRot(const Rot3D& rot);
     Pos3D getPos() const { return pos; }
     const Face* getFirstIntersection(const World* world, Point3D* pInter) const;
     //black list (et white list pour transparence) du dernier objet traversé

@@ -13,7 +13,7 @@ namespace Transfo3D {
     //Point3D pointPerspective(Point3D point, double perspective, double zoom);
 
     radian refract(const radian& r, float indiceRefrac);
-    Pos3D refractRot(const Pos3D& posOrigin, const Pos3D& pos, float indiceRefrac);
+    Rot3D refractRot(const Rot3D& posOrigin, const Rot3D& pos, float indiceRefrac);
 }
 
 #endif // TRANSFO_H

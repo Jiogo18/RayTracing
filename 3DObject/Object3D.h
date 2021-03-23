@@ -72,7 +72,7 @@ private:
 class Object : public Pos3D, public QObject
 {
 public:
-    Object(Pos3D pos);
+    Object(const Pos3D& pos);
     Object(const Object& obj);
     virtual ~Object();
     Object* operator =(const Object& obj);
@@ -104,8 +104,7 @@ public:
     ColorLight getColor(const QPointF& point, const QImage* img) const;
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const override { return material; }
-    radian boundRotX(const radian& posRX) const;
-    radian boundRotZ(const radian& posRZ) const;
+    Rot3D boundRot(const Rot3D& rot) const;
     Pos3D refractRot(const Pos3D& pos, float indiceRefrac) const;
     bool containsPoint(const Point3D& point) const override;
 private:

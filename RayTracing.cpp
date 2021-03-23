@@ -50,13 +50,12 @@ void RayTracingRessources::resetRessources(const Entity* client)
 Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
 {
     this->rtRess = rtRess;
-    origin = pos;
 
     distParcouru = 0;
+    this->pos = pos;
     insideMaterial = rtRess->insideMaterial;
     float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
     float previousSpeed = OBJECT3D::getSpeedOfLight(BLOCK::Material::air);//matériau du cristallin
-    setPos(pos);
     if (newSpeed != previousSpeed) {
         // calcul de la réfraction (le regard est normal au plan)
         setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
@@ -92,13 +91,13 @@ void Ray::process(const World* world)
 
         moveTo(pInter);
         if (face->getMaterial() == BLOCK::Material::mirror) {
-            setRot(face->boundRotX(pos.getRX()), face->boundRotZ(pos.getRZ()));
+            setRot(face->boundRot(pos.getRot()));
         }
         else {
             float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
             float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
-            setPos(face->refractRot(pos, newSpeed / previousSpeed));
+            setRot(face->refractRot(pos, newSpeed / previousSpeed));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
             insideMaterial = face->getMaterial();
             // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
@@ -126,10 +125,9 @@ void Ray::setRot(radian rX, radian rZ)
     pos.setRZ(rZ);
 }
 
-void Ray::setRot(const Pos3D& rot)
+void Ray::setRot(const Rot3D& rot)
 {
-    pos.setRX(rot.getRX());
-    pos.setRZ(rot.getRZ());
+    pos.setRot(rot);
 }
 
 const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const

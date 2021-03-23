@@ -42,17 +42,23 @@ radian Transfo3D::refract(const radian& r, float indiceRefrac)
     else return r4;
 }
 
-Pos3D Transfo3D::refractRot(const Pos3D& posOrigin, const Pos3D& pos, float indiceRefrac)
+Rot3D Transfo3D::refractRot(const Rot3D& posOrigin, const Rot3D& pos, float indiceRefrac)
 {
     if (indiceRefrac == 1) return pos;// shortcut
-    //TODO :
-    return pos;
-    radian rXRel = modRad(pos.getRX() - posOrigin.getRX());
-    radian rX4 = posOrigin.getRX() - (refract(rXRel, indiceRefrac) * cos(posOrigin.getRZ()) - abs(sin(posOrigin.getRZ())) * rXRel);
 
-    radian rZRel = modRad(pos.getRZ() - posOrigin.getRZ());
-    radian rZ4 = posOrigin.getRZ() + M_PI - refract(rZRel, indiceRefrac);
+    return pos;//TODO: on reste avec un mauvais rX en sortie
+    radian RX = posOrigin.getRX(), RZ = posOrigin.getRZ();
+
+    radian rXRel = modRad(pos.getRX() - RX);
+    radian rZRel = modRad(pos.getRZ() - RZ);
+
+    //    radian rX4 = RX - (refract(rXRel, indiceRefrac) * cos(RZ) - abs(sin(RZ)) * rXRel);
+    //    radian rZ4 = RZ + M_PI - refract(rZRel, indiceRefrac);
+    //    radian rX4 = RX + refract(rXRel, indiceRefrac);
+    radian rX4 = RX + refract(rXRel, indiceRefrac);
+    radian rZ4 = RZ + refract(rZRel, indiceRefrac);
+    //    radian rZ4 = RZ + M_PI - refract(rZRel, indiceRefrac);
 
 
-    return Pos3D(pos, M_PI - rX4, rZ4);
+    return Rot3D(rX4, rZ4);
 }

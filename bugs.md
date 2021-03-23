@@ -92,8 +92,10 @@
   - Exemple : watter => mirror => watter, pour l'instant le miroir est plat donc c'est comme si on faisait watter => watter
   - Fix: insideMaterial, permet aussi de choisir entre démarrer dans l'air ou dans l'eau
 
-- [x] #26 insideMaterial doit faire une réfraction car l'oeil n'est pas direct dans le matériau
+- [ ] #26 insideMaterial doit faire une réfraction car l'oeil n'est pas direct dans le matériau
   - Fix : dans le constructeur de Ray
   - Il reste encore le problème de la réfraction en haut/en bas
   - Fix : nouvelle formule
+  - Edit : marche toujours pas
 
+- [ ] #27 Verre dans les miroirs n'est pas bien réfracté

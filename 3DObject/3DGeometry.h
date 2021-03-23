@@ -9,32 +9,32 @@
 
 
 typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
-bool isNull(const doubli& d);
-doubli roundNull(const doubli& d);//plus opti que round
-doubli round(const doubli& d);
-doubli signOf(const doubli& d);
+bool isNull(const doubli d);
+doubli roundNull(const doubli d);//plus opti que round
+doubli round(const doubli d);
+doubli signOf(const doubli d);
 typedef float radian;
-doubli sqr(const doubli& d);//easy
-radian degreesToRadians(const doubli& deg);
-doubli radiansToDegrees(const radian& rad);
-doubli sqrt(const doubli& d);
-doubli cos(const radian& deg);
-doubli sin(const radian& deg);
-doubli tan(const radian& deg);
-radian acos(const doubli& d);
-radian asin(const doubli& d);
-radian atan(const doubli& d);
-doubli qIsInf(const doubli& d);
-doubli max(const doubli& a, const doubli& b);
-doubli max(const doubli& a, const doubli& b, const doubli& c);
-doubli min(const doubli& a, const doubli& b);
-doubli min(const doubli& a, const doubli& b, const doubli& c);
-bool isNull(const radian& d);
-radian mod(const radian& n, const radian& d);//perfect return : [0;d[ & 3 times faster
+doubli sqr(const doubli d);//easy
+radian degreesToRadians(const doubli deg);
+doubli radiansToDegrees(const radian rad);
+doubli sqrt(const doubli d);
+doubli cos(const radian deg);
+doubli sin(const radian deg);
+doubli tan(const radian deg);
+radian acos(const doubli d);
+radian asin(const doubli d);
+radian atan(const doubli d);
+doubli qIsInf(const doubli d);
+doubli max(const doubli a, const doubli b);
+doubli max(const doubli a, const doubli b, const doubli c);
+doubli min(const doubli a, const doubli b);
+doubli min(const doubli a, const doubli b, const doubli c);
+bool isNull(const radian d);
+radian mod(const radian n, const radian d);//perfect return : [0;d[ & 3 times faster
 radian modRad(radian d);//intervalle radian : ]-PI; PI]
 radian roundNull(radian d);//plus opti que round
 float signOf(radian d);// -1 or 1
-QDebug operator <<(QDebug debug, const doubli& d);
+QDebug operator <<(QDebug debug, const doubli d);
 
 class Point3D
 {
@@ -47,12 +47,14 @@ public:
     doubli getX() const { return x; }
     doubli getY() const { return y; }
     doubli getZ() const { return z; }
-    void setX(doubli x) { this->x = round(x); }
-    void setY(doubli y) { this->y = round(y); }
-    void setZ(doubli z) { this->z = round(z); }
-    void addX(doubli x) { this->x = round(this->x + x); }
-    void addY(doubli y) { this->y = round(this->y + y); }
-    void addZ(doubli z) { this->z = round(this->z + z); }
+    Point3D getPoint() const { return *this; }
+    void setX(doubli x) { this->x = x; }
+    void setY(doubli y) { this->y = y; }
+    void setZ(doubli z) { this->z = z; }
+    void addX(doubli x) { this->x += x; }
+    void addY(doubli y) { this->y += y; }
+    void addZ(doubli z) { this->z += z; }
+    void setPoint(const Point3D& point) { x = point.x; y = point.y; z = point.z; }
 
     doubli distanceAxeZ() const { return std::sqrt(x * x + y * y); }
     bool operator <(const Point3D& point) const;
@@ -80,14 +82,35 @@ public:
     friend Point3D qFloor(const Point3D& point);
     friend Point3D qCeil(const Point3D& point);
 
-private:
-    doubli x;
-    doubli y;
-    doubli z;
-    bool defined = false;
+protected:
+    doubli x, y, z;
+    bool defined = true;
 };
 
-class Pos3D : public Point3D {
+class Rot3D
+{
+public:
+    Rot3D() { rX = 0; rZ = 0; }
+    Rot3D(radian rX, radian rZ) { this->rX = rX; this->rZ = rZ; }
+
+    radian getRX() const { return rX; }
+    radian getRZ() const { return rZ; }
+    Rot3D getRot() const { return *this; }
+    void setRX(radian rX) { this->rX = rX; }
+    void setRZ(radian rZ) { this->rZ = rZ; }
+    void addRX(radian rX) { this->rX += rX; }
+    void addRZ(radian rZ) { this->rZ += rZ; }
+    void setRot(const Rot3D& rot) { rX = rot.rX; rZ = rot.rZ; }
+
+    bool operator ==(const Rot3D& rot) const { return rX == rot.rX && rZ == rot.rZ; }
+    bool operator !=(const Rot3D& rot) const { return rX != rot.rX || rZ != rot.rZ; }
+
+protected:
+    radian rX, rZ;
+};
+
+class Pos3D : public Point3D, public Rot3D
+{
 public:
     Pos3D();
     Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ);
@@ -95,13 +118,6 @@ public:
     Pos3D(const Pos3D& pos);
     Pos3D* operator=(const Pos3D& pos);
     static Pos3D fromDegree(doubli x, doubli y, doubli z, radian rX, radian rZ);
-
-    radian getRX() const { return rX; }
-    radian getRZ() const { return rZ; }
-    void setRX(radian rX) { this->rX = rX; }
-    void setRZ(radian rZ) { this->rZ = rZ; }
-    void addRX(radian rX) { this->rX += rX; }
-    void addRZ(radian rZ) { this->rZ += rZ; }
 
     void moveWithRot(doubli speed, radian rot);
     static Point3D pointFromRot(doubli d, radian rX, radian rZ);
@@ -114,8 +130,6 @@ public:
 
     friend QDebug operator << (QDebug debug, const Pos3D& pos);
 private:
-    radian rX;
-    radian rZ;
 
     static Point3D rotation(Point3D point, radian rX, radian rZ);
     static doubli rotation1(doubli x, doubli y, doubli sR, doubli cR);
@@ -137,18 +151,19 @@ public:
     doubli getDZ() const { return dZ; }
     Size3D getSize() const { return *this; }
     Point3D toPoint() const { return Point3D(dX, dY, dZ); }//relative to (0,0,0)
-    void setDX(doubli dZ) { this->dZ = round(dZ); }
-    void setDY(doubli dY) { this->dY = round(dY); }
-    void setDZ(doubli dZ) { this->dZ = round(dZ); }
+    void setDX(doubli dX) { this->dX = dX; }
+    void setDY(doubli dY) { this->dY = dY; }
+    void setDZ(doubli dZ) { this->dZ = dZ; }
     Size3D operator *(doubli scale) const { return Size3D(dX * scale, dY * scale, dZ * scale); }
     Size3D operator /(doubli scale) const { return Size3D(dX / scale, dY / scale, dZ / scale); }
+
+    friend Point3D operator -(const Point3D& p, const Size3D& s);
+    friend Point3D operator +(const Point3D& p, const Size3D& s);
+
 protected:
-    doubli dX;//delta X, width
-    doubli dY;//delta Y, height
-    doubli dZ;//delta Z, depth
+    doubli dX, dY, dZ;//delta
 };
-Point3D operator -(const Point3D& p, const Size3D& s);
-Point3D operator +(const Point3D& p, const Size3D& s);
+
 
 class HRect3D
 {
@@ -174,8 +189,7 @@ public:
     friend QDebug operator << (QDebug debug, const HRect3D& rect);
 
 private:
-    Point3D pointMax;
-    Point3D pointMin;
+    Point3D pointMin, pointMax;
     //TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
 
@@ -204,11 +218,7 @@ public:
     friend QDebug operator << (QDebug debug, const Rect3D& rect);
 
 private:
-    Point3D pointA;
-    Point3D pointB;
-    Point3D pointC;
-    Point3D pointMax;
-    Point3D pointMin;
+    Point3D pointA, pointB, pointC, pointMax, pointMin;
     void calcMinMax();
     //TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
@@ -230,12 +240,14 @@ public:
     QPointF projeteOrtho(const Point3D& pA) const;
     inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
     bool containsPoint(const Point3D& point) const;
+
+    radian getRX() const { return atan(a / b); }
+    radian getRZ() const { return atan(sqrt(a * a + b * b) / c); }
+
 private:
     Point3D pA;
-    Point3D pB;
-    Point3D pC;
     doubli a = 0, b = 0, c = 0, d = 0;
-    void calcEquation();//ax + by + cz + d = 0
+    void calcEquation(const Point3D& pB, const Point3D& pC);//ax + by + cz + d = 0
 };
 
 

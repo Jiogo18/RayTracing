@@ -1,39 +1,38 @@
 #include "3DGeometry.h"
 
-bool isNull(const doubli& d) { return -0.000001 < d && d < 0.000001; }
-doubli roundNull(const doubli& d) { return isNull(d) ? 0 : d; }
-doubli round(const doubli& d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
-doubli signOf(const doubli& d) { return d < 0 ? -1 : 1; }
-doubli sqr(const doubli& d) { return d * d; }
-radian degreesToRadians(const doubli& deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
-doubli radiansToDegrees(const radian& rad) { return rad * 180 / doubli(M_PI); }
-doubli sqrt(const doubli& d) { return std::sqrt(d); }
-doubli cos(const radian& deg) { return std::cos(deg); }
-doubli sin(const radian& deg) { return std::sin(deg); }
-doubli tan(const radian& deg) { return std::tan(deg); }
-radian acos(const doubli& d) { return std::acos(d); }
-radian asin(const doubli& d) { return std::asin(d); }
-radian atan(const doubli& d) { return std::atan(d); }
-doubli qIsInf(const doubli& d) { return qIsInf(static_cast<double>(d)); }
-doubli max(const doubli& a, const doubli& b) { return a > b ? a : b; }
-doubli max(const doubli& a, const doubli& b, const doubli& c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
-doubli min(const doubli& a, const doubli& b) { return a < b ? a : b; }
-doubli min(const doubli& a, const doubli& b, const doubli& c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
-bool isNull(const radian& d) { return -0.000001 < d && d < 0.000001; }
-radian mod(const radian& n, const radian& d) { return (n - floor(n / d) * d); }
+bool isNull(const doubli d) { return -0.000001 < d && d < 0.000001; }
+doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; }
+doubli round(const doubli d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
+doubli signOf(const doubli d) { return d < 0 ? -1 : 1; }
+doubli sqr(const doubli d) { return d * d; }
+radian degreesToRadians(const doubli deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
+doubli radiansToDegrees(const radian rad) { return rad * 180 / doubli(M_PI); }
+doubli sqrt(const doubli d) { return std::sqrt(d); }
+doubli cos(const radian deg) { return std::cos(deg); }
+doubli sin(const radian deg) { return std::sin(deg); }
+doubli tan(const radian deg) { return std::tan(deg); }
+radian acos(const doubli d) { return std::acos(d); }
+radian asin(const doubli d) { return std::asin(d); }
+radian atan(const doubli d) { return std::atan(d); }
+doubli qIsInf(const doubli d) { return qIsInf(static_cast<double>(d)); }
+doubli max(const doubli a, const doubli b) { return a > b ? a : b; }
+doubli max(const doubli a, const doubli b, const doubli c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
+doubli min(const doubli a, const doubli b) { return a < b ? a : b; }
+doubli min(const doubli a, const doubli b, const doubli c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
+bool isNull(const radian d) { return -0.000001 < d && d < 0.000001; }
+radian mod(const radian n, const radian d) { return (n - floor(n / d) * d); }
 radian modRad(radian d) { d = (d - floor(d / (2 * M_PI)) * 2 * M_PI); return d > M_PI ? d - 2 * M_PI : d; }
 radian roundNull(radian d) { d = modRad(d); return isNull(d) ? 0 : d; }
-float signOf(radian d) { return roundNull(d) < 0 ? -1 : 1; }
-QDebug operator <<(QDebug debug, const doubli& d) { debug << static_cast<double>(d); return debug; }
+float signOf(radian d) { return modRad(d) < 0 ? -1 : 1; }
+QDebug operator <<(QDebug debug, const doubli d) { debug << static_cast<double>(d); return debug; }
 
 
-Point3D::Point3D() { x = 0; y = 0; z = 0; }
+Point3D::Point3D() { x = 0; y = 0; z = 0; defined = false; }
 Point3D::Point3D(doubli x, doubli y, doubli z)
 {
     this->x = round(x);
     this->y = round(y);
     this->z = round(z);
-    defined = true;
 }
 Point3D::Point3D(const Point3D& point)
 {
@@ -145,22 +144,15 @@ Point3D qCeil(const Point3D& point)
 
 
 
-Pos3D::Pos3D() : Point3D(0, 0, 0) { rX = 0; rZ = 0; }
-Pos3D::Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ) : Point3D(x, y, z)
-{
-    this->rX = rX; this->rZ = rZ;
-}
-Pos3D::Pos3D(const Point3D& point, radian rX, radian rZ) : Point3D(point)
-{
-    this->rX = rX; this->rZ = rZ;
-}
-Pos3D::Pos3D(const Pos3D& pos) : Point3D(pos) { rX = pos.rX; rZ = pos.rZ; }
+Pos3D::Pos3D() : Point3D(0, 0, 0) {}
+Pos3D::Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ) : Point3D(x, y, z), Rot3D(rX, rZ) {}
+Pos3D::Pos3D(const Point3D& point, radian rX, radian rZ) : Point3D(point), Rot3D(rX, rZ) {}
+Pos3D::Pos3D(const Pos3D& pos) : Point3D(pos), Rot3D(pos) {}
 
 Pos3D* Pos3D::operator=(const Pos3D& pos)
 {
     Point3D::operator=(pos);
-    rX = pos.rX;
-    rZ = pos.rZ;
+    Rot3D::operator=(pos);
     return this;
 }
 
@@ -186,12 +178,14 @@ Point3D Pos3D::getNextPointRelatif() const
 {
     //on s'avance de 1 t
     //équivalent à pointFromRot(1, rX, rZ);
-    return Point3D(cos(rZ) * cos(rX), cos(rZ) * sin(rX), sin(rZ));
+    doubli crZ = cos(rZ);
+    return Point3D(crZ * cos(rX), crZ * sin(rX), sin(rZ));
 }
 Point3D Pos3D::getNextPoint() const
 {
-    return Point3D(cos(rZ) * cos(rX) + getX(),
-        cos(rZ) * sin(rX) + getY(),
+    doubli crZ = cos(rZ);
+    return Point3D(crZ * cos(rX) + getX(),
+        crZ * sin(rX) + getY(),
         sin(rZ) + getZ());
     //opti mais == getNextPointRelatif() + getPoint()
 }
@@ -217,12 +211,12 @@ Point3D Pos3D::changeRef(const Point3D& point) const { return rotation(point + s
 
 bool Pos3D::operator ==(const Pos3D& pos) const
 {
-    return Point3D::operator ==(pos) && rX == pos.rX && rZ == pos.rZ;
+    return Point3D::operator ==(pos) && Rot3D::operator ==(pos);
 }
 
 bool Pos3D::operator !=(const Pos3D& pos) const
 {
-    return Point3D::operator !=(pos) || rX != pos.rX || rZ != pos.rZ;
+    return Point3D::operator !=(pos) || Rot3D::operator !=(pos);
 }
 
 Point3D Pos3D::rotation(Point3D point, radian rX, radian rZ)
@@ -266,8 +260,8 @@ Pos3D Pos3D::getRotAsPoint(const Point3D& p)
 
 QDebug operator <<(QDebug debug, const Pos3D& pos)
 {
-    debug << "Pos3D(" << pos.getX() << "," << pos.getY() << "," << pos.getZ()
-        << ";" << pos.getRX() << "," << pos.getRZ() << ")";
+    debug << "Pos3D(" << pos.x << "," << pos.y << "," << pos.z
+        << ";" << pos.rX << "," << pos.rZ << ")";
     return debug;
 }
 
@@ -287,13 +281,14 @@ Size3D::Size3D(const Point3D& pA, const Point3D& pB)
     dY = pB.getY() - pA.getY();
     dZ = pB.getZ() - pA.getZ();
 }
+
 Point3D operator -(const Point3D& p, const Size3D& s)
 {
-    return Point3D(p.getX() - s.getDX(), p.getY() - s.getDY(), p.getZ() - s.getDZ());
+    return Point3D(p.getX() - s.dX, p.getY() - s.dY, p.getZ() - s.dZ);
 }
 Point3D operator +(const Point3D& p, const Size3D& s)
 {
-    return Point3D(p.getX() + s.getDX(), p.getY() + s.getDY(), p.getZ() + s.getDZ());
+    return Point3D(p.getX() + s.dX, p.getY() + s.dY, p.getZ() + s.dZ);
 }
 
 
@@ -428,32 +423,30 @@ Plan::Plan() {}
 Plan::Plan(const Point3D& pA, const Point3D& pB, const Point3D& pC)
 {
     this->pA = pA;
-    this->pB = pB;
-    this->pC = pC;
-    calcEquation();
+    calcEquation(pB, pC);
 }
 Plan::Plan(const HRect3D& rect)
 {
     this->pA = rect.getPointMin();
     //les points intermédiaires (B et C) sont à mis distance de A et de D sur Z
     //TODO: sauf si rotation...
-    this->pB = Point3D(rect.getPointMin().getX(),
+    const Point3D pB(rect.getPointMin().getX(),
         (rect.getPointMin().getY() + rect.getPointMax().getY()) / 2,
         (rect.getPointMin().getZ() + rect.getPointMax().getZ()) / 2);
-    this->pC = Point3D((rect.getPointMin().getX() + rect.getPointMax().getX()) / 2,
+    const Point3D pC((rect.getPointMin().getX() + rect.getPointMax().getX()) / 2,
         rect.getPointMin().getY(),
         (rect.getPointMin().getZ() + rect.getPointMax().getZ()) / 2);
-    calcEquation();
+    calcEquation(pB, pC);
 }
 Plan::Plan(const Plan& plan)
 {
-    pA = plan.pA; pB = plan.pB; pC = plan.pC;
+    pA = plan.pA;
     a = plan.a; b = plan.b; c = plan.c; d = plan.d;
 }
 
 Plan* Plan::operator =(const Plan& plan)
 {
-    pA = plan.pA; pB = plan.pB; pC = plan.pC;
+    pA = plan.pA;
     a = plan.a; b = plan.b; c = plan.c; d = plan.d;
     return this;
 }
@@ -500,15 +493,15 @@ bool Plan::containsPoint(const Point3D& point) const
     return isNull(a * point.getX() + b * point.getY() + c * point.getZ() + d);
 }
 
-void Plan::calcEquation()
+void Plan::calcEquation(const Point3D& pB, const Point3D& pC)
 {
     // same as Size but way more efficient
-    doubli xAB = roundNull(pB.getX() - pA.getX()),
-        yAB = roundNull(pB.getY() - pA.getY()),
-        zAB = roundNull(pB.getZ() - pA.getZ()),
-        xAC = roundNull(pC.getX() - pA.getX()),
-        yAC = roundNull(pC.getY() - pA.getY()),
-        zAC = roundNull(pC.getZ() - pA.getZ());
+    doubli xAB = (pB.getX() - pA.getX()),
+        yAB = (pB.getY() - pA.getY()),
+        zAB = (pB.getZ() - pA.getZ()),
+        xAC = (pC.getX() - pA.getX()),
+        yAC = (pC.getY() - pA.getY()),
+        zAC = (pC.getZ() - pA.getZ());
     //voir #EquationPlan
     a = 0; b = 0; c = 0; d = 0;
     if ((xAB == 0 && yAB == 0 && zAB == 0) || (xAC == 0 && yAC == 0 && zAC == 0)) {
@@ -572,6 +565,6 @@ void Plan::calcEquation()
         else
             b = (xAC * nOfc - xAB) * a / (yAB - yAC * nOfc);
     }
-    d = roundNull(-a * pA.getX() - b * pA.getY() - c * pA.getZ());
+    d = (-a * pA.getX() - b * pA.getY() - c * pA.getZ());
     //si il y a 2 x, y ou z ==0 pr chaque vecteur alors vecteurs colinéaires => pas de plan
 }
