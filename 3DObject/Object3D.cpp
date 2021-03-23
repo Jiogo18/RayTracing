@@ -245,19 +245,46 @@ radian Face::boundRotZ(const radian& posRZ) const
     //TODO: ou alors (pour les faces penchées ?) return M_PI * cos(RZ) - posRZ;
 }
 
-radian Face::refractRotX(const radian& posRX, float speedIn, float speedOut) const
+Pos3D Face::refractRot(const Pos3D& pos, float indiceRefrac) const
 {
-    // sin(angle in) / sin(angle out) = i out / i in
-    // sin(angle out) = sin(angle in) * i in / i out = sin(angle in) * speed out / speed in
-    if (roundNull(cos(RZ)) != 1) {
-        return posRX;// TODO
-    }
-    return RX - refractRot(RX - posRX, speedIn, speedOut);
-}
+    if (indiceRefrac == 1) return pos;// shortcut, speedOut/speedIn
 
-radian Face::refractRotZ(const radian& posRZ, float speedIn, float speedOut) const
-{
-    return RZ - refractRot(RZ - posRZ, speedIn, speedOut);
+    radian rXRel = modRad(pos.getRX() - RX);
+    radian rZRel = modRad(pos.getRZ() - RZ);
+    // peut toujours être utile : (rXInvere = false donne un effet miroir)
+//    bool rXInverse = abs(rXRel) > M_PI_2;
+//    radian rX4 = RX - (rXInverse ? 1 : -1) * refract(rXRel, speedIn, speedOut);
+
+//    radian rZRel = modRad((rXInverse ? M_PI - pos.getRZ() : pos.getRZ()) - RZ);
+//    bool rZInverse = abs(rZRel) > M_PI_2;
+//    radian rZ3 = refract(rZRel, speedIn, speedOut);
+//    radian rZ4 = rZInverse ? (M_PI - rZ3) : rZ3 - RZ;
+
+//    radian rX4 = RX - refract(rXRel, speedIn, speedOut);
+
+    //cos et sin fonctionnent avec du horizontal/vertical mais avec du penché ?
+    radian rX4 = RX - (refract(rXRel, indiceRefrac) * cos(RZ) - abs(sin(RZ)) * rXRel);
+    radian rZ4 = RZ + M_PI - refract(rZRel, indiceRefrac);
+
+    //radian rZ3 = - signOf(-abs(modRad(RZ))) * refract(rZRel, speedIn, speedOut);
+//    if (roundNull(cos(RZ)) == 0) {
+////        rZ3 = - rZ3;//TODO: pourquoi ? ok, avec le -signOf(-abs) ça marche
+//            //(-signOf-abs(RZ) != 1 car si RZ = 0 alors sign Of sera 1 )
+
+////        rX4 = pos.getRX();// ça c'est fix (ajout de abs(sin))
+
+//            // cas où rX4 == RX : (ligne du asin(sin)) == 0
+//                // si i très petit
+//                // si rXRel == 0 (pos.getRX == RX)
+//            // cas où rX4 == xRel : (ligne du asin(sin))
+//            // si penché : si rZRel == 0 alors angle de sortie est 0 (frole la surface)
+//    }
+////        rZInverse = false;//TODO: pourquoi ?
+////        radian rZ4 = rZ3 - RZ;// - pi/2
+////    }
+////    radian rZ4 = (rZInverse ? (M_PI - rZ3) : rZ3) - RZ;// + pi
+
+    return Pos3D(pos, rX4, rZ4);
 }
 
 bool Face::containsPoint(const Point3D& point) const
@@ -265,23 +292,20 @@ bool Face::containsPoint(const Point3D& point) const
     return plan.containsPoint(point);//TODO: par rapport aux points ?
 }
 
-radian Face::refractRot(const radian& posR, float speedIn, float speedOut)
-{
-    if (speedIn == speedOut) return posR;// shortcut
-    const float sign = signOf(posR + static_cast<radian>(M_PI_2));
-    radian posR2 = asin(sin(posR) * speedOut / speedIn);
-    if (isnanf(posR2)) {
-        posR2 = 0;
-    }
 
-    return sign == 1 ? posR2 : M_PI - posR2;
+radian Face::refract(const radian& r, float indiceRefrac)
+{
+    if (indiceRefrac == 1) return r;// shortcut, speedOut/speedIn
+    radian r4 = asin(sin(r) * indiceRefrac);
+    if (isnanf(r4)) return signOf(r) * M_PI_2;
+    else return r4;
 }
 
 void Face::calcFace()
 {
     maxGeometry = rect + getPoint();
     middleGeometry = maxGeometry.getMiddle();
-    texture = OBJECT3D::getFileTexture(getMaterial(), variations);
+    texture = OBJECT3D::getFileTexture(material, variations);
 
 
     doubli deltaX = rect.getPointMax().getX() - rect.getPointMin().getX();
@@ -303,6 +327,8 @@ void Face::calcFace()
     }
     RX = roundNull(RX);
     RZ = roundNull(RZ);
+
+    qDebug() << variations.first() << orientation << RX << RZ;
 
     plan = Plan(maxGeometry);
     pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);

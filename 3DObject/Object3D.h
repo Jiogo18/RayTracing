@@ -106,11 +106,10 @@ public:
     BLOCK::Material getMaterial() const override { return material; }
     radian boundRotX(const radian& posRX) const;
     radian boundRotZ(const radian& posRZ) const;
-    radian refractRotX(const radian& posRX, float speedIn, float speedOut) const;
-    radian refractRotZ(const radian& posRZ, float speedIn, float speedOut) const;
+    Pos3D refractRot(const Pos3D& pos, float indiceRefrac) const;
     bool containsPoint(const Point3D& point) const override;
 private:
-    static radian refractRot(const radian& posR, float speedIn, float speedOut);
+    static radian refract(const radian& r, float indiceRefrac);
     HRect3D rect;
     HRect3D maxGeometry;
     Point3D middleGeometry;

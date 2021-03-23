@@ -74,15 +74,17 @@ public:
 private:
     Pos3D origin;
     Pos3D pos;
-    Point3D posNextPoint;
     QList<ColorLight> colors;
     const Face* lastFace = nullptr;
     bool lastMoved = false;
     int opacity = 0;
     //vector objTraverse;
     doubli distParcouru;
-    void moveTo(const Pos3D& pos);
-    void setPos(const Pos3D& pos);
+    void moveTo(const Point3D& pos);
+    void setPos(const Pos3D& pos) { this->pos = pos; }
+    void setPoint(const Point3D& point) { pos.setPoint(point); }
+    void setRot(radian rX, radian rZ);
+    void setRot(const Pos3D& rot);
     Pos3D getPos() const { return pos; }
     const Face* getFirstIntersection(const World* world, Point3D* pInter) const;
     //black list (et white list pour transparence) du dernier objet traversé

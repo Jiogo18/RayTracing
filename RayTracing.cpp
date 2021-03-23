@@ -56,20 +56,11 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
     insideMaterial = rtRess->insideMaterial;
     float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
     float previousSpeed = OBJECT3D::getSpeedOfLight(BLOCK::Material::air);//matériau du cristallin
+    setPos(pos);
     if (newSpeed != previousSpeed) {
         // calcul de la réfraction (le regard est normal au plan)
-        radian cristallinRX = rtRess->clientPos.getRX();
-        radian cristallinRZ = rtRess->clientPos.getRZ();
-
-        if (abs(cos(cristallinRZ)) <= 0.5) {
-            // TODO: 0.5 c'est parce que je sais pas quels calculs faire dans ces cas (regarde vers le haut)
-        }
-        else {
-            pos.setRX(cristallinRX - Transfo3D::refractRot(cristallinRX - pos.getRX(), previousSpeed, newSpeed));
-            pos.setRZ(cristallinRZ - Transfo3D::refractRot(cristallinRZ - pos.getRZ(), previousSpeed, newSpeed));
-        }
+        setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
     }
-    setPos(pos);
 }
 
 ColorLight Ray::getColor() const
@@ -99,14 +90,15 @@ void Ray::process(const World* world)
         const QPointF pTexture = plan->projeteOrtho(pInter) - face->getPointC();
         colors.append(face->getColor(pTexture, getTexture(face->getTexture())));
 
+        moveTo(pInter);
         if (face->getMaterial() == BLOCK::Material::mirror) {
-            moveTo(Pos3D(pInter, face->boundRotX(pos.getRX()), face->boundRotZ(pos.getRZ())));
+            setRot(face->boundRotX(pos.getRX()), face->boundRotZ(pos.getRZ()));
         }
         else {
             float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
             float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
-            moveTo(Pos3D(pInter, face->refractRotX(pos.getRX(), previousSpeed, newSpeed), face->refractRotZ(pos.getRZ(), previousSpeed, newSpeed)));
+            setPos(face->refractRot(pos, newSpeed / previousSpeed));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
             insideMaterial = face->getMaterial();
             // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
@@ -122,21 +114,28 @@ void Ray::process(const World* world)
     }
 }
 
-void Ray::moveTo(const Pos3D& pos)
+void Ray::moveTo(const Point3D& pos)
 {
     distParcouru += Point3D::distance(this->pos, pos);
-    setPos(pos);
+    setPoint(pos);
 }
 
-void Ray::setPos(const Pos3D& pos)
+void Ray::setRot(radian rX, radian rZ)
 {
-    this->pos = pos;
-    posNextPoint = pos.getNextPoint();//pour pas le recalculer pour toutes les faces
+    pos.setRX(rX);
+    pos.setRZ(rZ);
+}
+
+void Ray::setRot(const Pos3D& rot)
+{
+    pos.setRX(rot.getRX());
+    pos.setRZ(rot.getRZ());
 }
 
 const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
 {
     const Face* faceMin = nullptr;
+    Point3D posNextPoint = pos.getNextPoint();
     Point3D pInterMin;
     doubli distanceInterMin = 0;//seront set car !faceMin.isValid() au début
     doubli distanceSolidMin = 0;

@@ -33,15 +33,26 @@ Point3D Transfo3D::pointPerspective(Point3D point, double perspective, double zo
     return point;
 }*/
 
-
-radian Transfo3D::refractRot(const radian& posR, float speedIn, float speedOut)
+radian Transfo3D::refract(const radian& r, float indiceRefrac)
 {
-    if (speedIn == speedOut) return posR;// shortcut
-    const float sign = signOf(posR + static_cast<radian>(M_PI_2));
-    radian posR2 = asin(sin(posR) * speedOut / speedIn);
-    if (isnanf(posR2)) {
-        posR2 = 0;
-    }
+    // sin(angle in) / sin(angle out) = i out / i in
+    // sin(angle out) = sin(angle in) * i in / i out = sin(angle in) * speed out / speed in
+    radian r4 = asin(sin(r) * indiceRefrac);
+    if (isnanf(r4)) return signOf(r) * M_PI_2;
+    else return r4;
+}
 
-    return sign == 1 ? posR2 : M_PI - posR2;
+Pos3D Transfo3D::refractRot(const Pos3D& posOrigin, const Pos3D& pos, float indiceRefrac)
+{
+    if (indiceRefrac == 1) return pos;// shortcut
+    //TODO :
+    return pos;
+    radian rXRel = modRad(pos.getRX() - posOrigin.getRX());
+    radian rX4 = posOrigin.getRX() - (refract(rXRel, indiceRefrac) * cos(posOrigin.getRZ()) - abs(sin(posOrigin.getRZ())) * rXRel);
+
+    radian rZRel = modRad(pos.getRZ() - posOrigin.getRZ());
+    radian rZ4 = posOrigin.getRZ() + M_PI - refract(rZRel, indiceRefrac);
+
+
+    return Pos3D(pos, M_PI - rX4, rZ4);
 }
