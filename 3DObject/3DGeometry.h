@@ -7,6 +7,7 @@
 #include <QPointF>
 #include "DebugTime.h"
 
+//#define NAN_VERIF//activer pour le debug des nan
 
 typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
 bool isNull(const doubli d);
@@ -66,7 +67,9 @@ public:
     bool isNull() const { return x == 0.0L && y == 0.0L && z == 0.0L; }
     bool isValid() const { return defined; }
     bool isInf() const { return qIsInf(x) || qIsInf(y) || qIsInf(z); }
-    static Point3D inifinite() { return Point3D(INFINITY, INFINITY, INFINITY); }
+    bool isNan() const { return isnanf(x) || isnanf(y) || isnanf(z); }
+    static Point3D makeInfinite() { return Point3D(INFINITY, INFINITY, INFINITY); }
+    static Point3D makeNotDefined() { Point3D p; p.defined = false; return p; }
 
     Point3D operator +(const Point3D& point) const;
     Point3D operator -(const Point3D& point) const;
@@ -77,6 +80,7 @@ public:
 
     static doubli distance(const Point3D& pA, const Point3D& pB);
     static doubli distanceMax(const Point3D& pA, const Point3D& pB);
+    doubli distanceOrigine() const { return sqrt(x * x + y * y + z * z); }
 
     friend QDebug operator <<(QDebug debug, const Point3D& point);
     friend Point3D qFloor(const Point3D& point);
@@ -87,15 +91,27 @@ protected:
     bool defined = true;
 };
 
+class Vec3D : public Point3D
+{
+public:
+    Vec3D(doubli x, doubli y, doubli z) { this->x = x; this->y = y; this->z = z; }// plus opti
+    doubli produitScalaire(const Vec3D& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+};
+
 class Rot3D
 {
 public:
     Rot3D() { rX = 0; rZ = 0; }
     Rot3D(radian rX, radian rZ) { this->rX = rX; this->rZ = rZ; }
+    Rot3D(const Rot3D& rot) { rX = rot.rX; rZ = rot.rZ; }
+    static Rot3D fromVector(const Point3D& vect);
 
     radian getRX() const { return rX; }
     radian getRZ() const { return rZ; }
     Rot3D getRot() const { return *this; }
+    Vec3D toVector() const;
+    Vec3D toVectorU() const;// vecteur unitaire
+
     void setRX(radian rX) { this->rX = rX; }
     void setRZ(radian rZ) { this->rZ = rZ; }
     void addRX(radian rX) { this->rX += rX; }
@@ -104,6 +120,9 @@ public:
 
     bool operator ==(const Rot3D& rot) const { return rX == rot.rX && rZ == rot.rZ; }
     bool operator !=(const Rot3D& rot) const { return rX != rot.rX || rZ != rot.rZ; }
+    bool isNan() const { return isnanf(rX) || isnanf(rZ); }
+
+    friend QDebug operator <<(QDebug debug, const Rot3D& point);
 
 protected:
     radian rX, rZ;
@@ -115,18 +134,21 @@ public:
     Pos3D();
     Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ);
     Pos3D(const Point3D& point, radian rX, radian rZ);
+    Pos3D(const Point3D& point, const Rot3D& rot);
     Pos3D(const Pos3D& pos);
     Pos3D* operator=(const Pos3D& pos);
     static Pos3D fromDegree(doubli x, doubli y, doubli z, radian rX, radian rZ);
 
     void moveWithRot(doubli speed, radian rot);
     static Point3D pointFromRot(doubli d, radian rX, radian rZ);
-    Point3D getNextPointRelatif() const;
+    Point3D getNextPointRelatif() const { return toVector(); }
     Point3D getNextPoint() const;
     Pos3D getChildRot(radian rXRelatif, radian rZRelatif) const;
     Point3D changeRef(const Point3D& point) const;
+
     bool operator ==(const Pos3D& pos) const;
     bool operator !=(const Pos3D& pos) const;
+    bool isNan() const { return isnanf(x) || isnanf(y) || isnanf(z) || isnanf(rX) || isnanf(rZ); }
 
     friend QDebug operator << (QDebug debug, const Pos3D& pos);
 private:
@@ -241,8 +263,11 @@ public:
     inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
     bool containsPoint(const Point3D& point) const;
 
-    radian getRX() const { return atan(a / b); }
-    radian getRZ() const { return atan(sqrt(a * a + b * b) / c); }
+    // sens positif (ne plus utiliser)
+    //radian getRX() const { return a >= 0 ? atan(a / b) : M_PI + atan(a / b); }
+    //radian getRZ() const { return atan(c / sqrt(a * a + b * b)); }
+    Vec3D normale() const { return Vec3D(a, b, c); }
+    Vec3D normaleUnitaire() const { return Vec3D(a, b, c); }
 
 private:
     Point3D pA;

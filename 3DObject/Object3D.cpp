@@ -173,7 +173,6 @@ Face::Face(const Face& face) : Object(face)
     maxGeometry = face.maxGeometry;
     middleGeometry = face.middleGeometry;
     texture = face.texture;
-    RX = face.RX; RZ = face.RZ;
     plan = face.plan;
     orientation = face.orientation;
     pC = face.pC;
@@ -181,6 +180,7 @@ Face::Face(const Face& face) : Object(face)
 ColorLight Face::getColor(const QPointF& point, const QImage* img) const
 {
     if (img != nullptr && !img->isNull()) {
+        QColor color;
         if (0 <= point.x() && point.x() <= 1 && 0 <= point.y() && point.y() <= 1) {
             //switch selon les positions ? => via fichier + peut etre
             int x = qFloor(point.x() * img->width());
@@ -189,13 +189,15 @@ ColorLight Face::getColor(const QPointF& point, const QImage* img) const
                 x = img->width() - 1;
             if (img->height() <= y)
                 y = img->height() - 1;
-            QColor color = img->pixelColor(x, y);
-            return ColorLight(color.red(), color.green(), color.blue(),
-                color.alpha(), OBJECT3D::getLight(getMaterial(),
-                    variations));
+            color = img->pixelColor(x, y);
         }
-        else
+        else {
+            color = img->pixelColor(0, 0);
             qDebug() << "Face::getColor point pas dans le cadre:" << point;
+        }
+        return ColorLight(color.red(), color.green(), color.blue(),
+            color.alpha(), OBJECT3D::getLight(getMaterial(),
+                variations));
     }
 
     /*int casesDone = 0;
@@ -232,80 +234,37 @@ ColorLight Face::getColor(const QPointF& point, const QImage* img) const
 
 Rot3D Face::boundRot(const Rot3D& rot) const
 {
-    //    radian rXRel = modRad(rot.getRX() - RX);
-    //    radian rZRel = modRad(rot.getRZ() - RZ);
+    Vec3D P = rot.toVectorU(), Ori = plan.normaleUnitaire();
 
-    radian rX4, rZ4;
+    doubli k = P.produitScalaire(Ori);// `/ Ori.distanceOrigine()` normalement mais il est unitaire ici
+    Point3D Op = Ori * (2 * k);// projeté de P sur l'axe de Ori * 2
 
-    if (abs(sin(RZ)) == 1) {
-        //        rX4 = RX + rXRel;
-        //        rZ4 = RZ + M_PI + (rZRel * cos(RZ) - abs(sin(RZ)) * rZRel);
-        rX4 = rot.getRX();
-        rZ4 = -rot.getRZ();
+#ifdef NAN_VERIF
+    if (Op.isInf() || P.isInf() || Op.isNan() || P.isNan()) {
+        qDebug() << "Face::boundRot P - Op is nan or inf" << Op << k << P;
     }
-    else {
-        //        rX4 = RX + M_PI - (rXRel * cos(RZ) - abs(sin(RZ)) * rXRel);
-        //        rZ4 = RZ + rZRel;
-        rX4 = M_PI - 2 * RX - rot.getRX();
-        rZ4 = rot.getRZ();
-    }
-    //    radian rZ4 = rot.getRZ() * signOf(rZRel + static_cast<radian>(M_PI_2));
+#endif // NAN_VERIF
 
-    return Rot3D(rX4, rZ4);
-
-
-    //    radian posRX = rot.getRX();
-    //    if (roundNull(cos(RZ)) == 1) {//top et bottom
-    //        posRX = -2 * RX - posRX;
-    //    }
-    //    radian posRZ = M_PI - 2 * RZ - rot.getRZ();
-    //    return Rot3D(posRX, posRZ);
+    return Rot3D::fromVector(P - Op);
 }
 
-Pos3D Face::refractRot(const Pos3D& pos, float indiceRefrac) const
+Rot3D Face::refractRot(const Pos3D& pos, float indiceRefrac) const
 {
     if (indiceRefrac == 1) return pos;// shortcut, speedOut/speedIn
+    if (indiceRefrac == 0 || isnanf(indiceRefrac)) return Rot3D();
 
-    radian rXRel = pos.getRX() - RX;
-    radian rZRel = pos.getRZ() - RZ;
+    Vec3D Ori = plan.normaleUnitaire();
+    Point3D delta = pos.toVectorU() - Ori;
 
-    //    radian rX4 = RX - (refract(rXRel, indiceRefrac) * cos(RZ) - abs(sin(RZ)) * rXRel);
-    //    radian rZ4 = RZ + M_PI - refract(rZRel, indiceRefrac);
-    radian rX4 = RX - (refract(rXRel, indiceRefrac) * cos(RZ) - abs(sin(RZ)) * rXRel);
-    radian rZ4 = RZ + M_PI - refract(rZRel, indiceRefrac);
+    Point3D Mid = Ori + delta / indiceRefrac;
 
-    // peut toujours être utile : (rXInvere = false donne un effet miroir)
-//    bool rXInverse = abs(rXRel) > M_PI_2;
-//    radian rX4 = RX - (rXInverse ? 1 : -1) * refract(rXRel, speedIn, speedOut);
+#ifdef NAN_VERIF
+    if (Mid.isInf() || Mid.isNan()) {
+        qDebug() << "Face::refractRot Mid is nan or inf:" << Mid << indiceRefrac;
+    }
+#endif // NAN_VERIF
 
-//    radian rZRel = modRad((rXInverse ? M_PI - pos.getRZ() : pos.getRZ()) - RZ);
-//    bool rZInverse = abs(rZRel) > M_PI_2;
-//    radian rZ3 = refract(rZRel, speedIn, speedOut);
-//    radian rZ4 = rZInverse ? (M_PI - rZ3) : rZ3 - RZ;
-
-//    radian rX4 = RX - refract(rXRel, speedIn, speedOut);
-
-    //cos et sin fonctionnent avec du horizontal/vertical mais avec du penché ?
-
-    //radian rZ3 = - signOf(-abs(modRad(RZ))) * refract(rZRel, speedIn, speedOut);
-//    if (roundNull(cos(RZ)) == 0) {
-////        rZ3 = - rZ3;//TODO: pourquoi ? ok, avec le -signOf(-abs) ça marche
-//            //(-signOf-abs(RZ) != 1 car si RZ = 0 alors sign Of sera 1 )
-
-////        rX4 = pos.getRX();// ça c'est fix (ajout de abs(sin))
-
-//            // cas où rX4 == RX : (ligne du asin(sin)) == 0
-//                // si i très petit
-//                // si rXRel == 0 (pos.getRX == RX)
-//            // cas où rX4 == xRel : (ligne du asin(sin))
-//            // si penché : si rZRel == 0 alors angle de sortie est 0 (frole la surface)
-//    }
-////        rZInverse = false;//TODO: pourquoi ?
-////        radian rZ4 = rZ3 - RZ;// - pi/2
-////    }
-////    radian rZ4 = (rZInverse ? (M_PI - rZ3) : rZ3) - RZ;// + pi
-
-    return Pos3D(pos, rX4, rZ4);
+    return Rot3D::fromVector(Mid);
 }
 
 bool Face::containsPoint(const Point3D& point) const
@@ -328,41 +287,7 @@ void Face::calcFace()
     middleGeometry = maxGeometry.getMiddle();
     texture = OBJECT3D::getFileTexture(material, variations);
 
-    /*Point3D delta = rect.getPointMax() - rect.getPointMin();
-    doubli deltaX = delta.getX(),
-        deltaY = delta.getY(),
-        deltaZ = delta.getZ();
-
-    doubli deltaXY = sqrt(deltaX * deltaX + deltaY * deltaY);
-    if (-0.5 < deltaXY && deltaXY < 0.5) {
-        qDebug() << "alerte deltaZ trop faible" << deltaXY << deltaZ;
-    }
-
-    if (orientation == true) {
-        RX = atan(deltaX / deltaY);
-        RZ = 2 * atan(deltaXY / deltaZ) - M_PI_2;
-    }
-    else {
-        RX = atan(deltaX / deltaY) + M_PI;
-        RZ = -2 * atan(deltaXY / deltaZ) + M_PI_2;
-    }*/
-
-
     plan = Plan(maxGeometry);
-
-    doubli RX2 = RX, RZ2 = RZ;
-
-    if (orientation == true) {
-        RX = M_PI_2 - plan.getRX();
-        RZ = M_PI_2 - plan.getRZ();
-    }
-    else {
-        RX = -M_PI_2 - plan.getRX();
-        RZ = plan.getRZ() - M_PI_2;
-    }
-    if (isnanf(RX)) RX = 0;
-    if (isnanf(RZ)) RZ = 0;
-    qDebug() << variations.first() << orientation << RX2 << RZ2 << plan.getRX() << plan.getRZ() << RX << RZ;
 
     pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
 }

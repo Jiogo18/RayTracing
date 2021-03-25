@@ -60,6 +60,12 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
         // calcul de la réfraction (le regard est normal au plan)
         setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
     }
+#ifdef NAN_VERIF
+    if (this->pos.isNan()) {
+        qDebug() << "Ray::Ray pos is nan" << this->pos;
+        exit(-1);
+    }
+#endif // NAN_VERIF
 }
 
 ColorLight Ray::getColor() const
@@ -110,6 +116,14 @@ void Ray::process(const World* world)
         //break;//TODO empecher de calculer après pour les tests (avoir que la première face)
         //Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe :'(
         lastFaceIntersection = face;
+        if (getSpeedOfLight(insideMaterial) <= 0) break;// solide
+#ifdef NAN_VERIF
+        if (pos.isNan()) {
+            //étrangement dans le constructeur il est pas nan ?
+            qDebug() << "Ray::process pos is nan" << pos;
+            exit(-1);
+        }
+#endif // NAN_VERIF
     }
 }
 
@@ -134,6 +148,12 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
 {
     const Face* faceMin = nullptr;
     Point3D posNextPoint = pos.getNextPoint();
+#ifdef NAN_VERIF
+    if (posNextPoint.isNan()) {
+        qDebug() << "Ray::getFirstIntersection posNextPoint is nan" << posNextPoint;
+        exit(-1);
+    }
+#endif // NAN_VERIF
     Point3D pInterMin;
     doubli distanceInterMin = 0;//seront set car !faceMin.isValid() au début
     doubli distanceSolidMin = 0;

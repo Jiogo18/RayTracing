@@ -105,7 +105,7 @@ public:
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const override { return material; }
     Rot3D boundRot(const Rot3D& rot) const;
-    Pos3D refractRot(const Pos3D& pos, float indiceRefrac) const;
+    Rot3D refractRot(const Pos3D& pos, float indiceRefrac) const;
     bool containsPoint(const Point3D& point) const override;
 private:
     static radian refract(const radian& r, float indiceRefrac);
@@ -116,8 +116,6 @@ private:
     BLOCK::Material material;
     QList<BLOCK::Variation> variations;
     QString texture;
-    radian RX = 0;
-    radian RZ = 0;
     Plan plan;
     QPointF pC;
     bool orientation;//true dans le sens positif du plan

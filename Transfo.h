@@ -12,7 +12,6 @@ namespace Transfo3D {
     //void addPerspective(World *world, double persp, double zoom);
     //Point3D pointPerspective(Point3D point, double perspective, double zoom);
 
-    radian refract(const radian& r, float indiceRefrac);
     Rot3D refractRot(const Rot3D& posOrigin, const Rot3D& pos, float indiceRefrac);
 }
 

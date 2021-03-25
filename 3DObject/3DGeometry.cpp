@@ -141,12 +141,47 @@ Point3D qCeil(const Point3D& point)
 
 
 
+Rot3D Rot3D::fromVector(const Point3D& vect)
+{
+    //https://fr.wikipedia.org/wiki/Coordonn%C3%A9es_polaires
+    //https://wikimedia.org/api/rest_v1/media/math/render/svg/d4a6b8b7e93b05abc00d7789635a762b495d0d67
+    doubli x = vect.getX(), y = vect.getY(), z = vect.getZ();
+    doubli rX = 2 * atan(y / (x + sqrt(x * x + y * y)));
+    doubli rZ = asin(z / sqrt(x * x + y * y + z * z));
+#ifdef NAN_VERIF
+    if (isnanf(rX) || isnanf(rZ)) {
+        qDebug() << "Rot3D::fromVector is nan:" << rX << rZ << vect;
+        exit(-1);
+    }
+#endif
+    return Rot3D(rX, rZ);
+}
+
+Vec3D Rot3D::toVector() const
+{
+    return Vec3D(cos(rX) * cos(rZ), sin(rX) * cos(rZ), sin(rZ));
+}
+
+Vec3D Rot3D::toVectorU() const
+{
+    doubli x = cos(rX) * cos(rZ), y = sin(rX) * cos(rZ), z = sin(rZ);
+    doubli d = sqrt(x * x + y * y + z * z);
+    return Vec3D(x / d, y / d, z / d);
+}
+
+QDebug operator <<(QDebug debug, const Rot3D& rot)
+{
+    debug << "Rot3D(" << rot.rX << "," << rot.rZ << ")";
+    return debug;
+}
 
 
 
-Pos3D::Pos3D() : Point3D(0, 0, 0) {}
+
+Pos3D::Pos3D() : Point3D(), Rot3D() {}
 Pos3D::Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ) : Point3D(x, y, z), Rot3D(rX, rZ) {}
 Pos3D::Pos3D(const Point3D& point, radian rX, radian rZ) : Point3D(point), Rot3D(rX, rZ) {}
+Pos3D::Pos3D(const Point3D& point, const Rot3D& rot) : Point3D(point), Rot3D(rot) {}
 Pos3D::Pos3D(const Pos3D& pos) : Point3D(pos), Rot3D(pos) {}
 
 Pos3D* Pos3D::operator=(const Pos3D& pos)
@@ -174,20 +209,11 @@ Point3D Pos3D::pointFromRot(doubli d, radian rX, radian rZ)
         cos(rZ) * sin(rX),
         sin(rZ) * d) * d;
 }
-Point3D Pos3D::getNextPointRelatif() const
-{
-    //on s'avance de 1 t
-    //équivalent à pointFromRot(1, rX, rZ);
-    doubli crZ = cos(rZ);
-    return Point3D(crZ * cos(rX), crZ * sin(rX), sin(rZ));
-}
+
 Point3D Pos3D::getNextPoint() const
 {
-    doubli crZ = cos(rZ);
-    return Point3D(crZ * cos(rX) + getX(),
-        crZ * sin(rX) + getY(),
-        sin(rZ) + getZ());
-    //opti mais == getNextPointRelatif() + getPoint()
+    return Point3D(cos(rZ) * cos(rX) + x, cos(rZ) * sin(rX) + y, sin(rZ) + z);
+    //return getPoint() + toVector();//équivalent
 }
 
 Pos3D Pos3D::getChildRot(radian rXRelatif, radian rZRelatif) const
@@ -465,11 +491,11 @@ Point3D Plan::intersection(const Point3D& pA, const Point3D& pB) const
     //Voir #Intersection
     Size3D ABs(pA, pB);
     if (paralleleDroite(ABs))
-        return Point3D();
+        return Point3D::makeNotDefined();
     doubli t = -(a * pA.getX() + b * pA.getY() + c * pA.getZ() + d)
         / (a * ABs.getDX() + b * ABs.getDY() + c * ABs.getDZ());
     if (t < 0)//derriere
-        return Point3D();
+        return Point3D::makeNotDefined();
     return pA + ABs * t;
 }
 
@@ -565,6 +591,13 @@ void Plan::calcEquation(const Point3D& pB, const Point3D& pC)
         else
             b = (xAC * nOfc - xAB) * a / (yAB - yAC * nOfc);
     }
+
+    // unitaire
+    doubli dist = sqrt(a * a + b * b + c * c);
+    if (dist != 0) {
+        a /= dist; b /= dist; c /= dist;
+    }
+
     d = (-a * pA.getX() - b * pA.getY() - c * pA.getZ());
     //si il y a 2 x, y ou z ==0 pr chaque vecteur alors vecteurs colinéaires => pas de plan
 }
