@@ -74,7 +74,7 @@ ColorLight Ray::getColor() const
         return ColorLight(0, 0, 0, 255, 0);
     ColorLight retour = colors.last();
     for (int i = colors.size() - 2; i >= 0; i--)
-        retour = colors.at(i) + retour;
+        retour += colors.at(i);
     return retour;
 }
 
@@ -109,8 +109,7 @@ void Ray::process(const World* world)
             // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
         }
 
-        int alpha = colors.last().getColorA().alpha();
-        opacity += alpha;
+        opacity += colors.last().alpha();
         if (opacity >= 255)
             break;//on s'arrete la
         //break;//TODO empecher de calculer après pour les tests (avoir que la première face)
@@ -298,10 +297,9 @@ void RayTracingWorker::run() {
 
         start2 = rtRess->dt->getCurrent();
         ColorLight colorL = ray.getColor();
-        QColor colorA = colorL.getColorA();
-        int red = colorA.red() * colorA.alpha() / 255;
-        int green = colorA.green() * colorA.alpha() / 255;
-        int blue = colorA.blue() * colorA.alpha() / 255;
+        int red = colorL.red() * colorL.alpha() / 255;
+        int green = colorL.green() * colorL.alpha() / 255;
+        int blue = colorL.blue() * colorL.alpha() / 255;
         int light = colorL.getLight();
 
         light += RAYTRACING::gamma;

@@ -107,44 +107,49 @@ float OBJECT3D::getSpeedOfLight(BLOCK::Material material)
 
 ColorLight::ColorLight()
 {
-    this->light = 0;
+    light = 0;
 }
 ColorLight::ColorLight(int r, int g, int b, int a, int light)
 {
-    setRed(r); setGreen(g); setBlue(b); setAlpha(a);
-    setLight(light);
+    this->r = r; this->g = g; this->b = b;
+    this->a = a > 255 ? 255 : a;
+    this->light = light;
 }
 
 ColorLight::ColorLight(const ColorLight& color)
 {
-    r = color.r; g = color.g; b = color.b; a = color.a;
+    r = color.r; g = color.g; b = color.b;
+    a = color.a;
     light = color.light;
 }
 
 QColor ColorLight::getColorReduced(double reduce) const
 {
-    int r = qFloor(this->r * light / reduce), g = qFloor(this->g * light / reduce), b = qFloor(this->b * light / reduce);
-    if (r >= 255) r = 255;
-    if (g >= 255) g = 255;
-    if (b >= 255) b = 255;
-    return QColor(r, g, b);
+    return QColor(colorReduced(r, reduce), colorReduced(g, reduce), colorReduced(b, reduce));
 }
 
-ColorLight ColorLight::operator +(const ColorLight& color) const
+void ColorLight::operator +=(const ColorLight& color)
 {
-    //si color a une luminositée importante (plus que l'actuelle) alors color est +importante
-    //si this a un alpha plus faible (transparent/miroir) alors color est +important
-    if (a == 0)//this n'est absolument pas visible
-        return color;
-    double poids = (color.light - light + 1.0) * 255 / a;
+    //si this a une luminositée importante (plus que color) alors this est +importante
+    //si color a un alpha plus faible (transparent/miroir) alors this est +important
+    if (color.a == 0) return;// avant est opaque
 
-    return ColorLight(qFloor((r + color.r * poids) / (1 + poids)),
-        qFloor((g + color.g * poids) / (1 + poids)),
-        qFloor((b + color.b * poids) / (1 + poids)),
-        a + color.a,
-        light + color.light);
+    double poids = (light - color.light + 1.0) * 255.0 / color.a;
+
+    r = (r * poids + color.r) / (1 + poids);
+    g = (g * poids + color.g) / (1 + poids);
+    b = (b * poids + color.b) / (1 + poids);
+    a = std::min(a + color.a, 255);
+    light += color.light;
 }
 
+ColorLight* ColorLight::operator =(const ColorLight& color)
+{
+    r = color.r; g = color.g; b = color.b;
+    a = color.a;
+    light = color.light;
+    return this;
+}
 
 
 
