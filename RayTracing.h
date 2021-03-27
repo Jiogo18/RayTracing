@@ -11,6 +11,9 @@
 
 #include "DebugTime.h"
 
+#define REFRESH_COLUMN//TODO: remove it
+//#define DISABLE_RAYPROCESS
+
 namespace RAYTRACING {
     const doubli viewDistance = 100;
     const radian angleH = degreesToRadians(120);//de 156° à 172° max pour un Humain (1 oeil)
@@ -23,6 +26,7 @@ namespace RAYTRACING {
     const int WorkerThread = std::thread::hardware_concurrency() * 2;
     const int RefreshColumn = 200;
     const int gamma = 2;// TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
+    const int ColumnsPerWorker = 30;// il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
 }
 using namespace RAYTRACING;
 
@@ -100,22 +104,24 @@ class RayTracingWorker : public QThread
     Q_OBJECT
 public:
     RayTracingWorker(int workerId, RayTracingRessources* rtRess, QObject* parent = nullptr);
-    RayTracingWorker* setPrimaryWork(const QList<doubli>& yPosList, const QSize& sceneSize);
-    RayTracingWorker* setWork(int xScene) { this->xScene = xScene; return this; };
-    int getWorkerId() const { return workerId; };
-    static QList<doubli> calcyPosList(const int& sceneHeight);
+    ~RayTracingWorker();
+    RayTracingWorker* setPrimaryWork(const QSize& sceneSize);
+    inline RayTracingWorker* setWork(int xScene) { this->xScene = xScene; return this; }
+    inline int getWorkerId() const { return workerId; };
+    inline int getNbColumns() const { return std::min(RAYTRACING::ColumnsPerWorker, sceneSize.width() - xScene); }
 
 signals:
-    void resultReady(RayTracingWorker* worker, int y, const QList<ColorLight>& c, int totalLight);
+    void resultReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight);
 private:
-    static QList<Pos3D> calcRaysPosColumn(const int& x, const QSize& sceneSize, const Pos3D& clientPos, const QList<doubli>& yPosList);
+    static QList<Pos3D> calcRaysPosColumn(const doubli& xPos, const int& sceneHeight, const Pos3D& clientPos);
     void run() override;// process ONE column at a time
     int workerId;
-    QList<doubli> yPosList;
     QSize sceneSize;
 
-    int xScene;// just ONE column
+    int xScene;// just ONE column, more columns with RAYTRACING::ColumnsPerWorker
     RayTracingRessources* rtRess;
+    int* totalLight = nullptr;
+    QList<ColorLight>* colors = nullptr;
 };
 
 
@@ -132,7 +138,8 @@ public:
 
 private slots:
     void worldChanged(const WorldChange& change);
-    void onRayWorkerReady(RayTracingWorker* worker, int x, const QList<ColorLight>& c, int totalLight);
+    void onRayWorkerReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight);
+    void onRayWorkerFinished();
 
 signals:
     void resultReady(const QImage& image);
@@ -153,10 +160,11 @@ private:
 
     QList<doubli> yPosList; // calculs des yPos en fonction de y
     PixScreen<ColorLight> colors;
-    QList<double> lightPerColumn; // calculs des light de chaque colonne (en fonction de x)
-    int processToStart = 0;
-    int processDone = 0;
+    QList<int> lightPerColumn; // calculs des light de chaque colonne (en fonction de x)
+    int processWidth = 0;
+    int processFinished = 0;
     int processStarted = 0;
+    int processForUpdate;
     QList<RayTracingWorker*> rayWorkers;
     bool workersInProcess = false;
     QImage image;

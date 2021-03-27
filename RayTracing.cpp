@@ -146,8 +146,8 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D& pInter) const
     Point3D pInterMin;
     doubli distanceInterMin = 0;//seront set car !faceMin.isValid() au début
     doubli distanceSolidMin = 0;
-    for (int i = 0; i < world->getChunks().size(); i++) {
-        Chunk* chunk = world->getChunks().at(i);
+    for (int iChunk = 0; iChunk < world->getChunks().size(); iChunk++) {
+        const Chunk* chunk = world->getChunks().at(iChunk);
         if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
         qint64 start1 = rtRess->dt->getCurrent();
@@ -228,79 +228,84 @@ RayTracingWorker::RayTracingWorker(int workerId, RayTracingRessources* rtRess, Q
 {
     this->workerId = workerId;
     this->rtRess = rtRess;
+    totalLight = new int[RAYTRACING::ColumnsPerWorker];
+    colors = new QList<ColorLight>[RAYTRACING::ColumnsPerWorker];
 }
 
-RayTracingWorker* RayTracingWorker::setPrimaryWork(const QList<doubli>& yPosList, const QSize& sceneSize)
+RayTracingWorker::~RayTracingWorker()
 {
-    this->yPosList = yPosList;
+    delete[] totalLight;
+    delete[] colors;
+}
+
+RayTracingWorker* RayTracingWorker::setPrimaryWork(const QSize& sceneSize)
+{
     this->sceneSize = sceneSize;
     return this;
 }
 
 
 
-QList<doubli> RayTracingWorker::calcyPosList(const int& sceneHeight)
-{
-    QList<doubli> yPosList(sceneHeight);
-    for (int y = 0; y < sceneHeight; y++) {
-        yPosList.replace(y, roundNull(static_cast<doubli>(1 - 2.0L * y / sceneHeight) * yMax));
-    }
-    return yPosList;
-}
 
-
-QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const int& x, const QSize& sceneSize, const Pos3D& clientPos, const QList<doubli>& yPosList)
+QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const doubli& xPos, const int& sceneHeight, const Pos3D& clientPos)
 {
-    QList<Pos3D> raysPos(sceneSize.height());
-    //pos en % de pixmap.width/2 * xMax
-    doubli xPos = roundNull(static_cast<doubli>(2.0L * x / sceneSize.width() - 1) * xMax);
+    QList<Pos3D> raysPos(sceneHeight);
+
     radian angleH = atan(xPos);
-    for (int y = 0; y < sceneSize.height(); y++) {
+    for (int y = 0; y < sceneHeight; y++) {
         //pos en % de pixmap.height/2 * yMax
-        doubli yPos = yPosList.at(y);
-        doubli d = sqrt(sqr(xPos) + sqr(yPos) + 1);
-        radian angleV = asin(yPos / d);
-
-        raysPos.replace(y, clientPos.getChildRot(angleH, angleV));
+        doubli yPos = roundNull(1 - 2.0L * y / sceneHeight) * yMax;
+        raysPos.replace(y, clientPos.getChildRot(angleH, atan(yPos / sqrt(xPos * xPos + 1))));
     }
 
     return raysPos;
 }
 
 void RayTracingWorker::run() {
-    int totalLight = 0;
+    int i;
+    for (i = 0; i < getNbColumns(); i++) {
+        qint64 start;
+        //start = rtRess->dt->getCurrent();
+        totalLight[i] = 0;
+        colors[i] = QList<ColorLight>(sceneSize.height());
+        //pos en % de pixmap.width/2 * xMax
+        doubli xPos = (2.0L * (xScene + i) / sceneSize.width() - 1) * xMax, xzPos = sqrt(xPos * xPos + 1);
+        radian angleH = atan(xPos);
+        //rtRess->dt->addValue("RayTracingWorker::run_init", rtRess->dt->getCurrent() - start);//1ms
 
-    qint64 start = rtRess->dt->getCurrent();
-    QList<Pos3D> initialPos = calcRaysPosColumn(xScene, sceneSize, rtRess->clientPos, yPosList);
-    rtRess->dt->addValue("RayTracingWorker::run_calcRaysPosColumn", rtRess->dt->getCurrent() - start);
+        start = rtRess->dt->getCurrent();
+        for (int y = 0; y < sceneSize.height(); y++) {
+            qint64 start2;
 
-    start = rtRess->dt->getCurrent();
-    QList<ColorLight> colors(initialPos.length());
-    for (int i = 0; i < initialPos.length(); i++) {
-        qint64 start2 = rtRess->dt->getCurrent();
-        Ray ray(initialPos.at(i), rtRess);
-        rtRess->dt->addValue("RayTracingWorker::run_1", rtRess->dt->getCurrent() - start2);
+            //start2 = rtRess->dt->getCurrent();
+            //pos en % de pixmap.height/2 * yMax
+            doubli yPos = (1 - 2.0L * y / sceneSize.height()) * yMax;
+            Ray ray(rtRess->clientPos.getChildRot(angleH, atan(yPos / xzPos)), rtRess);
+            //rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() - start2);//1080ms
 
-        start2 = rtRess->dt->getCurrent();
-        ray.process(rtRess->world);
-        rtRess->dt->addValue("RayTracingWorker::run_2", rtRess->dt->getCurrent() - start2);
+#ifndef DISABLE_RAYPROCESS
+            start2 = rtRess->dt->getCurrent();
+            ray.process(rtRess->world);
+            rtRess->dt->addValue("RayTracingWorker::run_2_process", rtRess->dt->getCurrent() - start2);
+#endif // DISABLE_RAYPROCESS
 
-        start2 = rtRess->dt->getCurrent();
-        ColorLight colorL = ray.getColor();
-        int red = colorL.red() * colorL.alpha() / 255;
-        int green = colorL.green() * colorL.alpha() / 255;
-        int blue = colorL.blue() * colorL.alpha() / 255;
-        int light = colorL.getLight();
+            //start2 = rtRess->dt->getCurrent();
+            ColorLight colorL = ray.getColor();
+            int red = colorL.red() * colorL.alpha() / 255;
+            int green = colorL.green() * colorL.alpha() / 255;
+            int blue = colorL.blue() * colorL.alpha() / 255;
+            int light = colorL.getLight();
 
-        light += RAYTRACING::gamma;
+            light += RAYTRACING::gamma;
 
-        totalLight += light;
-        colors.replace(i, ColorLight(red, green, blue, 255, light));
-        rtRess->dt->addValue("RayTracingWorker::run_3", rtRess->dt->getCurrent() - start2);
+            totalLight[i] += light;
+            colors[i].replace(y, ColorLight(red, green, blue, 255, light));
+            //rtRess->dt->addValue("RayTracingWorker::run_3_ColorLight", rtRess->dt->getCurrent() - start2);//150ms
+        }
+        rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
     }
 
-    rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
-    emit resultReady(this, xScene, colors, totalLight);
+    emit resultReady(xScene, i, colors, totalLight);
 }
 
 
@@ -317,6 +322,7 @@ RayTracing::RayTracing(const map3D* map) : QThread()
     for (int i = 0; i < rayWorkers.length(); i++) {
         rayWorkers[i] = new RayTracingWorker(i, rtRess);
         connect(rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
+        connect(rayWorkers[i], &QThread::finished, this, &RayTracing::onRayWorkerFinished);
     }
     image = QImage(1, 1, QImage::Format::Format_RGB32);
     image.fill(Qt::black);
@@ -333,19 +339,30 @@ RayTracing::~RayTracing()
 }
 
 
-void RayTracing::onRayWorkerReady(RayTracingWorker* worker, int x, const QList<ColorLight>& c, int totalLight)
+void RayTracing::onRayWorkerReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight)
 {
-    processDone++;
-    lightPerColumn.replace(x, totalLight);
-    colors.setColumn(x, c);
-
-    if (processDone < processToStart) {
-        assignNextRayWork(worker);
-        if (processDone % RAYTRACING::RefreshColumn == 0) paint();
+    processFinished += nbColumns;
+    for (int i = 0; i < nbColumns; i++) {
+        lightPerColumn.replace(x + i, totalLight[i]);
+        colors.setColumn(x + i, c[i]);
     }
-    else {
+
+    if (processFinished >= processWidth) {
         onAllWorkersFinished();
     }
+#ifdef REFRESH_COLUMN
+    else {
+        if (processForUpdate <= processFinished) {
+            paint();
+            processForUpdate = processFinished + RAYTRACING::RefreshColumn;
+        }
+    }
+#endif // REFRESH_COLUMN
+}
+
+void RayTracing::onRayWorkerFinished()
+{
+    assignNextRayWork(qobject_cast<RayTracingWorker*>(sender()));
 }
 
 void RayTracing::worldChanged(const WorldChange& change) {
@@ -365,12 +382,11 @@ void RayTracing::run() {
     startRun = dt.getCurrent();
 
     if (calcSize != colors.size()) {
-        yPosList = RayTracingWorker::calcyPosList(calcSize.height());
         for (int i = 0; i < rayWorkers.length(); i++) {
-            rayWorkers[i]->setPrimaryWork(yPosList, calcSize);
+            rayWorkers[i]->setPrimaryWork(calcSize);
         }
         colors = PixScreen<ColorLight>(calcSize);
-        lightPerColumn = QList<double>(calcSize.width());
+        lightPerColumn = QList<int>(calcSize.width());
         image = image.scaled(calcSize);
     }
 
@@ -381,12 +397,13 @@ void RayTracing::run() {
 
     rtRess->resetRessources(map->getClient());// reset the pos
 
-    processToStart = calcSize.width();
-    processDone = 0;
+    processWidth = calcSize.width();
+    processFinished = 0;
     processStarted = 0;
+    processForUpdate = RAYTRACING::RefreshColumn;
 
     workersInProcess = true;
-    for (int i = 0; i < rayWorkers.length() && i < processToStart; i++) {
+    for (int i = 0; i < rayWorkers.length() && i < processWidth; i++) {
         assignNextRayWork(rayWorkers[i]);
     }
     // then wait for the last onRayWorkerReady
@@ -395,9 +412,17 @@ void RayTracing::run() {
 
 void RayTracing::assignNextRayWork(RayTracingWorker* worker)
 {
-    if (processStarted >= processToStart || worker->isRunning()) return;
+    if (worker->isRunning()) {
+        qWarning() << "RayTracingWorker" << worker->getWorkerId() << "is already running";
+        worker->wait(1);
+        if (worker->isRunning()) {
+            qWarning() << "RayTracingWorker" << worker->getWorkerId() << "skipped";
+            return;
+        }
+    }
+    if (processStarted >= processWidth) return;
     worker->setWork(processStarted)->start();
-    processStarted++;
+    processStarted += worker->getNbColumns();
 }
 
 double RayTracing::calcTotalLight() const
@@ -415,7 +440,7 @@ void RayTracing::paint()
     double totalLight = calcTotalLight();
     qDebug() << "RayTracing::paint #totalLight" << totalLight;
 
-    for (int x = 0; x < colors.width() && x < processDone; x++) {
+    for (int x = 0; x < colors.width() && x < processFinished; x++) {
         for (int y = 0; y < colors.height(); y++) {
             ColorLight cl = colors.at(x, y);
             QColor color = cl.getColorReduced(totalLight);
@@ -430,7 +455,7 @@ void RayTracing::paint()
 
 void RayTracing::onAllWorkersFinished()
 {
-    qDebug() << "All ray workers have finished, processDone :" << processDone << "/" << processToStart;
+    qDebug() << "All ray workers have finished, processFinished :" << processFinished << "/" << processWidth;
     workersInProcess = false;
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);
