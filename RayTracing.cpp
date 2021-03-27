@@ -55,10 +55,10 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
     this->pos = pos;
     insideMaterial = rtRess->insideMaterial;
     float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
-    float previousSpeed = OBJECT3D::getSpeedOfLight(BLOCK::Material::air);//matériau du cristallin
+    float previousSpeed = 1;//OBJECT3D::getSpeedOfLight(BLOCK::Material::air);// the speed of light in the lens
     if (newSpeed != previousSpeed) {
         // calcul de la réfraction (le regard est normal au plan)
-        setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
+        pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
     }
 #ifdef NAN_VERIF
     if (this->pos.isNan()) {
@@ -83,39 +83,40 @@ void Ray::process(const World* world)
     while (distParcouru < viewDistance) {//pas exactement view distance mais pas loins (2*..?)
         qint64 start = rtRess->dt->getCurrent();
         Point3D pInter;
-        const Face* face = getFirstIntersection(world, &pInter);
+        const Face* face = getFirstIntersection(world, pInter);
         rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
         if (face == nullptr || !face->isValid())
             break;//c'est normal si on va dans le vide
 
-        lastMoved = !(pInter == pos);
+        lastMoved = pInter != pos;
         lastFace = face;
 
-        const Plan* plan = face->getPlan();
-        const QPointF pTexture = plan->projeteOrtho(pInter) - face->getPointC();
-        colors.append(face->getColor(pTexture, getTexture(face->getTexture())));
+        const QPointF pTexture = face->getPlan()->projeteOrtho(pInter) - face->getPointC();
+        ColorLight color = face->getColor(pTexture, getTexture(face->getTexture()));
+        colors.append(color);
+
+        opacity += color.alpha();
+        if (opacity >= 255)
+            break;// le rayon est saturé (solide opaque)
 
         moveTo(pInter);
         if (face->getMaterial() == BLOCK::Material::mirror) {
-            setRot(face->boundRot(pos.getRot()));
+            pos.setRot(face->boundRot(pos.getRot()));
         }
         else {
             float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
+            if (newSpeed <= 0) break;// un solide
             float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
-            setRot(face->refractRot(pos, newSpeed / previousSpeed));
+            pos.setRot(face->refractRot(pos, newSpeed / previousSpeed));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
             insideMaterial = face->getMaterial();
             // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
         }
 
-        opacity += colors.last().alpha();
-        if (opacity >= 255)
-            break;//on s'arrete la
         //break;//TODO empecher de calculer après pour les tests (avoir que la première face)
         //Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe :'(
-        lastFaceIntersection = face;
-        if (getSpeedOfLight(insideMaterial) <= 0) break;// solide
+
 #ifdef NAN_VERIF
         if (pos.isNan()) {
             //étrangement dans le constructeur il est pas nan ?
@@ -126,24 +127,13 @@ void Ray::process(const World* world)
     }
 }
 
-void Ray::moveTo(const Point3D& pos)
+void Ray::moveTo(const Point3D& newPos)
 {
-    distParcouru += Point3D::distance(this->pos, pos);
-    setPoint(pos);
+    distParcouru += pos.distance(newPos);
+    pos.setPoint(newPos);
 }
 
-void Ray::setRot(radian rX, radian rZ)
-{
-    pos.setRX(rX);
-    pos.setRZ(rZ);
-}
-
-void Ray::setRot(const Rot3D& rot)
-{
-    pos.setRot(rot);
-}
-
-const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
+const Face* Ray::getFirstIntersection(const World* world, Point3D& pInter) const
 {
     const Face* faceMin = nullptr;
     Point3D posNextPoint = pos.getNextPoint();
@@ -158,12 +148,12 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
     doubli distanceSolidMin = 0;
     for (int i = 0; i < world->getChunks().size(); i++) {
         Chunk* chunk = world->getChunks().at(i);
-        if (Point3D::distanceMax(chunk->getPoint(), pos) > viewDistance)
+        if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
         qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
             Solid* block = chunk->getSolids()->at(i2);
-            if (Point3D::distanceMax(block->getPoint(), pos) > viewDistance)
+            if (block->getPoint().distance(pos) > viewDistance)
                 continue;
             for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
                 const Face* face = &block->getFaces()->at(i3);
@@ -179,20 +169,20 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
                     continue;
                 if (!enter && pInter == pos && !lastMoved)
                     continue;//on viens de sortir (ou par défaut) et on se retrouve sur le même point
-                doubli distanceInter = roundNull(Point3D::distance(pos, pInter)),
-                    distanceSolid = 0;
+                doubli distanceInter = pos.distance(pInter), distanceSolid = 0;
                 if (faceMin != nullptr && faceMin->isValid()) {
                     if (distanceInter > distanceInterMin)
                         continue;
-                    distanceSolid = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceSolid = pos.distance(block->getMiddleGeometry());
                     if (distanceInter == distanceInterMin) {
                         if (distanceSolid >= distanceSolidMin)
                             continue;
                     }
                 }
                 else {
-                    distanceSolid = roundNull(Point3D::distance(pos, block->getMiddleGeometry()));
+                    distanceSolid = pos.distance(block->getMiddleGeometry());
                 }
+
                 //si il n'y a pas encore de face
                 //sinon si le pt d'intersection est plus proche
                 //sinon si c'est le même et si la face est plus proche
@@ -211,7 +201,7 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D* pInter) const
         rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
 
     }
-    *pInter = pInterMin;
+    pInter = pInterMin;
     return faceMin;
 }
 

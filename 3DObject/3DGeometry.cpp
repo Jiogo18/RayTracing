@@ -125,6 +125,17 @@ doubli Point3D::distanceMax(const Point3D& pA, const Point3D& pB)
     //on prend le plus grand (ça forme un carré)
 }
 
+doubli Point3D::distance(const Point3D& pA) const
+{
+    return sqrt((x - pA.x) * (x - pA.x) + (y - pA.y) * (y - pA.y) + (z - pA.z) * (z - pA.z));
+}
+
+doubli Point3D::distanceMax(const Point3D& pA) const
+{
+    return max(abs(x - pA.x), abs(y - pA.y), abs(z - pA.z));
+    //on prend le plus grand (ça forme un carré)
+}
+
 QDebug operator <<(QDebug debug, const Point3D& point)
 {
     debug << "Point3D(" << point.x << "," << point.y << "," << point.z << ")";
@@ -233,7 +244,20 @@ Pos3D Pos3D::getChildRot(radian rXRelatif, radian rZRelatif) const
     return Pos3D(static_cast<Point3D>(*this), rX, asin(z2));
 }
 
-Point3D Pos3D::changeRef(const Point3D& point) const { return rotation(point + static_cast<Point3D>(*this), rX, rZ); }
+Point3D Pos3D::changeRef(const Point3D point, doubli srX, doubli srZ) const
+{
+    doubli x = point.getX() + this->x,
+        z = point.getZ() + this->z,
+        crZ = sqrt(1 - srZ * srZ),
+        crX = sqrt(1 - srX * srX),
+        x2 = x * crZ - z * srZ;
+    return Point3D(x2 * crX - (point.getY() + this->y) * srX,
+        x2 * srX + (point.getY() + this->y) * crX,
+        x * srZ + z * crZ);
+    // condensé des équations de rotation dans Oxz puis dans Oxy
+    // x * sR + y * cR;
+    // x * cR - y * sR;
+}
 
 bool Pos3D::operator ==(const Pos3D& pos) const
 {
@@ -245,16 +269,6 @@ bool Pos3D::operator !=(const Pos3D& pos) const
     return Point3D::operator !=(pos) || Rot3D::operator !=(pos);
 }
 
-Point3D Pos3D::rotation(Point3D point, radian rX, radian rZ)
-{
-    //inversé par rapport aux autres progs (entre y et z et entre 1ere et 2eme ligne)
-    doubli sR = sin(rZ), cR = cos(rZ);
-    point = Point3D(rotation1(point.getX(), point.getZ(), sR, cR), point.getY(), rotation2(point.getX(), point.getZ(), sR, cR));
-    sR = sin(rX); cR = cos(rX);
-    return Point3D(rotation1(point.getX(), point.getY(), sR, cR), rotation2(point.getX(), point.getY(), sR, cR), point.getZ());
-}
-doubli Pos3D::rotation1(doubli x, doubli y, doubli sR, doubli cR) { return x * cR - y * sR; }
-doubli Pos3D::rotation2(doubli x, doubli y, doubli sR, doubli cR) { return x * sR + y * cR; }
 Pos3D Pos3D::getRotAsVect(const Point3D& p1, const Point3D& p2)
 {
     radian rZ = asin((p2.getZ() - p1.getZ()) / Point3D::distance(p1, p2));//formule getNextPos z inversée
@@ -504,14 +518,21 @@ QPointF Plan::projeteOrtho(const Point3D& pA) const
     //donne un point de position relative au plan (à la texture...)
     //un vecteur normal: m(a, b, c) donne la direction du vecteur MM'
     //un vecteur normal donne la rotation du Plan: sin(rY) = b / distance, sin(rX) = z / distance
-    doubli distance = sqrt(a * a + b * b + c * c);
-    Point3D pR = Pos3D(this->pA, asin(b / distance), asin(c / distance)).changeRef(pA);
+    // calcEquation donne des paramètres unitaires donc distance == 1
+
+    Point3D pR = Pos3D(this->pA, 0, 0).changeRef(pA, b, c);
     //on prend direct pA car si c'est pas un point du plan alors pR est son projeté dans l'autreref
     //(si x != 0 alors pA n'est pas sur le plan)
 
-
     return QPointF(pR.getY(), pR.getZ());
     //ne prend pas en compte la rotation... ! (relative au point A)
+}
+
+Point3D Plan::projeteOrtho3D(const Point3D& pA) const
+{
+    doubli dA = -(a * pA.getX() + b * pA.getY() + c * pA.getZ());
+    doubli k = dA - d;// /(a²+b²+c²) soit /1
+    return pA + Point3D(k * a, k * b, k * c);
 }
 
 bool Plan::containsPoint(const Point3D& point) const

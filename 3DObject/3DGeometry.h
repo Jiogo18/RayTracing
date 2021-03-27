@@ -45,9 +45,9 @@ public:
     Point3D(const Point3D& point);
     Point3D* operator =(const Point3D& point);
 
-    doubli getX() const { return x; }
-    doubli getY() const { return y; }
-    doubli getZ() const { return z; }
+    inline doubli getX() const { return x; }
+    inline doubli getY() const { return y; }
+    inline doubli getZ() const { return z; }
     Point3D getPoint() const { return *this; }
     void setX(doubli x) { this->x = x; }
     void setY(doubli y) { this->y = y; }
@@ -80,6 +80,8 @@ public:
 
     static doubli distance(const Point3D& pA, const Point3D& pB);
     static doubli distanceMax(const Point3D& pA, const Point3D& pB);
+    doubli distance(const Point3D& pA) const;
+    doubli distanceMax(const Point3D& pA) const;
     doubli distanceOrigine() const { return sqrt(x * x + y * y + z * z); }
 
     friend QDebug operator <<(QDebug debug, const Point3D& point);
@@ -144,7 +146,7 @@ public:
     Point3D getNextPointRelatif() const { return toVector(); }
     Point3D getNextPoint() const;
     Pos3D getChildRot(radian rXRelatif, radian rZRelatif) const;
-    Point3D changeRef(const Point3D& point) const;
+    Point3D changeRef(const Point3D point, doubli srX, doubli srZ) const;
 
     bool operator ==(const Pos3D& pos) const;
     bool operator !=(const Pos3D& pos) const;
@@ -153,9 +155,6 @@ public:
     friend QDebug operator << (QDebug debug, const Pos3D& pos);
 private:
 
-    static Point3D rotation(Point3D point, radian rX, radian rZ);
-    static doubli rotation1(doubli x, doubli y, doubli sR, doubli cR);
-    static doubli rotation2(doubli x, doubli y, doubli sR, doubli cR);
     static Pos3D getRotAsVect(const Point3D& p1, const Point3D& p2);
     static Pos3D getRotAsPoint(const Point3D& p);
 
@@ -260,6 +259,7 @@ public:
     bool paralleleDroite(const Size3D& vect) const;
     Point3D intersection(const Point3D& pA, const Point3D& pB) const;
     QPointF projeteOrtho(const Point3D& pA) const;
+    Point3D projeteOrtho3D(const Point3D& pA) const;
     inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
     bool containsPoint(const Point3D& point) const;
 

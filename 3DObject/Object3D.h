@@ -96,7 +96,7 @@ public:
     const Plan* getPlan() const { return &plan; }
     const QPointF& getPointC() const { return pC; }
     bool getOrientation() const { return orientation; }
-    bool isValid() const { return getMaterial() != BLOCK::Material::none; }
+    bool isValid() const { return material != BLOCK::Material::none; }
     ColorLight getColor(const QPointF& point, const QImage* img) const;
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const override { return material; }
@@ -104,7 +104,6 @@ public:
     Rot3D refractRot(const Pos3D& pos, float indiceRefrac) const;
     bool containsPoint(const Point3D& point) const override;
 private:
-    static radian refract(const radian& r, float indiceRefrac);
     HRect3D rect;
     HRect3D maxGeometry;
     Point3D middleGeometry;

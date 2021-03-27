@@ -277,15 +277,6 @@ bool Face::containsPoint(const Point3D& point) const
     return plan.containsPoint(point);//TODO: par rapport aux points ?
 }
 
-
-radian Face::refract(const radian& r, float indiceRefrac)
-{
-    if (indiceRefrac == 1) return r;// shortcut, speedOut/speedIn
-    radian r4 = asin(sin(r) * indiceRefrac);
-    if (isnanf(r4)) return signOf(r) * M_PI_2;
-    else return r4;
-}
-
 void Face::calcFace()
 {
     maxGeometry = rect + getPoint();
