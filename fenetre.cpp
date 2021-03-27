@@ -44,6 +44,9 @@ void fenetre::keyPressEvent(QKeyEvent* event)
         case Qt::Key_F5:
             refresh();
             break;
+        case Qt::Key_F7:
+            speedTest();
+            break;
         }
     }
 }
@@ -57,6 +60,16 @@ void fenetre::keyReleaseEvent(QKeyEvent* event)
             timerKeyPress.stop();
         }
     }
+}
+
+void fenetre::speedTest()
+{
+    if (testSpeedActivated) return;
+    testSpeedActivated = true;
+    testSpeedCounter = 0;
+    testSpeedTime = QDateTime::currentMSecsSinceEpoch();
+    qDebug() << "speedTest started for 1000 msec";
+    refresh();
 }
 
 //void fenetre::mouseMoveEvent(QMouseEvent *event)
@@ -78,6 +91,22 @@ void fenetre::workStarted()
 void fenetre::workFinished() {
     setCursor(Qt::ArrowCursor);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
+    if (testSpeedActivated) onSpeedTestFinished();
+}
+
+void fenetre::onSpeedTestFinished()
+{
+    testSpeedCounter++;
+    qint64 duration = QDateTime::currentMSecsSinceEpoch() - testSpeedTime;
+    if (duration >= 2000) {
+        // end
+        qDebug() << "speedTest with" << testSpeedCounter << "refresh in"
+            << duration << "msec ("
+            << (duration / testSpeedCounter) << "msec/frame,"
+            << ((float)testSpeedCounter / duration * 1000) << "FPS )";
+        testSpeedActivated = false;
+    }
+    else refresh();
 }
 
 void fenetre::updatePressPosition()
@@ -93,7 +122,7 @@ void fenetre::updatePressPosition()
     if (keysPressed & (1 << KEY::keyAction::left_rot)) map->moveRX(-MouseSensibility / 30);
     if (keysPressed & (1 << KEY::keyAction::right_rot)) map->moveRX(MouseSensibility / 30);
 
-    qDebug() << "pos client" << map->getClient()->getPos();
+    //    qDebug() << "pos client" << map->getClient()->getPos();
     if (isPainting()) {
         //actu à la fin du repaint en cours
         timerRefresh.start(lastRefreshDuration);

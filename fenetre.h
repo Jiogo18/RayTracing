@@ -54,10 +54,12 @@ public:
         //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
     //    QPoint MidWindow();
     //    void moveMouseMidWindow();
+    void speedTest();
 
 private slots:
     void workStarted();
     void workFinished();
+    void onSpeedTestFinished();
 
 private:
     void updatePressPosition();
@@ -71,6 +73,10 @@ private:
 
     QTimer timerKeyPress;
     int keysPressed = 0;// combinaison de keyAction
+
+    bool testSpeedActivated = false;
+    int testSpeedCounter;
+    qint64 testSpeedTime;
 };
 
 #endif // FENETRE_H
