@@ -58,7 +58,7 @@ Ray::Ray(Pos3D pos, RayTracingRessources* rtRess)
     float previousSpeed = 1;//OBJECT3D::getSpeedOfLight(BLOCK::Material::air);// the speed of light in the lens
     if (newSpeed != previousSpeed) {
         // calcul de la réfraction (le regard est normal au plan)
-        pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
+        this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
     }
 #ifdef NAN_VERIF
     if (this->pos.isNan()) {
