@@ -11,6 +11,15 @@ PixScreen<T>::PixScreen(const QSize& size)
     }
 }
 
+template<typename T>
+PixScreen<T>::PixScreen(int width, int height)
+{
+    screen = QList<QList<T>>(width);
+    for (int i = 0; i < width; i++) {
+        screen[i] = QList<T>(height);
+    }
+}
+
 
 RayTracingRessources::RayTracingRessources(const World* world, const Entity* client, DebugTime* dt)
 {
@@ -224,23 +233,37 @@ const QImage* Ray::getTexture(const QString& file) const
 
 
 
+RayTracingWorker::RayTracingWorker()
+{
+    workerId = -1;
+    rtRess = nullptr;
+    totalLight = new int[RAYTRACING::ColumnsPerWorker];
+}
+
 RayTracingWorker::RayTracingWorker(int workerId, RayTracingRessources* rtRess, QObject* parent) : QThread(parent)
 {
     this->workerId = workerId;
     this->rtRess = rtRess;
     totalLight = new int[RAYTRACING::ColumnsPerWorker];
-    colors = new QList<ColorLight>[RAYTRACING::ColumnsPerWorker];
 }
 
 RayTracingWorker::~RayTracingWorker()
 {
     delete[] totalLight;
-    delete[] colors;
+}
+
+RayTracingWorker* RayTracingWorker::operator=(const RayTracingWorker& worker)
+{
+    workerId = worker.workerId;
+    rtRess = worker.rtRess;
+    setParent(worker.parent());
+    return this;
 }
 
 RayTracingWorker* RayTracingWorker::setPrimaryWork(const QSize& sceneSize)
 {
     this->sceneSize = sceneSize;
+    colors = PixScreen<ColorLight>(RAYTRACING::ColumnsPerWorker, sceneSize.height());//inversement des lignes et des colonnes
     return this;
 }
 
@@ -267,7 +290,6 @@ void RayTracingWorker::run() {
         qint64 start;
         //start = rtRess->dt->getCurrent();
         totalLight[i] = 0;
-        colors[i] = QList<ColorLight>(sceneSize.height());
         //pos en % de pixmap.width/2 * xMax
         doubli xPos = (2.0L * (xScene + i) / sceneSize.width() - 1) * xMax, xzPos = sqrt(xPos * xPos + 1);
         radian angleH = atan(xPos);
@@ -299,7 +321,7 @@ void RayTracingWorker::run() {
             light += RAYTRACING::gamma;
 
             totalLight[i] += light;
-            colors[i].replace(y, ColorLight(red, green, blue, 255, light));
+            colors.set(i, y, ColorLight(red, green, blue, 255, light));
             //rtRess->dt->addValue("RayTracingWorker::run_3_ColorLight", rtRess->dt->getCurrent() - start2);//150ms
         }
         rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
@@ -311,6 +333,64 @@ void RayTracingWorker::run() {
 
 
 
+RayTracingDistributor::RayTracingDistributor(RayTracingRessources* rtRess)
+{
+    workers = new RayTracingWorker[nb_workers];
+    for (int i = 0; i < nb_workers; i++) {
+        workers[i] = RayTracingWorker(i, rtRess);
+        connect(&workers[i], &QThread::finished, this, &RayTracingDistributor::onRayWorkerFinished);
+    }
+}
+
+RayTracingDistributor::~RayTracingDistributor()
+{
+    for (int i = 0; i < nb_workers; i++) workers[i].quit();
+    for (int i = 0; i < nb_workers; i++) {
+        workers[i].wait(1000);
+    }
+    delete[] workers;
+}
+
+void RayTracingDistributor::start(int processWidth)
+{
+    this->processWidth = processWidth;
+    processStarted = 0;
+    workersInProcess = true;
+    for (int i = 0; i < nb_workers && i < processWidth; i++) {
+        assignNextRayWork(&workers[i]);
+    }
+    // then wait for the last onRayWorkerReady
+}
+
+void RayTracingDistributor::stop()
+{
+    processWidth = 0;
+    processStarted = 0;
+    workersInProcess = false;
+}
+
+void RayTracingDistributor::onRayWorkerFinished()
+{
+    assignNextRayWork(qobject_cast<RayTracingWorker*>(sender()));
+}
+
+void RayTracingDistributor::assignNextRayWork(RayTracingWorker* worker)
+{
+    if (worker->isRunning()) {
+        qWarning() << "RayTracingWorker" << worker->getWorkerId() << "is already running";
+        worker->wait(1);
+        if (worker->isRunning()) {
+            qWarning() << "RayTracingWorker" << worker->getWorkerId() << "skipped";
+            return;
+        }
+    }
+    if (processStarted >= processWidth) return;
+    worker->setWork(processStarted)->start();
+    processStarted += worker->getNbColumns();
+}
+
+
+
 RayTracing::RayTracing(const map3D* map) : QThread()
 {
     this->map = map;
@@ -318,33 +398,30 @@ RayTracing::RayTracing(const map3D* map) : QThread()
 
     connect(map->getWorld(), &World::changed, this, &RayTracing::worldChanged);
 
-    rayWorkers = QList<RayTracingWorker*>(RAYTRACING::WorkerThread);
-    for (int i = 0; i < rayWorkers.length(); i++) {
-        rayWorkers[i] = new RayTracingWorker(i, rtRess);
-        connect(rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
-        connect(rayWorkers[i], &QThread::finished, this, &RayTracing::onRayWorkerFinished);
+    workerDistributor = new RayTracingDistributor(rtRess);
+    RayTracingWorker* rayWorkers = workerDistributor->getWorkers();
+    for (int i = 0; i < workerDistributor->nb_workers; i++) {
+        connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
     }
+
     image = QImage(1, 1, QImage::Format::Format_RGB32);
     image.fill(Qt::black);
 }
 
 RayTracing::~RayTracing()
 {
-    for (int i = 0; i < rayWorkers.length(); i++) rayWorkers[i]->quit();
-    for (int i = 0; i < rayWorkers.length(); i++) {
-        rayWorkers[i]->wait(1000);
-        delete rayWorkers[i];
-    }
-    rayWorkers.clear();
+    delete workerDistributor;
+    delete rtRess;
+    if (lightPerColumn != nullptr) delete[] lightPerColumn;
 }
 
 
-void RayTracing::onRayWorkerReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight)
+void RayTracing::onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight>& c, const int* totalLight)
 {
     processFinished += nbColumns;
     for (int i = 0; i < nbColumns; i++) {
-        lightPerColumn.replace(x + i, totalLight[i]);
-        colors.setColumn(x + i, c[i]);
+        lightPerColumn[x + i] = totalLight[i];
+        colors.setColumn(x + i, c.getColumn(i));
     }
 
     if (processFinished >= processWidth) {
@@ -358,11 +435,6 @@ void RayTracing::onRayWorkerReady(int x, int nbColumns, const QList<ColorLight>*
         }
     }
 #endif // REFRESH_COLUMN
-}
-
-void RayTracing::onRayWorkerFinished()
-{
-    assignNextRayWork(qobject_cast<RayTracingWorker*>(sender()));
 }
 
 void RayTracing::worldChanged(const WorldChange& change) {
@@ -381,12 +453,18 @@ void RayTracing::run() {
     dt.clear();
     startRun = dt.getCurrent();
 
+    processWidth = calcSize.width();
+    processFinished = 0;
+    processForUpdate = RAYTRACING::RefreshColumn;
+
     if (calcSize != colors.size()) {
-        for (int i = 0; i < rayWorkers.length(); i++) {
-            rayWorkers[i]->setPrimaryWork(calcSize);
+        for (int i = 0; i < workerDistributor->nb_workers; i++) {
+            workerDistributor->getWorkers()[i].setPrimaryWork(calcSize);
         }
         colors = PixScreen<ColorLight>(calcSize);
-        lightPerColumn = QList<int>(calcSize.width());
+        if (lightPerColumn != nullptr) delete[] lightPerColumn;
+        lightPerColumn = new int[processWidth];
+        for (int i = 0; i < processWidth; i++) lightPerColumn[i] = 0;
         image = image.scaled(calcSize);
     }
 
@@ -397,40 +475,16 @@ void RayTracing::run() {
 
     rtRess->resetRessources(map->getClient());// reset the pos
 
-    processWidth = calcSize.width();
-    processFinished = 0;
-    processStarted = 0;
-    processForUpdate = RAYTRACING::RefreshColumn;
-
-    workersInProcess = true;
-    for (int i = 0; i < rayWorkers.length() && i < processWidth; i++) {
-        assignNextRayWork(rayWorkers[i]);
-    }
-    // then wait for the last onRayWorkerReady
+    workerDistributor->start(processWidth);
     // N.B. this function takes less than 1 msec
 }
 
-void RayTracing::assignNextRayWork(RayTracingWorker* worker)
-{
-    if (worker->isRunning()) {
-        qWarning() << "RayTracingWorker" << worker->getWorkerId() << "is already running";
-        worker->wait(1);
-        if (worker->isRunning()) {
-            qWarning() << "RayTracingWorker" << worker->getWorkerId() << "skipped";
-            return;
-        }
-    }
-    if (processStarted >= processWidth) return;
-    worker->setWork(processStarted)->start();
-    processStarted += worker->getNbColumns();
-}
 
 double RayTracing::calcTotalLight() const
 {
     double totalLight = 0;//une sorte de moyenne pour privilégier le poids des très lumineux
-    for (int i = 0; i < lightPerColumn.length(); i++) totalLight += lightPerColumn.at(i);
-    totalLight /= colors.rowNumber();//moyenne par pixel
-    return totalLight;
+    for (int i = 0; i < processWidth; i++) totalLight += lightPerColumn[i];
+    return totalLight / colors.rowNumber();//moyenne par pixel
     // full screen : 2 msec / 20 appels
 }
 
@@ -456,7 +510,7 @@ void RayTracing::paint()
 void RayTracing::onAllWorkersFinished()
 {
     qDebug() << "All ray workers have finished, processFinished :" << processFinished << "/" << processWidth;
-    workersInProcess = false;
+    workerDistributor->stop();
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);
     qDebug() << "GUIWorker::run #end" << dt;

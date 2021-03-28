@@ -36,18 +36,23 @@ template<typename T>
 class PixScreen
 {
 public://il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
-    PixScreen() { screen = QList<QList<T>>(0); };
+    PixScreen() {}
     PixScreen(const QSize& size);
-    PixScreen(const PixScreen& ps) { screen = ps.screen; };
-    PixScreen* operator=(const PixScreen& ps) { screen = ps.screen; return this; };
-    void set(const int& x, const int& y, T pos) { screen[x][y] = pos; };
-    T at(const int& x, const int& y) const { return screen.at(x).at(y); };
-    int width() const { return screen.length(); };
-    int height() const { return screen.length() ? screen.at(0).length() : 0; };
+    PixScreen(int width, int height);
+    PixScreen* operator=(const PixScreen& ps) { screen = ps.screen; return this; }
+
+    void set(int x, int y, const T& pos) { screen[x][y] = pos; }
+    const T& at(int x, int y) const { return screen[x][y]; }
+    T& operator()(int x, int y) { return screen[x][y]; }
+
+    int width() const { return screen.size(); }
+    int height() const { return screen.isEmpty() ? 0 : screen.first().size(); }
     QSize size() const { return QSize(width(), height()); }
-    int rowNumber() const { return width() * height(); };
-    QList<T> getColumn(int x) const { return screen.at(x); };
-    void setColumn(int x, QList<T> column) { screen[x] = column; };
+    int rowNumber() const { return width() * height(); }
+
+    QList<T>& operator[](const int& x) { return screen[x]; }
+    const QList<T>& getColumn(int x) const { return screen.at(x); }
+    void setColumn(int x, const QList<T>& column) { screen[x] = column; }
 private:
     QList<QList<T>> screen;
 };
@@ -103,15 +108,18 @@ class RayTracingWorker : public QThread
 {
     Q_OBJECT
 public:
+    RayTracingWorker();
     RayTracingWorker(int workerId, RayTracingRessources* rtRess, QObject* parent = nullptr);
     ~RayTracingWorker();
+    RayTracingWorker* operator=(const RayTracingWorker& worker);
+
     RayTracingWorker* setPrimaryWork(const QSize& sceneSize);
     inline RayTracingWorker* setWork(int xScene) { this->xScene = xScene; return this; }
     inline int getWorkerId() const { return workerId; };
     inline int getNbColumns() const { return std::min(RAYTRACING::ColumnsPerWorker, sceneSize.width() - xScene); }
 
 signals:
-    void resultReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight);
+    void resultReady(int x, int nbColumns, const PixScreen<ColorLight>& c, const int* totalLight);
 private:
     static QList<Pos3D> calcRaysPosColumn(const doubli& xPos, const int& sceneHeight, const Pos3D& clientPos);
     void run() override;// process ONE column at a time
@@ -121,9 +129,34 @@ private:
     int xScene;// just ONE column, more columns with RAYTRACING::ColumnsPerWorker
     RayTracingRessources* rtRess;
     int* totalLight = nullptr;
-    QList<ColorLight>* colors = nullptr;
+    PixScreen<ColorLight> colors;
 };
 
+
+class RayTracingDistributor : public QThread
+{
+    Q_OBJECT
+public:
+    RayTracingDistributor(RayTracingRessources* rtRess);
+    ~RayTracingDistributor();
+
+    void start(int processWidth);
+    void stop();
+
+    RayTracingWorker* getWorkers() const { return workers; }
+    const int nb_workers = RAYTRACING::WorkerThread;
+    bool isRunning() const { return QThread::isRunning() || workersInProcess; }
+
+private slots:
+    void onRayWorkerFinished();
+
+private:
+    void assignNextRayWork(RayTracingWorker* worker);
+    RayTracingWorker* workers = nullptr;
+    int processWidth = 0;
+    int processStarted = 0;
+    bool workersInProcess = false;
+};
 
 class RayTracing : public QThread
 {
@@ -134,19 +167,17 @@ public:
 
     RayTracing* setSize(const QSize& size) { if (!isRunning()) calcSize = size; return this; }
     const QImage& getImage() const { return image; }
-    bool isRunning() { return QThread::isRunning() || workersInProcess; }
+    bool isRunning() { return QThread::isRunning() || workerDistributor->isRunning(); }
 
 private slots:
     void worldChanged(const WorldChange& change);
-    void onRayWorkerReady(int x, int nbColumns, const QList<ColorLight>* c, const int* totalLight);
-    void onRayWorkerFinished();
+    void onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight>& c, const int* totalLight);
 
 signals:
     void resultReady(const QImage& image);
 
 private:
     void run() override;
-    void assignNextRayWork(RayTracingWorker* worker);
     double calcTotalLight() const;
     void paint();
     void onAllWorkersFinished();
@@ -158,15 +189,14 @@ private:
     const map3D* map;
     QSize calcSize;
 
-    QList<doubli> yPosList; // calculs des yPos en fonction de y
     PixScreen<ColorLight> colors;
-    QList<int> lightPerColumn; // calculs des light de chaque colonne (en fonction de x)
+    int* lightPerColumn = nullptr; // calculs des light de chaque colonne (en fonction de x)
+
+    RayTracingDistributor* workerDistributor;
     int processWidth = 0;
     int processFinished = 0;
-    int processStarted = 0;
     int processForUpdate;
-    QList<RayTracingWorker*> rayWorkers;
-    bool workersInProcess = false;
+
     QImage image;
 };
 
