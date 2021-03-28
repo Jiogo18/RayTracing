@@ -12,7 +12,7 @@
 typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
 bool isNull(const doubli d);
 doubli roundNull(const doubli d);//plus opti que round
-doubli round(const doubli d);
+constexpr doubli round(const doubli d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
 doubli signOf(const doubli d);
 typedef float radian;
 doubli sqr(const doubli d);//easy
@@ -40,21 +40,19 @@ QDebug operator <<(QDebug debug, const doubli d);
 class Point3D
 {
 public:
-    Point3D();
-    Point3D(doubli x, doubli y, doubli z);
-    Point3D(const Point3D& point);
-    Point3D* operator =(const Point3D& point);
+    constexpr inline Point3D() : x(0), y(0), z(0) {}
+    constexpr inline Point3D(const doubli& x, const doubli& y, const doubli& z) : x(round(x)), y(round(y)), z(round(z)) {}
 
     inline doubli getX() const { return x; }
     inline doubli getY() const { return y; }
     inline doubli getZ() const { return z; }
     Point3D getPoint() const { return *this; }
-    void setX(doubli x) { this->x = x; }
-    void setY(doubli y) { this->y = y; }
-    void setZ(doubli z) { this->z = z; }
-    void addX(doubli x) { this->x += x; }
-    void addY(doubli y) { this->y += y; }
-    void addZ(doubli z) { this->z += z; }
+    inline void setX(doubli x) { this->x = x; }
+    inline void setY(doubli y) { this->y = y; }
+    inline void setZ(doubli z) { this->z = z; }
+    inline void addX(doubli x) { this->x += x; }
+    inline void addY(doubli y) { this->y += y; }
+    inline void addZ(doubli z) { this->z += z; }
     void setPoint(const Point3D& point) { x = point.x; y = point.y; z = point.z; }
 
     doubli distanceAxeZ() const { return std::sqrt(x * x + y * y); }
@@ -65,11 +63,9 @@ public:
     bool operator <=(const Point3D& point) const;
     bool operator >=(const Point3D& point) const;
     bool isNull() const { return x == 0.0L && y == 0.0L && z == 0.0L; }
-    bool isValid() const { return defined; }
     bool isInf() const { return qIsInf(x) || qIsInf(y) || qIsInf(z); }
     bool isNan() const { return isnanf(x) || isnanf(y) || isnanf(z); }
     static Point3D makeInfinite() { return Point3D(INFINITY, INFINITY, INFINITY); }
-    static Point3D makeNotDefined() { Point3D p; p.defined = false; return p; }
 
     Point3D operator +(const Point3D& point) const;
     Point3D operator -(const Point3D& point) const;
@@ -77,6 +73,8 @@ public:
     Point3D operator *(doubli n) const;
     Point3D operator /(const Point3D& point) const;
     Point3D operator /(doubli n) const;
+    // unary operator
+    friend inline Point3D operator-(const Point3D& p) { return Point3D(-p.x, -p.y, -p.z); }
 
     static doubli distance(const Point3D& pA, const Point3D& pB);
     static doubli distanceMax(const Point3D& pA, const Point3D& pB);
@@ -90,7 +88,16 @@ public:
 
 protected:
     doubli x, y, z;
-    bool defined = true;
+};
+
+class Point3DCancelable : public Point3D {
+public:
+    constexpr inline Point3DCancelable() : valid(false) {}
+    constexpr inline Point3DCancelable(doubli x, doubli y, doubli z) : Point3D(x, y, z), valid(true) {}
+    constexpr inline Point3DCancelable(const Point3D& p) : Point3D(p), valid(true) {}
+    constexpr inline bool isValid() const { return valid; }
+private:
+    const bool valid;
 };
 
 class Vec3D : public Point3D
@@ -98,6 +105,9 @@ class Vec3D : public Point3D
 public:
     Vec3D(doubli x, doubli y, doubli z) { this->x = x; this->y = y; this->z = z; }// plus opti
     doubli produitScalaire(const Vec3D& vec) const { return x * vec.x + y * vec.y + z * vec.z; }
+
+    // unary operator
+    friend inline Vec3D operator-(const Vec3D& p) { return Vec3D(-p.x, -p.y, -p.z); }
 };
 
 class Rot3D
@@ -257,7 +267,7 @@ public:
     Plan* operator =(const Plan& plan);
     //mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
     bool paralleleDroite(const Size3D& vect) const;
-    Point3D intersection(const Point3D& pA, const Point3D& pB) const;
+    Point3DCancelable intersection(const Point3D& pA, const Point3D& pB) const;
     QPointF projeteOrtho(const Point3D& pA) const;
     Point3D projeteOrtho3D(const Point3D& pA) const;
     inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }

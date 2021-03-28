@@ -2,7 +2,6 @@
 
 bool isNull(const doubli d) { return -0.000001 < d && d < 0.000001; }
 doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; }
-doubli round(const doubli d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
 doubli signOf(const doubli d) { return d < 0 ? -1 : 1; }
 doubli sqr(const doubli d) { return d * d; }
 radian degreesToRadians(const doubli deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
@@ -27,28 +26,7 @@ float signOf(radian d) { return modRad(d) < 0 ? -1 : 1; }
 QDebug operator <<(QDebug debug, const doubli d) { debug << static_cast<double>(d); return debug; }
 
 
-Point3D::Point3D() { x = 0; y = 0; z = 0; defined = false; }
-Point3D::Point3D(doubli x, doubli y, doubli z)
-{
-    this->x = round(x);
-    this->y = round(y);
-    this->z = round(z);
-}
-Point3D::Point3D(const Point3D& point)
-{
-    x = point.x;
-    y = point.y;
-    z = point.z;
-    defined = point.defined;
-}
-Point3D* Point3D::operator =(const Point3D& point)
-{
-    x = point.x;
-    y = point.y;
-    z = point.z;
-    defined = point.defined;
-    return this;
-}
+
 
 bool Point3D::operator <(const Point3D& point) const
 {
@@ -500,17 +478,17 @@ bool Plan::paralleleDroite(const Size3D& vect) const
     return isNull(scalaireAvecVectNormal);
 }
 
-Point3D Plan::intersection(const Point3D& pA, const Point3D& pB) const
+Point3DCancelable Plan::intersection(const Point3D& pA, const Point3D& pB) const
 {
     //Voir #Intersection
     Size3D ABs(pA, pB);
     if (paralleleDroite(ABs))
-        return Point3D::makeNotDefined();
+        return Point3DCancelable();
     doubli t = -(a * pA.getX() + b * pA.getY() + c * pA.getZ() + d)
         / (a * ABs.getDX() + b * ABs.getDY() + c * ABs.getDZ());
     if (t < 0)//derriere
-        return Point3D::makeNotDefined();
-    return pA + ABs * t;
+        return Point3DCancelable();
+    return Point3DCancelable(pA + ABs * t);
 }
 
 QPointF Plan::projeteOrtho(const Point3D& pA) const

@@ -172,7 +172,7 @@ const Face* Ray::getFirstIntersection(const World* world, Point3D& pInter) const
 
                 if (!plan->isValid()) continue;
 
-                Point3D pInter = plan->intersection(pos, posNextPoint);
+                Point3DCancelable pInter = plan->intersection(pos, posNextPoint);
 
                 if (!pInter.isValid() || !face->getMaxGeometry().contains(pInter))
                     continue;
