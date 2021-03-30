@@ -1,7 +1,7 @@
 #ifndef TRANSFO_H
 #define TRANSFO_H
 
-#include "3DObject/3DGeometry.h"
+#include "3DObject/Geometry3D.h"
 #include "3DObject/World3D.h"
 
 

@@ -1,7 +1,9 @@
 QT += widgets opengl openglwidgets #winextras
 
 SOURCES += \
-    3DObject/3DGeometry.cpp \
+    3DObject/Point3D.cpp \
+    3DObject/Pos3D.cpp \
+    3DObject/Geometry3D.cpp \
     3DObject/Object3D.cpp \
     3DObject/World3D.cpp \
     DebugTime.cpp \
@@ -14,7 +16,9 @@ SOURCES += \
     map3D.cpp
 
 HEADERS += \
-    3DObject/3DGeometry.h \
+    3DObject/Point3D.h \
+    3DObject/Pos3D.h \
+    3DObject/Geometry3D.h \
     3DObject/Object3D.h \
     3DObject/World3D.h \
     DebugTime.h \

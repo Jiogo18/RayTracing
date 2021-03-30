@@ -1,7 +1,7 @@
 #ifndef OBJECT3D_H
 #define OBJECT3D_H
 
-#include "3DGeometry.h"
+#include "Geometry3D.h"
 #include <QImage>
 #include <QMap>
 
