@@ -2,53 +2,55 @@
 #define GEOMETRY3D_H
 
 #include <QPointF>
-#include "DebugTime.h"
 #include "Pos3D.h"
 
 class Size3D
 {
 public:
-    Size3D();
-    Size3D(doubli dX, doubli dY, doubli dZ);
-    Size3D(const Size3D &size);
-    Size3D(const Point3D &pA, const Point3D &pB);
-    doubli getDX() const { return dX; }
-    doubli getDY() const { return dY; }
-    doubli getDZ() const { return dZ; }
-    Size3D getSize() const { return *this; }
-    Point3D toPoint() const { return Point3D(dX, dY, dZ); } // relative to (0,0,0)
-    void setDX(doubli dX) { this->dX = dX; }
-    void setDY(doubli dY) { this->dY = dY; }
-    void setDZ(doubli dZ) { this->dZ = dZ; }
-    Size3D operator*(doubli scale) const { return Size3D(dX * scale, dY * scale, dZ * scale); }
-    Size3D operator/(doubli scale) const { return Size3D(dX / scale, dY / scale, dZ / scale); }
+    constexpr inline Size3D() : dXp(0), dYp(0), dZp(0) {}
+    constexpr inline Size3D(const doubli &dX, const doubli &dY, const doubli &dZ) : dXp(dX), dYp(dY), dZp(dZ) {}
+    constexpr inline Size3D(const Size3D &s) : dXp(s.dXp), dYp(s.dYp), dZp(s.dZp) {}
+    constexpr inline Size3D(const Point3D &pA, const Point3D &pB)
+        : dXp(pB.x() - pA.x()), dYp(pB.y() - pA.y()), dZp(pB.z() - pA.z()) {}
+    constexpr inline const doubli &dX() const { return dXp; }
+    constexpr inline const doubli &dY() const { return dYp; }
+    constexpr inline const doubli &dZ() const { return dZp; }
+    constexpr inline const Size3D &getSize() const { return *this; }
+    constexpr inline Point3D toPoint() const { return Point3D(dXp, dYp, dZp); } // relative to (0,0,0)
 
-    friend Point3D operator-(const Point3D &p, const Size3D &s);
-    friend Point3D operator+(const Point3D &p, const Size3D &s);
+    constexpr inline void setDX(const doubli &dX) { dXp = dX; }
+    constexpr inline void setDY(const doubli &dY) { dYp = dY; }
+    constexpr inline void setDZ(const doubli &dZ) { dZp = dZ; }
 
-protected:
-    doubli dX, dY, dZ; // delta
+    constexpr inline Size3D operator*(const doubli &scale) const { return Size3D(dXp * scale, dYp * scale, dZp * scale); }
+    constexpr inline Size3D operator/(const doubli &scale) const { return Size3D(dXp / scale, dYp / scale, dZp / scale); }
+
+    friend constexpr inline Point3D operator-(const Point3D &p, const Size3D &s) { return Point3D(p.x() - s.dXp, p.y() - s.dYp, p.z() - s.dZp); }
+    friend constexpr inline Point3D operator+(const Point3D &p, const Size3D &s) { return Point3D(p.x() + s.dXp, p.y() + s.dYp, p.z() + s.dZp); }
+
+private:
+    doubli dXp, dYp, dZp; // delta
 };
 
 class HRect3D
 {
 public:
-    HRect3D(); // a horizontal cuboid
-    HRect3D(const Point3D &pointA, const Point3D &pointB);
-    HRect3D(const Point3D &pointA, const Size3D &size);
-    HRect3D(const HRect3D &rect);
-    Size3D getSize() const { return Size3D(pointMin, pointMax); }
-    Point3D getPointMin() const { return pointMin; }
-    Point3D getPointMax() const { return pointMax; }
-    Point3D getMiddle() const { return (pointMin + pointMax) / 2; }
+    constexpr inline HRect3D() {} // a horizontal cuboid
+    constexpr inline HRect3D(const Point3D &pA, const Point3D &pB)
+        : pMin(min(pA.x(), pB.x()), min(pA.y(), pB.y()), min(pA.z(), pB.z())),
+          pMax(max(pA.x(), pB.x()), max(pA.y(), pB.y()), max(pA.z(), pB.z())) {}
+    constexpr inline HRect3D(const Point3D &pA, const Size3D &s) : pMin(pA), pMax(pA + s) {}
+    constexpr inline HRect3D(const HRect3D &r) : pMin(r.pMin), pMax(r.pMax) {}
+
+    constexpr inline Size3D getSize() const { return Size3D(pMin, pMax); }
+    constexpr inline const Point3D &getPointMin() const { return pMin; }
+    constexpr inline const Point3D &getPointMax() const { return pMax; }
+    inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
     // void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     // void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
-    void scale(doubli scale);
-    HRect3D operator+(const Point3D &pointAdd) const
-    {
-        return HRect3D(pointMin + pointAdd, pointMax + pointAdd);
-    }
+    void scale(const doubli &scale);
+    HRect3D operator+(const Point3D &pointAdd) const { return HRect3D(pMin + pointAdd, pMax + pointAdd); }
     HRect3D *operator=(const HRect3D &rect);
     bool operator==(const HRect3D &rect) const;
 
@@ -57,29 +59,27 @@ public:
     friend QDebug operator<<(QDebug debug, const HRect3D &rect);
 
 private:
-    Point3D pointMin, pointMax;
+    Point3D pMin, pMax;
     // TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
 
 class Rect3D : public HRect3D
 {
 public:
-    Rect3D();
-    Rect3D(const Point3D &pointA, const Point3D &pointB, const Point3D &pointC);
-    Rect3D(const Point3D &pointA, const Point3D &pointB, const Size3D &size);
-    Rect3D(const Rect3D &rect);
-    Size3D getSize() const { return Size3D(pointMin, pointMax); }
-    Point3D getPointMin() const { return pointMin; }
-    Point3D getPointMax() const { return pointMax; }
-    Point3D getMiddle() const { return (pointMin + pointMax) / 2; }
+    constexpr inline Rect3D() : HRect3D() {}
+    constexpr inline Rect3D(const Point3D &pA, const Point3D &pB, const Point3D &pC) : HRect3D(pA, pC), pB(pB) { calcMinMax(); }
+    constexpr inline Rect3D(const Point3D &pA, const Point3D &pB, const Size3D &s) : HRect3D(pA, s), pB(pB) { calcMinMax(); }
+    constexpr inline Rect3D(const Rect3D &r) : HRect3D(r), pB(r.pB), pMin(r.pMin), pMax(r.pMax) {}
+
+    constexpr inline Size3D getSize() const { return Size3D(pMin, pMax); }
+    constexpr inline const Point3D &getPointMin() const { return pMin; }
+    constexpr inline const Point3D &getPointMax() const { return pMax; }
+    inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
     // void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     // void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
-    void scale(doubli scale);
-    Rect3D operator+(const Point3D &pointAdd) const
-    {
-        return Rect3D(pointA + pointAdd, pointB + pointAdd, pointC + pointAdd);
-    }
+    void scale(const doubli &scale);
+    Rect3D operator+(const Point3D &pointAdd) const { return Rect3D(pA + pointAdd, pB + pointAdd, pC + pointAdd); }
     Rect3D *operator=(const Rect3D &rect);
     bool operator==(const Rect3D &rect) const;
 
@@ -88,19 +88,29 @@ public:
     friend QDebug operator<<(QDebug debug, const Rect3D &rect);
 
 private:
-    Point3D pointA, pointB, pointC, pointMax, pointMin;
-    void calcMinMax();
+    Point3D pA, pB, pC, pMin, pMax;
+    constexpr void calcMinMax();
     // TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
+
+constexpr void Rect3D::calcMinMax()
+{
+    pMax = Point3D(max(HRect3D::getPointMax().x(), pB.x()),
+                   max(HRect3D::getPointMax().y(), pB.y()),
+                   max(HRect3D::getPointMax().z(), pB.z()));
+    pMin = Point3D(min(HRect3D::getPointMin().x(), pB.x(), pC.x()),
+                   min(HRect3D::getPointMin().y(), pB.y()),
+                   min(HRect3D::getPointMin().z(), pB.z()));
+}
 
 class Plan
 {
 public:
-    Plan();
-    Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC);
-    Plan(const HRect3D &rect);
-    Plan(const Plan &plan);
-    Plan *operator=(const Plan &plan);
+    constexpr inline Plan() : pA() {}
+    constexpr inline Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC) : pA(pA) { calcEquation(pB, pC); }
+    Plan(const HRect3D &r);
+    constexpr inline Plan(const Plan &p) : pA(p.pA), a(p.a), b(p.b), c(p.c), d(p.d) {}
+    Plan *operator=(const Plan &p);
     // mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
     bool paralleleDroite(const Size3D &vect) const;
     Point3DCancelable intersection(const Point3D &pA, const Point3D &pB) const;
@@ -112,8 +122,7 @@ public:
     // sens positif (ne plus utiliser)
     // radian getRX() const { return a >= 0 ? atan(a / b) : M_PI + atan(a / b); }
     // radian getRZ() const { return atan(c / sqrt(a * a + b * b)); }
-    Vec3D normale() const { return Vec3D(a, b, c); }
-    Vec3D normaleUnitaire() const { return Vec3D(a, b, c); }
+    constexpr inline Vec3D normale() const { return Vec3D(a, b, c); } // (calculé unitaire)
 
 private:
     Point3D pA;

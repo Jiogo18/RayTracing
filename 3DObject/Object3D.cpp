@@ -256,7 +256,7 @@ ColorLight Face::getColor(const QPointF &point, const QImage *img) const
 
 Rot3D Face::boundRot(const Rot3D &rot) const
 {
-    Vec3D P = rot.toVector(), Ori = plan.normaleUnitaire();
+    Vec3D P = rot.toVector(), Ori = plan.normale();
 
     doubli k =
         P.produitScalaire(Ori); // `/ Ori.distanceOrigine()` normalement mais il est unitaire ici
@@ -276,7 +276,7 @@ Rot3D Face::refractRot(const Pos3D &pos, float indiceRefrac) const
     if (indiceRefrac == 1) return pos; // shortcut, speedOut/speedIn
     if (indiceRefrac == 0 || isnanf(indiceRefrac)) return Rot3D();
 
-    Vec3D Ori = plan.normaleUnitaire();
+    Vec3D Ori = plan.normale();
     Point3D delta = pos.toVector() - Ori;
 
     Point3D Mid = Ori + delta / indiceRefrac;
@@ -335,17 +335,17 @@ bool Block::containsPoint(const Point3D &point) const
 QList<Face> Block::createDefaultFaces(Point3D posSolid, Size3D size, BLOCK::Material material)
 {
     return {
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.getDX(), size.getDY(), 0)), 0,
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), size.dY(), 0)), 0,
              material, {BLOCK::Variation::bottom}), // BOTTOM
-        Face(posSolid, HRect3D(Point3D(0, 0, size.getDZ()), size.toPoint()), 1, material,
+        Face(posSolid, HRect3D(Point3D(0, 0, size.dZ()), size.toPoint()), 1, material,
              {BLOCK::Variation::top}), // TOP
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.getDY(), size.getDZ())), 0,
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.dY(), size.dZ())), 0,
              material, {BLOCK::Variation::back}), // SOUTH
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.getDX(), 0, size.getDZ())), 0,
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), 0, size.dZ())), 0,
              material, {BLOCK::Variation::right}), // EAST
-        Face(posSolid, HRect3D(Point3D(size.getDX(), 0, 0), size.toPoint()), 1, material,
+        Face(posSolid, HRect3D(Point3D(size.dX(), 0, 0), size.toPoint()), 1, material,
              {BLOCK::Variation::front}), // NORTH
-        Face(posSolid, HRect3D(Point3D(0, size.getDY(), 0), size.toPoint()), 1, material,
+        Face(posSolid, HRect3D(Point3D(0, size.dY(), 0), size.toPoint()), 1, material,
              {BLOCK::Variation::left}) // WEST
     };
 }

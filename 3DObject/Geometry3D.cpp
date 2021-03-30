@@ -1,132 +1,65 @@
 #include "Geometry3D.h"
 
-Size3D::Size3D(doubli dX, doubli dY, doubli dZ)
-{
-    this->dX = dX;
-    this->dY = dY;
-    this->dZ = dZ;
-}
-Size3D::Size3D(const Size3D &size)
-{
-    dX = size.dX;
-    dY = size.dY;
-    dZ = size.dZ;
-}
-Size3D::Size3D(const Point3D &pA, const Point3D &pB)
-{
-    dX = pB.x() - pA.x();
-    dY = pB.y() - pA.y();
-    dZ = pB.z() - pA.z();
-}
-
-Point3D operator-(const Point3D &p, const Size3D &s)
-{
-    return Point3D(p.x() - s.dX, p.y() - s.dY, p.z() - s.dZ);
-}
-Point3D operator+(const Point3D &p, const Size3D &s)
-{
-    return Point3D(p.x() + s.dX, p.y() + s.dY, p.z() + s.dZ);
-}
-
-HRect3D::HRect3D() {}
-HRect3D::HRect3D(const Point3D &pointA, const Point3D &pointB)
-{
-    pointMin = Point3D(min(pointA.x(), pointB.x()), min(pointA.y(), pointB.y()),
-                       min(pointA.z(), pointB.z()));
-    pointMax = Point3D(max(pointA.x(), pointB.x()), max(pointA.y(), pointB.y()),
-                       max(pointA.z(), pointB.z()));
-}
-HRect3D::HRect3D(const Point3D &pointA, const Size3D &size)
-{
-    pointMin = pointA;
-    pointMax = pointA + size;
-}
-HRect3D::HRect3D(const HRect3D &rect)
-{
-    pointMin = rect.pointMin;
-    pointMax = rect.pointMax;
-}
-
-void HRect3D::scale(doubli scale)
+void HRect3D::scale(const doubli &scale)
 {
     Size3D demisizeScaled = getSize() / 2 * scale;
     const Point3D &middle = getMiddle();
-    pointMin = middle - demisizeScaled;
-    pointMax = middle + demisizeScaled;
+    pMin = middle - demisizeScaled;
+    pMax = middle + demisizeScaled;
 }
 
 HRect3D *HRect3D::operator=(const HRect3D &rect)
 {
-    pointMin = rect.pointMin;
-    pointMax = rect.pointMax;
+    pMin = rect.pMin;
+    pMax = rect.pMax;
     return this;
 }
 bool HRect3D::operator==(const HRect3D &rect) const
 {
-    return pointMin == rect.pointMin && pointMax == rect.pointMax;
+    return pMin == rect.pMin && pMax == rect.pMax;
 }
 
 bool HRect3D::contains(const Point3D &point) const
 {
-    if (point.x() < pointMin.x() || pointMax.x() < point.x()) return false;
-    if (point.y() < pointMin.y() || pointMax.y() < point.y()) return false;
-    if (point.z() < pointMin.z() || pointMax.z() < point.z()) return false;
+    if (point.x() < pMin.x() || pMax.x() < point.x()) return false;
+    if (point.y() < pMin.y() || pMax.y() < point.y()) return false;
+    if (point.z() < pMin.z() || pMax.z() < point.z()) return false;
     return true;
 }
 
 QDebug operator<<(QDebug debug, const HRect3D &rect)
 {
-    debug << "HRect3D(" << rect.pointMin << "->" << rect.pointMax << ")";
+    debug << "HRect3D(" << rect.pMin << "->" << rect.pMax << ")";
     return debug;
 }
 
-Rect3D::Rect3D() : HRect3D() {}
-Rect3D::Rect3D(const Point3D &pointA, const Point3D &pointB, const Point3D &pointC)
-    : HRect3D(pointA, pointC)
-{
-    this->pointB = pointB;
-    calcMinMax();
-}
-Rect3D::Rect3D(const Point3D &pointA, const Point3D &pointB, const Size3D &size)
-    : HRect3D(pointA, size)
-{
-    this->pointB = pointB;
-    calcMinMax();
-}
-Rect3D::Rect3D(const Rect3D &rect) : HRect3D(rect)
-{
-    pointB = rect.pointB;
-    pointMin = rect.pointMin;
-    pointMax = rect.pointMax;
-}
-
-void Rect3D::scale(doubli scale)
+void Rect3D::scale(const doubli &scale)
 {
     HRect3D::scale(scale);
-    Size3D thirdSize = Size3D(getMiddle(), pointB) * scale;
-    pointB = pointB + thirdSize;
+    Size3D size(getMiddle(), pB);
+    pB = pB + size * scale;
     calcMinMax();
 }
 
 Rect3D *Rect3D::operator=(const Rect3D &rect)
 {
     HRect3D::operator=(rect);
-    pointB = rect.pointB;
-    pointMin = rect.pointMin;
-    pointMax = rect.pointMax;
+    pB = rect.pB;
+    pMin = rect.pMin;
+    pMax = rect.pMax;
     return this;
 }
 
 bool Rect3D::operator==(const Rect3D &rect) const
 {
-    return HRect3D::operator==(rect) && pointB == rect.pointB;
+    return HRect3D::operator==(rect) && pB == rect.pB;
 }
 
 bool Rect3D::contains(const Point3D &point) const
 {
-    if (point.x() < pointMin.x() || pointMax.x() < point.x()) return false;
-    if (point.y() < pointMin.y() || pointMax.y() < point.y()) return false;
-    if (point.z() < pointMin.z() || pointMax.z() < point.z()) return false;
+    if (point.x() < pMin.x() || pMax.x() < point.x()) return false;
+    if (point.y() < pMin.y() || pMax.y() < point.y()) return false;
+    if (point.z() < pMin.z() || pMax.z() < point.z()) return false;
     return true;
 }
 
@@ -136,40 +69,15 @@ QDebug operator<<(QDebug debug, const Rect3D &rect)
     return debug;
 }
 
-void Rect3D::calcMinMax()
+Plan::Plan(const HRect3D &r) : pA(r.getPointMin())
 {
-    pointMax = Point3D(max(HRect3D::getPointMax().x(), pointB.x()),
-                       max(HRect3D::getPointMax().y(), pointB.y()),
-                       max(HRect3D::getPointMax().z(), pointB.z()));
-    pointMin = Point3D(min(HRect3D::getPointMin().x(), pointB.x(), pointC.x()),
-                       min(HRect3D::getPointMin().y(), pointB.y()),
-                       min(HRect3D::getPointMin().z(), pointB.z()));
-}
-
-Plan::Plan() {}
-Plan::Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC)
-{
-    this->pA = pA;
-    calcEquation(pB, pC);
-}
-Plan::Plan(const HRect3D &rect)
-{
-    this->pA = rect.getPointMin();
     // les points intermédiaires (B et C) sont à mis distance de A et de D sur Z
     // TODO: sauf si rotation...
-    const Point3D pB(rect.getPointMin().x(), (rect.getPointMin().y() + rect.getPointMax().y()) / 2,
-                     (rect.getPointMin().z() + rect.getPointMax().z()) / 2);
-    const Point3D pC((rect.getPointMin().x() + rect.getPointMax().x()) / 2, rect.getPointMin().y(),
-                     (rect.getPointMin().z() + rect.getPointMax().z()) / 2);
+    const Point3D pB(r.getPointMin().x(), (r.getPointMin().y() + r.getPointMax().y()) / 2,
+                     (r.getPointMin().z() + r.getPointMax().z()) / 2);
+    const Point3D pC((r.getPointMin().x() + r.getPointMax().x()) / 2, r.getPointMin().y(),
+                     (r.getPointMin().z() + r.getPointMax().z()) / 2);
     calcEquation(pB, pC);
-}
-Plan::Plan(const Plan &plan)
-{
-    pA = plan.pA;
-    a = plan.a;
-    b = plan.b;
-    c = plan.c;
-    d = plan.d;
 }
 
 Plan *Plan::operator=(const Plan &plan)
@@ -185,7 +93,7 @@ Plan *Plan::operator=(const Plan &plan)
 bool Plan::paralleleDroite(const Size3D &vect) const
 {
     // voir #Orthogonal
-    doubli scalaireAvecVectNormal = a * vect.getDX() + b * vect.getDY() + c * vect.getDZ();
+    doubli scalaireAvecVectNormal = a * vect.dX() + b * vect.dY() + c * vect.dZ();
     return isNull(scalaireAvecVectNormal);
 }
 
@@ -195,7 +103,7 @@ Point3DCancelable Plan::intersection(const Point3D &pA, const Point3D &pB) const
     Size3D ABs(pA, pB);
     if (paralleleDroite(ABs)) return Point3DCancelable();
     doubli t = -(a * pA.x() + b * pA.y() + c * pA.z() + d)
-               / (a * ABs.getDX() + b * ABs.getDY() + c * ABs.getDZ());
+               / (a * ABs.dX() + b * ABs.dY() + c * ABs.dZ());
     if (t < 0) // derriere
         return Point3DCancelable();
     return Point3DCancelable(pA + ABs * t);
