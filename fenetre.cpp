@@ -1,20 +1,19 @@
 #include "fenetre.h"
 
-fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
+fenetre::fenetre(map3D *map, QWidget *parent) : GUI(map, parent)
 {
     this->map = map;
 
     connect(this, &GUI::workStarted, this, &fenetre::onWorkStarted);
     connect(this, &GUI::workFinished, this, &fenetre::onWorkFinished);
-    //setCursor(Qt::BlankCursor);
+    // setCursor(Qt::BlankCursor);
 
     show();
     setMinimumSize(50, 50);
     setGeometry(QRect(geometry().topLeft(), QSize(150, 100)));
 
-    //moveMouseMidWindow();
-    //posMouse = QPoint(0, 0);
-
+    // moveMouseMidWindow();
+    // posMouse = QPoint(0, 0);
 
     lastRefreshTime = 0;
     refresh();
@@ -29,17 +28,15 @@ fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
 
 fenetre::~fenetre() {}
 
-
-void fenetre::keyPressEvent(QKeyEvent* event)
+void fenetre::keyPressEvent(QKeyEvent *event)
 {
     if (KEY::keyConfig.contains(event->key())) {
         if (event->isAutoRepeat()) return;
-        keysPressed |= (1 << KEY::keyConfig.value(event->key()));//add the key
+        keysPressed |= (1 << KEY::keyConfig.value(event->key())); // add the key
         if (keysPressed && !timerKeyPress.isActive()) {
             timerKeyPress.start();
         }
-    }
-    else {
+    } else {
         switch (event->key()) {
         case Qt::Key_F5:
             refresh();
@@ -51,11 +48,11 @@ void fenetre::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void fenetre::keyReleaseEvent(QKeyEvent* event)
+void fenetre::keyReleaseEvent(QKeyEvent *event)
 {
     if (KEY::keyConfig.contains(event->key())) {
         if (event->isAutoRepeat()) return;
-        keysPressed ^= (1 << KEY::keyConfig.value(event->key()));//remove the key
+        keysPressed ^= (1 << KEY::keyConfig.value(event->key())); // remove the key
         if (!keysPressed && timerKeyPress.isActive()) {
             timerKeyPress.stop();
         }
@@ -72,7 +69,7 @@ void fenetre::speedTest()
     refresh();
 }
 
-//void fenetre::mouseMoveEvent(QMouseEvent *event)
+// void fenetre::mouseMoveEvent(QMouseEvent *event)
 //{
 //    Q_UNUSED(event)
 //    //map->getClient()->moveRX((MidWindow().x() - event->x())/MouseSensibility);
@@ -80,15 +77,16 @@ void fenetre::speedTest()
 //    //moveMouseMidWindow();
 //}
 
-//QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
-//void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
+// QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
+// void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
 
 void fenetre::onWorkStarted()
 {
     lastRefreshTime = QDateTime::currentMSecsSinceEpoch();
     setCursor(Qt::WaitCursor);
 }
-void fenetre::onWorkFinished() {
+void fenetre::onWorkFinished()
+{
     setCursor(Qt::ArrowCursor);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
     if (testSpeedActivated) onSpeedTestFinished();
@@ -100,13 +98,12 @@ void fenetre::onSpeedTestFinished()
     qint64 duration = QDateTime::currentMSecsSinceEpoch() - testSpeedTime;
     if (duration >= 2000) {
         // end
-        qDebug() << "speedTest with" << testSpeedCounter << "refresh in"
-            << duration << "msec ("
-            << (duration / testSpeedCounter) << "msec/frame,"
-            << ((float)testSpeedCounter / duration * 1000) << "FPS )";
+        qDebug() << "speedTest with" << testSpeedCounter << "refresh in" << duration << "msec ("
+                 << (duration / testSpeedCounter) << "msec/frame,"
+                 << ((float)testSpeedCounter / duration * 1000) << "FPS )";
         testSpeedActivated = false;
-    }
-    else refresh();
+    } else
+        refresh();
 }
 
 void fenetre::updatePressPosition()
@@ -124,10 +121,9 @@ void fenetre::updatePressPosition()
 
     //    qDebug() << "pos client" << map->getClient()->getPos();
     if (isPainting()) {
-        //actu à la fin du repaint en cours
+        // actu à la fin du repaint en cours
         timerRefresh.start(lastRefreshDuration);
-    }
-    else {
+    } else {
         refresh();
     }
 }

@@ -1,7 +1,6 @@
 #include "GUI.h"
 
-
-GUI::GUI(const map3D* map, QWidget* parent) : QWidget(parent)
+GUI::GUI(const map3D *map, QWidget *parent) : QWidget(parent)
 {
     this->map = map;
 
@@ -18,7 +17,6 @@ GUI::~GUI()
     delete workerThread;
 }
 
-
 // actualiser toute l'image (pour le GUIWorker)
 void GUI::refresh()
 {
@@ -30,18 +28,18 @@ void GUI::refresh()
 }
 
 // garder l'image d'origine mais changer la taille de l'image à l'écran
-void GUI::paintEvent(QPaintEvent* event)
+void GUI::paintEvent(QPaintEvent *event)
 {
     // see 2D Painting Example (with OpenGL)
     Q_UNUSED(event)
-        QPainter painter(this);
+    QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
     painter.drawImage(0, 0, lastImage.scaled(size()));
     painter.end();
 }
 
 // toute l'image a été actualisée (par le GUIWorker)
-void GUI::handleWorkerResults(const QImage& image)
+void GUI::handleWorkerResults(const QImage &image)
 {
     lastImage = image;
     repaint();
@@ -50,7 +48,7 @@ void GUI::handleWorkerResults(const QImage& image)
     }
 }
 
-//pourquoi je m'embete avec des ppp quand je peux juste faire un scale down ?
+// pourquoi je m'embete avec des ppp quand je peux juste faire un scale down ?
 QSize GUI::getRayTracingSize() const
 {
     return QSize(width() * RAYTRACING::pppH, height() * RAYTRACING::pppV);

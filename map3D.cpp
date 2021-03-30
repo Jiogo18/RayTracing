@@ -5,15 +5,14 @@ map3D::map3D() : QObject()
     world = new World();
     client = new Entity(Pos3D::fromDegree(-0.5L, 1.5L, 1.5L, -30, -20), ENTITY::Type::ghost);
     world->addEntity(client);
-    //client->moveTo(Pos3D::fromDegree(1.8L, 2, 1.9L, -140, -30));//belle vue
-    //client->moveTo(Pos3D::fromDegree(1.5L, 1.1L, 0.9L, -140, -30));//vue green_glass
+    // client->moveTo(Pos3D::fromDegree(1.8L, 2, 1.9L, -140, -30));//belle vue
+    // client->moveTo(Pos3D::fromDegree(1.5L, 1.1L, 0.9L, -140, -30));//vue green_glass
 
-    //client->moveTo(Pos3D::fromDegree(0.5L, 1.5, 2.5L, -90, -30));//vue miroir verre blanc
-    //client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
-    //client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
-    client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10));//belle vue mirroir
-    //client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
-
+    // client->moveTo(Pos3D::fromDegree(0.5L, 1.5, 2.5L, -90, -30));//vue miroir verre blanc
+    // client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
+    // client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
+    client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10)); // belle vue mirroir
+    // client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
 
     world->addSolid(new Cube(Pos3D(0, 0, 0, 0, 0), BLOCK::Material::oak_log));
     world->addSolid(new Cube(Pos3D(0, 1, 0, 0, 0), BLOCK::Material::birch_log));
@@ -23,23 +22,21 @@ map3D::map3D() : QObject()
     world->addSolid(new HalfCube(Pos3D(0, 2, 0, 0, 0), BLOCK::Material::glowstone));
     world->addSolid(new Cube(Pos3D(0, 0, 2, 0, 0), BLOCK::Material::mirror));
 
-    //mur de miroir entouré de stone
+    // mur de miroir entouré de stone
     fillCube(Point3D(2, 0, 0), Point3D(2, 2, 3), BLOCK::Material::stone);
     fillCube(Point3D(2, 1, 0), Point3D(2, 1, 3), BLOCK::Material::mirror);
 
     world->addSolid(new Cube(Pos3D(0, 3, 0, 0, 0), BLOCK::Material::mirror));
     world->addSolid(new Cube(Pos3D(1, 3, 0, 0, 0), BLOCK::Material::watter));
-
 }
 
 map3D::~map3D()
 {
     if (world != nullptr) delete world;
-    //client est delete par le world donc c'est bon
+    // client est delete par le world donc c'est bon
 }
 
-
-int map3D::fillCube(const Point3D& posMin, const Point3D& posMax, BLOCK::Material blockMaterial)
+int map3D::fillCube(const Point3D &posMin, const Point3D &posMax, BLOCK::Material blockMaterial)
 {
     HRect3D rect(posMin, posMax);
 
@@ -47,7 +44,7 @@ int map3D::fillCube(const Point3D& posMin, const Point3D& posMax, BLOCK::Materia
     for (int x = rect.getPointMin().getX(); x <= rect.getPointMax().getX(); x++) {
         for (int y = rect.getPointMin().getY(); y <= rect.getPointMax().getY(); y++) {
             for (int z = rect.getPointMin().getZ(); z <= rect.getPointMax().getZ(); z++) {
-                Cube* c = new Cube(Pos3D(x, y, z, 0, 0), blockMaterial);
+                Cube *c = new Cube(Pos3D(x, y, z, 0, 0), blockMaterial);
                 if (world->addSolid(c))
                     blockPlaced++;
                 else
@@ -57,4 +54,3 @@ int map3D::fillCube(const Point3D& posMin, const Point3D& posMax, BLOCK::Materia
     }
     return blockPlaced;
 }
-

@@ -1,0 +1,36 @@
+# https://stackoverflow.com/a/55499182/12908345
+# https://github.com/qt/qt5/blob/dev/_clang-format
+
+BasedOnStyle: LLVM
+
+Standard: Cpp11
+
+
+IndentWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+NamespaceIndentation: All
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterExternBlock: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterObjCDeclaration: false
+  AfterStruct: true
+  AfterUnion: false
+  BeforeCatch: false
+  BeforeElse: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: true
+  SplitEmptyNamespace: true
+
+SortIncludes: false
+SpaceAfterTemplateKeyword: false
+BreakBeforeBinaryOperators: NonAssignment
+
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AlwaysBreakTemplateDeclarations: Yes

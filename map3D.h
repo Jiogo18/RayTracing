@@ -14,9 +14,8 @@ class map3D : public QObject
 public:
     map3D();
     ~map3D();
-    const Entity* getClient() const { return client; }
-    const World* getWorld() const { return world; }
-
+    const Entity *getClient() const { return client; }
+    const World *getWorld() const { return world; }
 
     void moveUp() { client->moveUp(); }
     void moveDown() { client->moveDown(); }
@@ -26,17 +25,16 @@ public:
     void moveRight() { client->moveRight(); }
     void moveRX(radian rX) { client->moveRX(rX); }
     void moveRZ(radian rZ) { client->moveRZ(rZ); }
-    void moveClient(const Pos3D& pos) { client->moveTo(pos); }
+    void moveClient(const Pos3D &pos) { client->moveTo(pos); }
 
-    int fillCube(const Point3D& posMin, const Point3D& posMax, BLOCK::Material blockMaterial);
-
+    int fillCube(const Point3D &posMin, const Point3D &posMax, BLOCK::Material blockMaterial);
 
 signals:
-    void clientChanged(const Entity* client);
+    void clientChanged(const Entity *client);
 
 private:
-    Entity* client = nullptr;
-    World* world = nullptr;
+    Entity *client = nullptr;
+    World *world = nullptr;
 };
 
 #endif // MAP3D_H
