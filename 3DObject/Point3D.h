@@ -1,38 +1,13 @@
 #ifndef POINT3D_H
 #define POINT3D_H
 
+#include "maths3D.h"
 #include <QDebug>
-#include <QtMath>
 
 //#define NAN_VERIF//activer pour le debug des nan
 
-typedef long double doubli;//un nombre pour gérer 6 décimales max (arrondit)
-bool isNull(const doubli d);
-doubli roundNull(const doubli d);//plus opti que round
-constexpr doubli round(const doubli d) { return std::floor(d * 1000000 + 0.5L) / 1000000; }
-doubli signOf(const doubli d);
-typedef float radian;
-doubli sqr(const doubli d);//easy
-radian degreesToRadians(const doubli deg);
-doubli radiansToDegrees(const radian rad);
-doubli sqrt(const doubli d);
-doubli cos(const radian deg);
-doubli sin(const radian deg);
-doubli tan(const radian deg);
-radian acos(const doubli d);
-radian asin(const doubli d);
-radian atan(const doubli d);
-doubli qIsInf(const doubli d);
-doubli max(const doubli a, const doubli b);
-doubli max(const doubli a, const doubli b, const doubli c);
-doubli min(const doubli a, const doubli b);
-doubli min(const doubli a, const doubli b, const doubli c);
-bool isNull(const radian d);
-radian mod(const radian n, const radian d);//perfect return : [0;d[ & 3 times faster
-radian modRad(radian d);//intervalle radian : ]-PI; PI]
-radian roundNull(radian d);//plus opti que round
-float signOf(radian d);// -1 or 1
-QDebug operator <<(QDebug debug, const doubli d);
+QDebug operator <<(QDebug debug, const doubli& d);
+
 
 class Point3D
 {

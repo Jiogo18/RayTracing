@@ -19,6 +19,7 @@ HEADERS += \
     3DObject/Point3D.h \
     3DObject/Pos3D.h \
     3DObject/Geometry3D.h \
+    3DObject/maths3D.h \
     3DObject/Object3D.h \
     3DObject/World3D.h \
     DebugTime.h \

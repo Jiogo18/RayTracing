@@ -1,33 +1,6 @@
 #include "Point3D.h"
 
-
-
-bool isNull(const doubli d) { return -0.000001 < d && d < 0.000001; }
-doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; }
-doubli signOf(const doubli d) { return d < 0 ? -1 : 1; }
-doubli sqr(const doubli d) { return d * d; }
-radian degreesToRadians(const doubli deg) { return fmodl(deg, 360) * doubli(M_PI) / 180; }
-doubli radiansToDegrees(const radian rad) { return rad * 180 / doubli(M_PI); }
-doubli sqrt(const doubli d) { return std::sqrt(d); }
-doubli cos(const radian deg) { return std::cos(deg); }
-doubli sin(const radian deg) { return std::sin(deg); }
-doubli tan(const radian deg) { return std::tan(deg); }
-radian acos(const doubli d) { return std::acos(d); }
-radian asin(const doubli d) { return std::asin(d); }
-radian atan(const doubli d) { return std::atan(d); }
-doubli qIsInf(const doubli d) { return qIsInf(static_cast<double>(d)); }
-doubli max(const doubli a, const doubli b) { return a > b ? a : b; }
-doubli max(const doubli a, const doubli b, const doubli c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
-doubli min(const doubli a, const doubli b) { return a < b ? a : b; }
-doubli min(const doubli a, const doubli b, const doubli c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
-bool isNull(const radian d) { return -0.000001 < d && d < 0.000001; }
-radian mod(const radian n, const radian d) { return (n - floor(n / d) * d); }
-radian modRad(radian d) { d = (d - floor(d / (2 * M_PI)) * 2 * M_PI); return d > M_PI ? d - 2 * M_PI : d; }
-radian roundNull(radian d) { d = modRad(d); return isNull(d) ? 0 : d; }
-float signOf(radian d) { return modRad(d) < 0 ? -1 : 1; }
-QDebug operator <<(QDebug debug, const doubli d) { debug << static_cast<double>(d); return debug; }
-
-
+QDebug operator <<(QDebug debug, const doubli& d) { debug << static_cast<double>(d); return debug; }
 
 
 bool Point3D::operator <(const Point3D& point) const
