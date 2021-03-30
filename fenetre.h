@@ -57,8 +57,8 @@ public:
     void speedTest();
 
 private slots:
-    void workStarted();
-    void workFinished();
+    void onWorkStarted();
+    void onWorkFinished();
     void onSpeedTestFinished();
 
 private:

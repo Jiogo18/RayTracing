@@ -4,8 +4,8 @@ fenetre::fenetre(map3D* map, QWidget* parent) : GUI(map, parent)
 {
     this->map = map;
 
-    connect(this, &GUI::workStarted, this, &fenetre::workStarted);
-    connect(this, &GUI::workFinished, this, &fenetre::workFinished);
+    connect(this, &GUI::workStarted, this, &fenetre::onWorkStarted);
+    connect(this, &GUI::workFinished, this, &fenetre::onWorkFinished);
     //setCursor(Qt::BlankCursor);
 
     show();
@@ -83,12 +83,12 @@ void fenetre::speedTest()
 //QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
 //void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
 
-void fenetre::workStarted()
+void fenetre::onWorkStarted()
 {
     lastRefreshTime = QDateTime::currentMSecsSinceEpoch();
     setCursor(Qt::WaitCursor);
 }
-void fenetre::workFinished() {
+void fenetre::onWorkFinished() {
     setCursor(Qt::ArrowCursor);
     lastRefreshDuration = QDateTime::currentMSecsSinceEpoch() - lastRefreshTime;
     if (testSpeedActivated) onSpeedTestFinished();
