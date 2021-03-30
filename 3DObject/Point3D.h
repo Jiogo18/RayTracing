@@ -88,7 +88,7 @@ public:
     }
 
     // unary operator
-    friend Vec3D operator-(const Vec3D &p);
+    friend constexpr inline Vec3D operator-(const Vec3D &p) { return {-p.x(), -p.y(), -p.z()}; }
 };
 
 #endif // POINT3D_H

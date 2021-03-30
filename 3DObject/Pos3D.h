@@ -45,10 +45,8 @@ public:
                            const radian &rX, const radian &rZ) : Point3D(x, y, z), Rot3D(rX, rZ) {}
     constexpr inline Pos3D(const Point3D &p,
                            const radian &rX, const radian &rZ) : Point3D(p), Rot3D(rX, rZ) {}
-    constexpr inline Pos3D(const Point3D &p,
-                           const Rot3D &r) : Point3D(p), Rot3D(r) {}
+    constexpr inline Pos3D(const Point3D &p, const Rot3D &r) : Point3D(p), Rot3D(r) {}
     constexpr inline Pos3D(const Pos3D &p) : Point3D(p), Rot3D(p) {}
-    Pos3D *operator=(const Pos3D &pos);
     static Pos3D fromDegree(const doubli &x, const doubli &y, const doubli &z,
                             const radian &rX, const radian &rZ);
 

@@ -44,7 +44,7 @@ bool Point3D::operator==(const Point3D &p) const { return (xp == p.xp) && (yp ==
 bool Point3D::operator!=(const Point3D &p) const { return (xp != p.xp) || (yp != p.yp) || (zp != p.zp); }
 
 bool Point3D::isNull() const { return xp == 0 && yp == 0 && zp == 0; }
-bool Point3D::isInf() const { return qIsInf(xp) || qIsInf(yp) || qIsInf(zp); }
+bool Point3D::isInf() const { return isinf(xp) || isinf(yp) || isinf(zp); }
 bool Point3D::isNan() const { return isnanf(xp + yp + zp); }
 
 Point3D Point3D::operator+(const Point3D &p) const { return {xp + p.xp, yp + p.yp, zp + p.zp}; }
@@ -55,25 +55,25 @@ Point3D Point3D::operator/(const Point3D &p) const { return {xp / p.xp, yp / p.y
 Point3D Point3D::operator/(const doubli &n) const { return {xp / n, yp / n, zp / n}; }
 Point3D operator-(const Point3D &p) { return {-p.xp, -p.yp, -p.zp}; }
 
-doubli Point3D::distanceAxeZ() const { return std::sqrt(xp * xp + yp * yp); }
-doubli Point3D::distanceOrigine() const { return sqrt(xp * xp + yp * yp + zp * zp); }
-doubli Point3D::distance(const Point3D &pA, const Point3D &pB)
-{
-    return sqrt(sqr(pB.xp - pA.xp) + sqr(pB.yp - pA.yp) + sqr(pB.zp - pA.zp));
-}
-doubli Point3D::distanceMax(const Point3D &pA, const Point3D &pB)
-{
-    return max(abs(pB.xp - pA.xp), abs(pB.yp - pA.yp), abs(pB.zp - pA.zp));
-    // on prend le plus grand (ça forme un carré)
-}
+doubli Point3D::distanceAxeZ() const { return distanceLoxodromique_2(xp, yp); }
+doubli Point3D::distanceOrigine() const { return distanceLoxodromique_3(xp, yp, zp); }
 doubli Point3D::distance(const Point3D &p) const
 {
-    return sqrt((xp - p.xp) * (xp - p.xp) + (yp - p.yp) * (yp - p.yp) + (zp - p.zp) * (zp - p.zp));
+    return distanceLoxodromique_3(xp - p.xp, yp - p.yp, zp - p.zp);
 }
-
 doubli Point3D::distanceMax(const Point3D &p) const
 {
-    return max(abs(xp - p.xp), abs(yp - p.yp), abs(zp - p.zp));
+    return MAX_ABS_3(xp - p.xp, yp - p.yp, zp - p.zp);
+    // on prend le plus grand (ça forme un carré)
+}
+doubli Point3D::distance(const Point3D &pA, const Point3D &pB)
+{
+    return distanceLoxodromique_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
+}
+
+doubli Point3D::distanceMax(const Point3D &pA, const Point3D &pB)
+{
+    return MAX_ABS_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
     // on prend le plus grand (ça forme un carré)
 }
 
@@ -90,5 +90,3 @@ Point3D qCeil(const Point3D &p)
 {
     return {std::ceil(p.xp), std::ceil(p.yp), std::ceil(p.zp)};
 }
-
-Vec3D operator-(const Vec3D &p) { return {-p.x(), -p.y(), -p.z()}; }

@@ -21,7 +21,22 @@ constexpr inline doubli round(const doubli &d)
 constexpr inline doubli signOf(const doubli &d) { return d < 0 ? -1 : 1; }
 constexpr inline doubli sqr(const doubli &d) { return d * d; }
 constexpr inline doubli sqrt(const doubli &d) { return std::sqrt(d); }
-inline doubli qIsInf(const doubli &d) { return qIsInf(static_cast<double>(d)); }
+constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b) { return sqrt(a * a + b * b); }
+constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b, const doubli &c) { return sqrt(a * a + b * b + c * c); }
+// les fonctions define sont plus rapide (2*) mais empchent d'avoir le constexpr
+#define sqrtD __builtin_sqrtl
+#define sqrD(x) ((x) * (x))
+#define distanceLoxodromique_2(a, b) (sqrtD(sqrD(a) + sqrD(b)))
+#define distanceLoxodromique_3(a, b, c) (sqrtD(sqrD(a) + sqrD(b) + sqrD(c)))
+#define isinf __builtin_isinf
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MAX_3(a, b, c) (MAX(MAX(a, b), c))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#define MIN_3(a, b, c) (MIN(MIN(a, b), c))
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define MAX_ABS_3(a, b, c) (MAX_3(ABS(a), ABS(b), ABS(c)))
+//
 
 constexpr inline doubli max(const doubli &a, const doubli &b) { return a > b ? a : b; }
 constexpr inline doubli max(const doubli &a, const doubli &b, const doubli &c)
@@ -37,12 +52,6 @@ constexpr inline doubli min(const doubli &a, const doubli &b, const doubli &c)
 typedef float radian;
 inline radian degreesToRadians(const doubli &deg) { return fmodf(deg, 360) * doubli(M_PI) / 180; }
 constexpr inline doubli radiansToDegrees(const radian &rad) { return rad * 180 / doubli(M_PI); }
-constexpr inline doubli cos(const radian &x) { return std::cos(x); }
-constexpr inline doubli sin(const radian &x) { return std::sin(x); }
-constexpr inline doubli tan(const radian &x) { return std::tan(x); }
-constexpr inline radian acos(const doubli &d) { return std::acos(d); }
-constexpr inline radian asin(const doubli &d) { return std::asin(d); }
-constexpr inline radian atan(const doubli &d) { return std::atan(d); }
 
 constexpr inline bool isNull(const radian &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
 // perfect return : [0;d[ & 3 times faster
