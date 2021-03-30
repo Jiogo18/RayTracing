@@ -35,8 +35,8 @@ Rot3D Transfo3D::refractRot(const Rot3D &posOrigin, const Rot3D &pos, float indi
     if (indiceRefrac == 1) return pos;       // shortcut
     if (indiceRefrac == 0) return posOrigin; // solide
 
-    Point3D Ori = posOrigin.toVectorU();
-    Point3D delta = pos.toVectorU() - Ori;
+    Point3D Ori = posOrigin.toVector();
+    Point3D delta = pos.toVector() - Ori;
 
     Point3D Mid = Ori + delta / indiceRefrac;
 

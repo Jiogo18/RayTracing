@@ -53,27 +53,27 @@ void Chunk::calcMinMaxPoint()
         return;
     }
     maxGeometry = solids.first()->getMaxGeometry();
-    doubli minX = maxGeometry.getPointMin().getX();
-    doubli minY = maxGeometry.getPointMin().getY();
-    doubli minZ = maxGeometry.getPointMin().getZ();
-    doubli maxX = maxGeometry.getPointMax().getX();
-    doubli maxY = maxGeometry.getPointMax().getY();
-    doubli maxZ = maxGeometry.getPointMax().getZ();
+    doubli minX = maxGeometry.getPointMin().x();
+    doubli minY = maxGeometry.getPointMin().y();
+    doubli minZ = maxGeometry.getPointMin().z();
+    doubli maxX = maxGeometry.getPointMax().x();
+    doubli maxY = maxGeometry.getPointMax().y();
+    doubli maxZ = maxGeometry.getPointMax().z();
 
     for (int i = 0; i < solids.size(); i++) {
         HRect3D currentMaxGeometry = solids.at(i)->getMaxGeometry();
-        if (currentMaxGeometry.getPointMin().getX() < minX)
-            minX = currentMaxGeometry.getPointMin().getX();
-        if (currentMaxGeometry.getPointMin().getY() < minY)
-            minY = currentMaxGeometry.getPointMin().getY();
-        if (currentMaxGeometry.getPointMin().getZ() < minZ)
-            minZ = currentMaxGeometry.getPointMin().getZ();
-        if (maxX < currentMaxGeometry.getPointMax().getX())
-            maxX = currentMaxGeometry.getPointMax().getX();
-        if (maxY < currentMaxGeometry.getPointMax().getY())
-            maxY = currentMaxGeometry.getPointMax().getY();
-        if (maxZ < currentMaxGeometry.getPointMax().getZ())
-            maxZ = currentMaxGeometry.getPointMax().getZ();
+        if (currentMaxGeometry.getPointMin().x() < minX)
+            minX = currentMaxGeometry.getPointMin().x();
+        if (currentMaxGeometry.getPointMin().y() < minY)
+            minY = currentMaxGeometry.getPointMin().y();
+        if (currentMaxGeometry.getPointMin().z() < minZ)
+            minZ = currentMaxGeometry.getPointMin().z();
+        if (maxX < currentMaxGeometry.getPointMax().x())
+            maxX = currentMaxGeometry.getPointMax().x();
+        if (maxY < currentMaxGeometry.getPointMax().y())
+            maxY = currentMaxGeometry.getPointMax().y();
+        if (maxZ < currentMaxGeometry.getPointMax().z())
+            maxZ = currentMaxGeometry.getPointMax().z();
     }
     maxGeometry = HRect3D(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
     // middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);

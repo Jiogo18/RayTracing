@@ -256,7 +256,7 @@ ColorLight Face::getColor(const QPointF &point, const QImage *img) const
 
 Rot3D Face::boundRot(const Rot3D &rot) const
 {
-    Vec3D P = rot.toVectorU(), Ori = plan.normaleUnitaire();
+    Vec3D P = rot.toVector(), Ori = plan.normaleUnitaire();
 
     doubli k =
         P.produitScalaire(Ori); // `/ Ori.distanceOrigine()` normalement mais il est unitaire ici
@@ -277,7 +277,7 @@ Rot3D Face::refractRot(const Pos3D &pos, float indiceRefrac) const
     if (indiceRefrac == 0 || isnanf(indiceRefrac)) return Rot3D();
 
     Vec3D Ori = plan.normaleUnitaire();
-    Point3D delta = pos.toVectorU() - Ori;
+    Point3D delta = pos.toVector() - Ori;
 
     Point3D Mid = Ori + delta / indiceRefrac;
 

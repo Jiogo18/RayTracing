@@ -6,70 +6,61 @@
 class Rot3D
 {
 public:
-    Rot3D()
-    {
-        rX = 0;
-        rZ = 0;
-    }
-    Rot3D(radian rX, radian rZ)
-    {
-        this->rX = rX;
-        this->rZ = rZ;
-    }
-    Rot3D(const Rot3D &rot)
-    {
-        rX = rot.rX;
-        rZ = rot.rZ;
-    }
-    static Rot3D fromVector(const Point3D &vect);
+    constexpr inline Rot3D() : rXp(0), rZp(0) {}
+    constexpr inline Rot3D(const radian &rX, const radian &rZ) : rXp(rX), rZp(rZ) {}
+    constexpr inline Rot3D(const Rot3D &rot) : rXp(rot.rXp), rZp(rot.rZp) {}
+    // constructeur de copie 2* plus rapide
+    static Rot3D fromVector(const Point3D &v);
 
-    radian getRX() const { return rX; }
-    radian getRZ() const { return rZ; }
-    Rot3D getRot() const { return *this; }
-    Vec3D toVector() const;
-    Vec3D toVectorU() const; // vecteur unitaire
+    constexpr inline const radian &rX() const { return rXp; }
+    constexpr inline const radian &rZ() const { return rZp; }
+    constexpr inline const Rot3D &getRot() const { return *this; }
+    Vec3D toVector() const; // vecteur unitaire
 
-    void setRX(radian rX) { this->rX = rX; }
-    void setRZ(radian rZ) { this->rZ = rZ; }
-    void addRX(radian rX) { this->rX += rX; }
-    void addRZ(radian rZ) { this->rZ += rZ; }
-    void setRot(const Rot3D &rot)
+    constexpr inline void setRX(const radian &rX) { rXp = rX; }
+    constexpr inline void setRZ(const radian &rZ) { rZp = rZ; }
+    constexpr inline void addRX(const radian &rX) { rXp += rX; }
+    constexpr inline void addRZ(const radian &rZ) { rZp += rZ; }
+    constexpr inline void setRot(const Rot3D &rot)
     {
-        rX = rot.rX;
-        rZ = rot.rZ;
+        rXp = rot.rXp;
+        rZp = rot.rZp;
     }
 
-    bool operator==(const Rot3D &rot) const { return rX == rot.rX && rZ == rot.rZ; }
-    bool operator!=(const Rot3D &rot) const { return rX != rot.rX || rZ != rot.rZ; }
-    bool isNan() const { return isnanf(rX) || isnanf(rZ); }
+    bool operator==(const Rot3D &rot) const;
+    bool operator!=(const Rot3D &rot) const;
+    bool isNan() const;
 
     friend QDebug operator<<(QDebug debug, const Rot3D &point);
 
-protected:
-    radian rX, rZ;
+private:
+    radian rXp, rZp;
 };
 
 class Pos3D : public Point3D, public Rot3D
 {
 public:
-    Pos3D();
-    Pos3D(doubli x, doubli y, doubli z, radian rX, radian rZ);
-    Pos3D(const Point3D &point, radian rX, radian rZ);
-    Pos3D(const Point3D &point, const Rot3D &rot);
-    Pos3D(const Pos3D &pos);
+    constexpr inline Pos3D() : Point3D(), Rot3D() {}
+    constexpr inline Pos3D(const doubli &x, const doubli &y, const doubli &z,
+                           const radian &rX, const radian &rZ) : Point3D(x, y, z), Rot3D(rX, rZ) {}
+    constexpr inline Pos3D(const Point3D &p,
+                           const radian &rX, const radian &rZ) : Point3D(p), Rot3D(rX, rZ) {}
+    constexpr inline Pos3D(const Point3D &p,
+                           const Rot3D &r) : Point3D(p), Rot3D(r) {}
+    constexpr inline Pos3D(const Pos3D &p) : Point3D(p), Rot3D(p) {}
     Pos3D *operator=(const Pos3D &pos);
-    static Pos3D fromDegree(doubli x, doubli y, doubli z, radian rX, radian rZ);
+    static Pos3D fromDegree(const doubli &x, const doubli &y, const doubli &z,
+                            const radian &rX, const radian &rZ);
 
-    void moveWithRot(doubli speed, radian rot);
-    static Point3D pointFromRot(doubli d, radian rX, radian rZ);
-    Point3D getNextPointRelatif() const { return toVector(); }
+    void moveWithRot(const doubli &speed, const radian &rot);
+    static Point3D pointFromRot(const doubli &d, const radian &rX, const radian &rZ);
     Point3D getNextPoint() const;
-    Pos3D getChildRot(radian rXRelatif, radian rZRelatif) const;
-    Point3D changeRef(const Point3D point, doubli srX, doubli srZ) const;
+    Pos3D getChildRot(const radian &rXRelatif, const radian &rZRelatif) const;
+    Point3D changeRef(const Point3D &point, const doubli &srX, const doubli &srZ) const;
 
     bool operator==(const Pos3D &pos) const;
     bool operator!=(const Pos3D &pos) const;
-    bool isNan() const { return isnanf(x) || isnanf(y) || isnanf(z) || isnanf(rX) || isnanf(rZ); }
+    bool isNan() const;
 
     friend QDebug operator<<(QDebug debug, const Pos3D &pos);
 

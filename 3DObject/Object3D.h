@@ -16,9 +16,16 @@ namespace BLOCK {
         glass,
         green_glass,
         mirror,
-        watter,
+        watter
     };
-    enum Variation { front, back, left, right, top, bottom };
+    enum Variation {
+        front,
+        back,
+        left,
+        right,
+        top,
+        bottom
+    };
 }; // namespace BLOCK
 namespace ENTITY {
     enum Type {
@@ -26,7 +33,14 @@ namespace ENTITY {
         player,
         ghost // spectator
     };
-    enum Direction { front, back, left, right, top, bottom };
+    enum Direction {
+        front,
+        back,
+        left,
+        right,
+        top,
+        bottom
+    };
     doubli baseSpeed(ENTITY::Type type, ENTITY::Direction dir);
 } // namespace ENTITY
 
@@ -209,8 +223,8 @@ public:
     void moveTo(const Pos3D &pos)
     {
         moveTo(static_cast<Point3D>(pos));
-        setRX(pos.getRX());
-        setRZ(pos.getRZ());
+        setRX(pos.rX());
+        setRZ(pos.rZ());
     }
     void moveRX(radian rX) { addRX(rX); }
     void moveRZ(radian rZ) { addRZ(rZ); }

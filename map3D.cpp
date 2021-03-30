@@ -41,9 +41,9 @@ int map3D::fillCube(const Point3D &posMin, const Point3D &posMax, BLOCK::Materia
     HRect3D rect(posMin, posMax);
 
     int blockPlaced = 0;
-    for (int x = rect.getPointMin().getX(); x <= rect.getPointMax().getX(); x++) {
-        for (int y = rect.getPointMin().getY(); y <= rect.getPointMax().getY(); y++) {
-            for (int z = rect.getPointMin().getZ(); z <= rect.getPointMax().getZ(); z++) {
+    for (int x = rect.getPointMin().x(); x <= rect.getPointMax().x(); x++) {
+        for (int y = rect.getPointMin().y(); y <= rect.getPointMax().y(); y++) {
+            for (int z = rect.getPointMin().z(); z <= rect.getPointMax().z(); z++) {
                 Cube *c = new Cube(Pos3D(x, y, z, 0, 0), blockMaterial);
                 if (world->addSolid(c))
                     blockPlaced++;
