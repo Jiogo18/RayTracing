@@ -64,17 +64,14 @@ doubli Point3D::distance(const Point3D &p) const
 doubli Point3D::distanceMax(const Point3D &p) const
 {
     return MAX_ABS_3(xp - p.xp, yp - p.yp, zp - p.zp);
-    // on prend le plus grand (ça forme un carré)
 }
 doubli Point3D::distance(const Point3D &pA, const Point3D &pB)
 {
     return distanceLoxodromique_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
 }
-
 doubli Point3D::distanceMax(const Point3D &pA, const Point3D &pB)
 {
     return MAX_ABS_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
-    // on prend le plus grand (ça forme un carré)
 }
 
 QDebug operator<<(QDebug debug, const Point3D &p)

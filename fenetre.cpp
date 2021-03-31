@@ -6,14 +6,14 @@ fenetre::fenetre(map3D *map, QWidget *parent) : GUI(map, parent)
 
     connect(this, &GUI::workStarted, this, &fenetre::onWorkStarted);
     connect(this, &GUI::workFinished, this, &fenetre::onWorkFinished);
-    // setCursor(Qt::BlankCursor);
+    //setCursor(Qt::BlankCursor);
 
     show();
     setMinimumSize(50, 50);
     setGeometry(QRect(geometry().topLeft(), QSize(150, 100)));
 
-    // moveMouseMidWindow();
-    // posMouse = QPoint(0, 0);
+    //moveMouseMidWindow();
+    //posMouse = QPoint(0, 0);
 
     lastRefreshTime = 0;
     refresh();
@@ -69,7 +69,7 @@ void fenetre::speedTest()
     refresh();
 }
 
-// void fenetre::mouseMoveEvent(QMouseEvent *event)
+//void fenetre::mouseMoveEvent(QMouseEvent *event)
 //{
 //    Q_UNUSED(event)
 //    //map->getClient()->moveRX((MidWindow().x() - event->x())/MouseSensibility);
@@ -77,8 +77,8 @@ void fenetre::speedTest()
 //    //moveMouseMidWindow();
 //}
 
-// QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
-// void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
+//QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
+//void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
 
 void fenetre::onWorkStarted()
 {
@@ -98,7 +98,8 @@ void fenetre::onSpeedTestFinished()
     qint64 duration = QDateTime::currentMSecsSinceEpoch() - testSpeedTime;
     if (duration >= 2000) {
         // end
-        qDebug() << "speedTest with" << testSpeedCounter << "refresh in" << duration << "msec ("
+        qDebug() << "speedTest with" << testSpeedCounter << "refresh in"
+                 << duration << "msec ("
                  << (duration / testSpeedCounter) << "msec/frame,"
                  << ((float)testSpeedCounter / duration * 1000) << "FPS )";
         testSpeedActivated = false;
@@ -119,7 +120,7 @@ void fenetre::updatePressPosition()
     if (keysPressed & (1 << KEY::keyAction::left_rot)) map->moveRX(-MouseSensibility / 30);
     if (keysPressed & (1 << KEY::keyAction::right_rot)) map->moveRX(MouseSensibility / 30);
 
-    //    qDebug() << "pos client" << map->getClient()->getPos();
+    //qDebug() << "pos client" << map->getClient()->getPos();
     if (isPainting()) {
         // actu à la fin du repaint en cours
         timerRefresh.start(lastRefreshDuration);

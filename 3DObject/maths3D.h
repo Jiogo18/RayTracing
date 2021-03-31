@@ -10,14 +10,8 @@
 typedef long double doubli; // un nombre pour gérer 6 décimales max (arrondit)
 
 constexpr inline bool isNull(const doubli &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
-constexpr inline doubli roundNull(const doubli &d)
-{
-    return isNull(d) ? 0 : d;
-} // plus opti que round
-constexpr inline doubli round(const doubli &d)
-{
-    return (long long int)(d * 1e+6 + 0.5) * DOUBLI_MIN;
-}
+constexpr inline doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; } // plus opti que round
+constexpr inline doubli round(const doubli &d) { return (long long int)(d * 1e+6 + 0.5) * DOUBLI_MIN; }
 constexpr inline doubli signOf(const doubli &d) { return d < 0 ? -1 : 1; }
 constexpr inline doubli sqr(const doubli &d) { return d * d; }
 constexpr inline doubli sqrt(const doubli &d) { return std::sqrt(d); }
@@ -38,18 +32,12 @@ constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b, c
 #define MAX_ABS_3(a, b, c) (MAX_3(ABS(a), ABS(b), ABS(c)))
 //
 
-constexpr inline doubli max(const doubli &a, const doubli &b) { return a > b ? a : b; }
-constexpr inline doubli max(const doubli &a, const doubli &b, const doubli &c)
-{
-    return a > b ? (a > c ? a : c) : (b > c ? b : c);
-}
-constexpr inline doubli min(const doubli &a, const doubli &b) { return a < b ? a : b; }
-constexpr inline doubli min(const doubli &a, const doubli &b, const doubli &c)
-{
-    return a < b ? (a < c ? a : c) : (b < c ? b : c);
-}
+constexpr doubli max(const doubli &a, const doubli &b) { return a > b ? a : b; }
+constexpr doubli max(const doubli &a, const doubli &b, const doubli &c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
+constexpr doubli min(const doubli &a, const doubli &b) { return a < b ? a : b; }
+constexpr doubli min(const doubli &a, const doubli &b, const doubli &c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
 
-typedef float radian;
+typedef double radian;
 inline radian degreesToRadians(const doubli &deg) { return fmodf(deg, 360) * doubli(M_PI) / 180; }
 constexpr inline doubli radiansToDegrees(const radian &rad) { return rad * 180 / doubli(M_PI); }
 
@@ -62,7 +50,7 @@ constexpr inline radian modRad(radian d)
     d = mod(d, M_2PI);
     return d > M_PI ? d - M_2PI : d;
 }
-// plus opti que round
+// plus opti que round :
 constexpr inline radian roundNull(radian d)
 {
     d = modRad(d);

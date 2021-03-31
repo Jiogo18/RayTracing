@@ -1,6 +1,7 @@
 #include "RayTracing.h"
 
-template<typename T> PixScreen<T>::PixScreen(const QSize &size)
+template<typename T>
+PixScreen<T>::PixScreen(const QSize &size)
 {
     screen = QList<QList<T>>(size.width());
     for (int i = 0; i < size.width(); i++) {
@@ -8,7 +9,8 @@ template<typename T> PixScreen<T>::PixScreen(const QSize &size)
     }
 }
 
-template<typename T> PixScreen<T>::PixScreen(int width, int height)
+template<typename T>
+PixScreen<T>::PixScreen(int width, int height)
 {
     screen = QList<QList<T>>(width);
     for (int i = 0; i < width; i++) {
@@ -42,8 +44,7 @@ void RayTracingRessources::resetRessources(const Entity *client)
 {
     clientPos = client->getPos();
     const Solid *solid = world->getSolid(clientPos);
-    insideMaterial =
-        solid ? solid->getMaterial() : BLOCK::Material::air; // par défaut on est dans l'air
+    insideMaterial = solid ? solid->getMaterial() : BLOCK::Material::air; // par défaut on est dans l'air
 }
 
 Ray::Ray(Pos3D pos, RayTracingRessources *rtRess)
@@ -54,8 +55,7 @@ Ray::Ray(Pos3D pos, RayTracingRessources *rtRess)
     this->pos = pos;
     insideMaterial = rtRess->insideMaterial;
     float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
-    float previousSpeed =
-        1; // OBJECT3D::getSpeedOfLight(BLOCK::Material::air);// the speed of light in the lens
+    float previousSpeed = 1; // the speed of light in the lens
     if (newSpeed != previousSpeed) {
         // calcul de la réfraction (le regard est normal au plan)
         this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
@@ -80,10 +80,10 @@ ColorLight Ray::getColor() const
 void Ray::process(const World *world)
 {
     while (distParcouru < viewDistance) { // pas exactement view distance mais pas loins (2*..?)
-        qint64 start = rtRess->dt->getCurrent();
+        //qint64 start = rtRess->dt->getCurrent();
         Point3D pInter;
         const Face *face = getFirstIntersection(world, pInter);
-        rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
+        //rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
         if (face == nullptr || !face->isValid()) break; // c'est normal si on va dans le vide
 
         lastMoved = pInter != pos;
@@ -105,14 +105,13 @@ void Ray::process(const World *world)
             float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
             pos.setRot(face->refractRot(pos, newSpeed / previousSpeed));
-            // moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
+            //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
             insideMaterial = face->getMaterial();
             // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
         }
 
-        // break;//TODO empecher de calculer après pour les tests (avoir que la première face)
-        // Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe
-        // :'(
+        //break;// TODO empecher de calculer après pour les tests (avoir que la première face)
+        // Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe :'(
 
 #ifdef NAN_VERIF
         if (pos.isNan()) {
@@ -145,30 +144,36 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
     doubli distanceSolidMin = 0;
     for (int iChunk = 0; iChunk < world->getChunks().size(); iChunk++) {
         const Chunk *chunk = world->getChunks().at(iChunk);
-        if (chunk->getPoint().distance(pos) > viewDistance) continue;
-        qint64 start1 = rtRess->dt->getCurrent();
+        if (chunk->getPoint().distance(pos) > viewDistance)
+            continue;
+        //qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
             Solid *block = chunk->getSolids()->at(i2);
-            if (block->getPoint().distance(pos) > viewDistance) continue;
+            if (block->getPoint().distance(pos) > viewDistance)
+                continue;
             for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
                 const Face *face = &block->getFaces()->at(i3);
-                if (face == lastFace) continue;
+                if (face == lastFace)
+                    continue;
                 const Plan *plan = face->getPlan();
 
-                if (!plan->isValid()) continue;
+                if (!plan->isValid())
+                    continue;
 
                 Point3DCancelable pInter = plan->intersection(pos, posNextPoint);
 
-                if (!pInter.isValid() || !face->getMaxGeometry().contains(pInter)) continue;
+                if (!pInter.isValid() || !face->getMaxGeometry().contains(pInter))
+                    continue;
                 if (!enter && pInter == pos && !lastMoved)
-                    continue; // on viens de sortir (ou par défaut) et on se retrouve sur le même
-                              // point
+                    continue; // on viens de sortir (ou par défaut) et on se retrouve sur le même point
                 doubli distanceInter = pos.distance(pInter), distanceSolid = 0;
                 if (faceMin != nullptr && faceMin->isValid()) {
-                    if (distanceInter > distanceInterMin) continue;
+                    if (distanceInter > distanceInterMin)
+                        continue;
                     distanceSolid = pos.distance(block->getMiddleGeometry());
                     if (distanceInter == distanceInterMin) {
-                        if (distanceSolid >= distanceSolidMin) continue;
+                        if (distanceSolid >= distanceSolidMin)
+                            continue;
                     }
                 } else {
                     distanceSolid = pos.distance(block->getMiddleGeometry());
@@ -183,12 +188,12 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
                 pInterMin = pInter;
                 distanceInterMin = distanceInter;
                 distanceSolidMin = distanceSolid;
-                // il est possible qu'un même distance soit pour le meme block, pour des faces diff
-                // (de meme distance) mais c'est pas grave car ça arrive quand c'est VRAIMENT
-                // indéterminant (on peu prendre l'un ou l'autre)
+                // il est possible qu'un même distance soit pour le meme block, pour des faces diff (de meme distance)
+                // mais c'est pas grave car ça arrive quand c'est VRAIMENT indéterminant
+                //(on peu prendre l'un ou l'autre)
             }
         }
-        rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
+        //rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
     }
     pInter = pInterMin;
     return faceMin;
@@ -214,8 +219,7 @@ RayTracingWorker::RayTracingWorker()
     totalLight = new int[RAYTRACING::ColumnsPerWorker];
 }
 
-RayTracingWorker::RayTracingWorker(int workerId, RayTracingRessources *rtRess, QObject *parent)
-    : QThread(parent)
+RayTracingWorker::RayTracingWorker(int workerId, RayTracingRessources *rtRess, QObject *parent) : QThread(parent)
 {
     this->workerId = workerId;
     this->rtRess = rtRess;
@@ -235,13 +239,11 @@ RayTracingWorker *RayTracingWorker::operator=(const RayTracingWorker &worker)
 RayTracingWorker *RayTracingWorker::setPrimaryWork(const QSize &sceneSize)
 {
     this->sceneSize = sceneSize;
-    colors = PixScreen<ColorLight>(RAYTRACING::ColumnsPerWorker,
-                                   sceneSize.height()); // inversement des lignes et des colonnes
+    colors = PixScreen<ColorLight>(RAYTRACING::ColumnsPerWorker, sceneSize.height()); //inversement des lignes et des colonnes
     return this;
 }
 
-QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const doubli &xPos, const int &sceneHeight,
-                                                 const Pos3D &clientPos)
+QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const doubli &xPos, const int &sceneHeight, const Pos3D &clientPos)
 {
     QList<Pos3D> raysPos(sceneHeight);
 
@@ -260,34 +262,30 @@ void RayTracingWorker::run()
     int i;
     for (i = 0; i < getNbColumns(); i++) {
         qint64 start;
-        // start = rtRess->dt->getCurrent();
+        //start = rtRess->dt->getCurrent();
         totalLight[i] = 0;
-        // pos en % de pixmap.width/2 * xMax
-        doubli xPos = (2.0L * (xScene + i) / sceneSize.width() - 1) * xMax,
-               xzPos = sqrt(xPos * xPos + 1);
+        //pos en % de pixmap.width/2 * xMax
+        doubli xPos = (2.0L * (xScene + i) / sceneSize.width() - 1) * xMax, xzPos = sqrt(xPos * xPos + 1);
         radian angleH = atan(xPos);
-        // rtRess->dt->addValue("RayTracingWorker::run_init", rtRess->dt->getCurrent() -
-        // start);//1ms
+        //rtRess->dt->addValue("RayTracingWorker::run_init", rtRess->dt->getCurrent() - start);//1ms
 
         start = rtRess->dt->getCurrent();
         for (int y = 0; y < sceneSize.height(); y++) {
-            qint64 start2;
+            //qint64 start2;
 
-            // start2 = rtRess->dt->getCurrent();
-            // pos en % de pixmap.height/2 * yMax
+            //start2 = rtRess->dt->getCurrent();
+            //pos en % de pixmap.height/2 * yMax
             doubli yPos = (1 - 2.0L * y / sceneSize.height()) * yMax;
             Ray ray(rtRess->clientPos.getChildRot(angleH, atan(yPos / xzPos)), rtRess);
-            // rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() -
-            // start2);//1080ms
+            //rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() - start2);//1080ms
 
 #ifndef DISABLE_RAYPROCESS
-            start2 = rtRess->dt->getCurrent();
+            //start2 = rtRess->dt->getCurrent();
             ray.process(rtRess->world);
-            rtRess->dt->addValue("RayTracingWorker::run_2_process",
-                                 rtRess->dt->getCurrent() - start2);
+            //rtRess->dt->addValue("RayTracingWorker::run_2_process", rtRess->dt->getCurrent() - start2);
 #endif // DISABLE_RAYPROCESS
 
-            // start2 = rtRess->dt->getCurrent();
+            //start2 = rtRess->dt->getCurrent();
             ColorLight colorL = ray.getColor();
             int red = colorL.red() * colorL.alpha() / 255;
             int green = colorL.green() * colorL.alpha() / 255;
@@ -298,8 +296,7 @@ void RayTracingWorker::run()
 
             totalLight[i] += light;
             colors.set(i, y, ColorLight(red, green, blue, 255, light));
-            // rtRess->dt->addValue("RayTracingWorker::run_3_ColorLight", rtRess->dt->getCurrent() -
-            // start2);//150ms
+            //rtRess->dt->addValue("RayTracingWorker::run_3_ColorLight", rtRess->dt->getCurrent() - start2);//150ms
         }
         rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
     }
@@ -374,8 +371,7 @@ RayTracing::RayTracing(const map3D *map) : QThread()
     workerDistributor = new RayTracingDistributor(rtRess);
     RayTracingWorker *rayWorkers = workerDistributor->getWorkers();
     for (int i = 0; i < workerDistributor->nb_workers; i++) {
-        connect(&rayWorkers[i], &RayTracingWorker::resultReady, this,
-                &RayTracing::onRayWorkerReady);
+        connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
     }
 
     image = QImage(1, 1, QImage::Format::Format_RGB32);
@@ -389,8 +385,7 @@ RayTracing::~RayTracing()
     if (lightPerColumn != nullptr) delete[] lightPerColumn;
 }
 
-void RayTracing::onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c,
-                                  const int *totalLight)
+void RayTracing::onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight)
 {
     processFinished += nbColumns;
     for (int i = 0; i < nbColumns; i++) {
@@ -485,8 +480,7 @@ void RayTracing::paint()
 
 void RayTracing::onAllWorkersFinished()
 {
-    qDebug() << "All ray workers have finished, processFinished :" << processFinished << "/"
-             << processWidth;
+    qDebug() << "All ray workers have finished, processFinished :" << processFinished << "/" << processWidth;
     workerDistributor->stop();
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);

@@ -8,14 +8,8 @@ class ChunkPos : public Point3D
 public:
     static const int chunkSize = 8;
 
-    static ChunkPos fromBlockPos(const Point3D &blockPos)
-    {
-        return Point3D(qFloor(blockPos / ChunkPos::chunkSize));
-    }
-    Point3D chunkOrigin() const
-    {
-        return qFloor(static_cast<Point3D>(*this) * ChunkPos::chunkSize);
-    }
+    static ChunkPos fromBlockPos(const Point3D &blockPos) { return qFloor(blockPos / ChunkPos::chunkSize); }
+    Point3D chunkOrigin() const { return qFloor(static_cast<Point3D>(*this) * ChunkPos::chunkSize); }
     ChunkPos(const ChunkPos &pos) : Point3D(pos) {}
 
 private:
@@ -35,18 +29,12 @@ public:
     Solid *getSolid(const Point3D &blockPos) const;
     bool removeSolid(const Point3D &blockPos);
     bool containsPoint(const Point3D &blockPos) const;
-    static Point3D relativePosOfPos(const Point3D &blockPos)
-    {
-        return blockPos - ChunkPos::fromBlockPos(blockPos).chunkOrigin();
-    }
+    static Point3D relativePosOfPos(const Point3D &blockPos) { return blockPos - ChunkPos::fromBlockPos(blockPos).chunkOrigin(); }
 
     HRect3D getMaxGeometry() const { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleMinGeometry; }
     const QList<Solid *> *getSolids() const { return &solids; }
-    static Size3D getSize()
-    {
-        return Size3D(ChunkPos::chunkSize, ChunkPos::chunkSize, ChunkPos::chunkSize);
-    }
+    static Size3D getSize() { return Size3D(ChunkPos::chunkSize, ChunkPos::chunkSize, ChunkPos::chunkSize); }
 
 private:
     QList<Solid *> solids;

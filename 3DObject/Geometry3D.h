@@ -12,6 +12,7 @@ public:
     constexpr inline Size3D(const Size3D &s) : dXp(s.dXp), dYp(s.dYp), dZp(s.dZp) {}
     constexpr inline Size3D(const Point3D &pA, const Point3D &pB)
         : dXp(pB.x() - pA.x()), dYp(pB.y() - pA.y()), dZp(pB.z() - pA.z()) {}
+
     constexpr inline const doubli &dX() const { return dXp; }
     constexpr inline const doubli &dY() const { return dYp; }
     constexpr inline const doubli &dZ() const { return dZp; }
@@ -47,8 +48,8 @@ public:
     constexpr inline const Point3D &getPointMax() const { return pMax; }
     inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
-    // void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
-    // void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
+    //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
+    //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(const doubli &scale);
     HRect3D operator+(const Point3D &pointAdd) const { return HRect3D(pMin + pointAdd, pMax + pointAdd); }
     HRect3D *operator=(const HRect3D &rect);
@@ -76,10 +77,10 @@ public:
     constexpr inline const Point3D &getPointMax() const { return pMax; }
     inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
-    // void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
-    // void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
+    //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
+    //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(const doubli &scale);
-    Rect3D operator+(const Point3D &pointAdd) const { return Rect3D(pA + pointAdd, pB + pointAdd, pC + pointAdd); }
+    Rect3D operator+(const Point3D &pAdd) const { return Rect3D(pA + pAdd, pB + pAdd, pC + pAdd); }
     Rect3D *operator=(const Rect3D &rect);
     bool operator==(const Rect3D &rect) const;
 
@@ -120,8 +121,8 @@ public:
     bool containsPoint(const Point3D &point) const;
 
     // sens positif (ne plus utiliser)
-    // radian getRX() const { return a >= 0 ? atan(a / b) : M_PI + atan(a / b); }
-    // radian getRZ() const { return atan(c / sqrt(a * a + b * b)); }
+    //radian getRX() const { return a >= 0 ? atan(a / b) : M_PI + atan(a / b); }
+    //radian getRZ() const { return atan(c / sqrt(a * a + b * b)); }
     constexpr inline Vec3D normale() const { return Vec3D(a, b, c); } // (calculé unitaire)
 
 private:

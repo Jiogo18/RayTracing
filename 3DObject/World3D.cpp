@@ -21,14 +21,16 @@ bool Chunk::haveSolid(const Point3D &blockPos) const { return getSolidAt(blockPo
 Solid *Chunk::getSolidAt(const Point3D &blockPos) const
 {
     for (int i = 0; i < solids.size(); i++)
-        if (solids.at(i)->getPoint() == blockPos) return solids.at(i);
+        if (solids.at(i)->getPoint() == blockPos)
+            return solids.at(i);
     return nullptr;
 }
 
 Solid *Chunk::getSolid(const Point3D &blockPos) const
 {
     for (int i = 0; i < solids.size(); i++)
-        if (solids.at(i)->containsPoint(blockPos)) return solids.at(i);
+        if (solids.at(i)->containsPoint(blockPos))
+            return solids.at(i);
     return nullptr;
 }
 
@@ -41,10 +43,7 @@ bool Chunk::removeSolid(const Point3D &blockPos)
     return true;
 }
 
-bool Chunk::containsPoint(const Point3D &blockPos) const
-{
-    return ChunkPos::fromBlockPos(blockPos) == getPoint();
-}
+bool Chunk::containsPoint(const Point3D &blockPos) const { return ChunkPos::fromBlockPos(blockPos) == getPoint(); }
 
 void Chunk::calcMinMaxPoint()
 {
@@ -76,7 +75,7 @@ void Chunk::calcMinMaxPoint()
             maxZ = currentMaxGeometry.getPointMax().z();
     }
     maxGeometry = HRect3D(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
-    // middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);
+    //middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);
     middleMinGeometry = maxGeometry.getMiddle();
 }
 
@@ -163,7 +162,8 @@ void World::deleteChunk(Chunk *chunk)
 Chunk *World::getChunk(ChunkPos posChunk) const
 {
     for (int i = 0; i < chunks.size(); i++)
-        if (chunks.at(i)->getPoint() == posChunk) return chunks.at(i);
+        if (chunks.at(i)->getPoint() == posChunk)
+            return chunks.at(i);
     return nullptr;
 }
 bool World::haveChunk(ChunkPos posChunk) const { return getChunk(posChunk) != nullptr; }

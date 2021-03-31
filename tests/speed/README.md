@@ -19,3 +19,13 @@ sinon il peut inverser :
 
 - `#define sqr(x) ((x) * (x))`
 Idem, les parenthèses sont importantes (celles à l'intérieur)
+
+---
+
+# Speed
+
+| Date       | FPS 150*100 | Time mini frame | FPS Full screen | Time Full screen |
+| :--------- | :---------: | :-------------: | :-------------: | :--------------: |
+| 29/03/2021 |    21.5     |   46 ms/frame   |      0.28       |  3500 ms/frame   |
+| 30/03/2021 |     24      |   43 ms/frame   |                 |  2800 ms/frame   |
+| 31/03/2021 |    28.5     |   34 ms/frame   |      0.39       |  2600 ms/frame   |

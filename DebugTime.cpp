@@ -28,8 +28,10 @@ QDebug operator<<(QDebug debug, const DebugTime &d)
         i.next();
         debug << "\n    " << i.key()
               << QString("(*" + QString::number(i.value().getNb()) + ")").toStdString().c_str()
-              << "total:" << i.value().getTotal() << "moyenne:" << i.value().getMoyenne()
-              << "min:" << i.value().getMin() << "max:" << i.value().getMax();
+              << "total:" << i.value().getTotal()
+              << "moyenne:" << i.value().getMoyenne()
+              << "min:" << i.value().getMin()
+              << "max:" << i.value().getMax();
     }
     if (!d.getValues().isEmpty()) {
         debug << "\n";

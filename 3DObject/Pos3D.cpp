@@ -95,7 +95,7 @@ bool Pos3D::operator!=(const Pos3D &pos) const
     return Point3D::operator!=(pos) || Rot3D::operator!=(pos);
 }
 
-bool Pos3D::isNan() const { return Point3D::isNull(); }
+bool Pos3D::isNan() const { return Point3D::isNan() || Rot3D::isNan(); }
 
 Pos3D Pos3D::getRotAsVect(const Point3D &p1, const Point3D &p2)
 {

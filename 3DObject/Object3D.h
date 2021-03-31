@@ -16,7 +16,7 @@ namespace BLOCK {
         glass,
         green_glass,
         mirror,
-        watter
+        watter,
     };
     enum Variation {
         front,
@@ -31,16 +31,14 @@ namespace ENTITY {
     enum Type {
         none,
         player,
-        ghost // spectator
+        ghost //spectator
     };
-    enum Direction {
-        front,
-        back,
-        left,
-        right,
-        top,
-        bottom
-    };
+    enum Direction { front,
+                     back,
+                     left,
+                     right,
+                     top,
+                     bottom };
     doubli baseSpeed(ENTITY::Type type, ENTITY::Direction dir);
 } // namespace ENTITY
 
@@ -64,14 +62,14 @@ public:
     inline int blue() const { return b; }
     inline int alpha() const { return a; }
     inline int getLight() const { return light; }
-    void operator+=(const ColorLight &color); // couleur après + couleur avant = couleur mixé
+    void operator+=(const ColorLight &color); //couleur après + couleur avant = couleur mixé
     ColorLight *operator=(const ColorLight &color);
 
 private:
-    // entre 0 et 255
+    //entre 0 et 255
     int r, g, b, a;
-    int light; // entre 0 et infini (0 par défaut et valeur >0 si on arrive à une source de lumière)
-    // bc de light pr le soleil, les sources concentrées (plusieurs Ray)
+    int light; //entre 0 et infini (0 par défaut et valeur >0 si on arrive à une source de lumière)
+    //bc de light pr le soleil, les sources concentrées (plusieurs Ray)
     inline int colorReduced(int c, double reduce) const
     {
         c = c * light / reduce;
@@ -101,8 +99,8 @@ class Face : public Object
 {
 public:
     Face();
-    Face(const Point3D &point, const HRect3D &rect, bool orientation, BLOCK::Material material,
-         QList<BLOCK::Variation> variations);
+    Face(const Point3D &point, const HRect3D &rect, bool orientation,
+         BLOCK::Material material, QList<BLOCK::Variation> variations);
     Face(const Face &face);
     HRect3D getMaxGeometry() const override { return maxGeometry; }
     Point3D getMiddleGeometry() const { return middleGeometry; }
@@ -114,7 +112,7 @@ public:
     QString getTexture() const { return texture; }
     BLOCK::Material getMaterial() const override { return material; }
     Rot3D boundRot(const Rot3D &rot) const;
-    Rot3D refractRot(const Pos3D &pos, float indiceRefrac) const;
+    Rot3D refractRot(const Rot3D &pos, float indiceRefrac) const;
     bool containsPoint(const Point3D &point) const override;
 
 private:
@@ -143,10 +141,7 @@ public:
 
     BLOCK::Material getMaterial() const override { return material; }
 
-    bool containsPoint(const Point3D &point) const override
-    {
-        return getMaxGeometry().contains(point);
-    }
+    bool containsPoint(const Point3D &point) const override { return getMaxGeometry().contains(point); }
 
 private:
     BLOCK::Material material;

@@ -12,7 +12,8 @@ class Point3D
 {
 public:
     constexpr inline Point3D() : xp(0), yp(0), zp(0) {}
-    constexpr inline Point3D(const doubli &x, const doubli &y, const doubli &z) : xp(round(x)), yp(round(y)), zp(round(z)) {}
+    constexpr inline Point3D(const doubli &x, const doubli &y, const doubli &z)
+        : xp(round(x)), yp(round(y)), zp(round(z)) {}
     // constructeur de copie 2* plus lent
 
     constexpr inline const doubli &x() const { return xp; }
@@ -70,7 +71,8 @@ class Point3DCancelable : public Point3D
 {
 public:
     constexpr inline Point3DCancelable() : valid(false) {}
-    constexpr inline Point3DCancelable(const doubli &x, const doubli &y, const doubli &z) : Point3D(x, y, z), valid(true) {}
+    constexpr inline Point3DCancelable(const doubli &x, const doubli &y, const doubli &z)
+        : Point3D(x, y, z), valid(true) {}
     constexpr inline Point3DCancelable(const Point3D &p) : Point3D(p), valid(true) {}
     constexpr inline bool isValid() const { return valid; }
 

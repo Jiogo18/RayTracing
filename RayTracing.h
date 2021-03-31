@@ -25,17 +25,15 @@ namespace RAYTRACING {
     const int ppp = pppV * pppH;
     const int WorkerThread = std::thread::hardware_concurrency() * 2;
     const int RefreshColumn = 200;
-    const int gamma = 2; // TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
-    const int ColumnsPerWorker =
-        30; // il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
+    const int gamma = 2;             // TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
+    const int ColumnsPerWorker = 20; // il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
 } // namespace RAYTRACING
 using namespace RAYTRACING;
 
 template<typename T>
 class PixScreen
 {
-public: // il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans
-        // d'autres fichiers
+public: // il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
     PixScreen() {}
     PixScreen(const QSize &size);
     PixScreen(int width, int height);
@@ -96,10 +94,9 @@ private:
     // black list (et white list pour transparence) du dernier objet traversé
     // par défaut: sortie du client (pour pas le retapper)
     // si rebond: dernier objet en mode "sortie"
-    // si entrée (transparent): dernier objet en mode "entrée" puis "sortie" pour calculer
-    // l'épaisseur si un objet dans l'objet entré est touché alors on sort du premier objet au point
-    // P et on rentre ds le 2 puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre
-    // coté de 2)
+    // si entrée (transparent): dernier objet en mode "entrée" puis "sortie" pour calculer l'épaisseur
+    // si un objet dans l'objet entré est touché alors on sort du premier objet au point P et on rentre ds le 2
+    // puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre coté de 2)
     bool enter = false;
     BLOCK::Material insideMaterial;
     RayTracingRessources *rtRess = nullptr;
@@ -122,17 +119,13 @@ public:
         return this;
     }
     inline int getWorkerId() const { return workerId; };
-    inline int getNbColumns() const
-    {
-        return std::min(RAYTRACING::ColumnsPerWorker, sceneSize.width() - xScene);
-    }
+    inline int getNbColumns() const { return std::min(RAYTRACING::ColumnsPerWorker, sceneSize.width() - xScene); }
 
 signals:
     void resultReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
 
 private:
-    static QList<Pos3D> calcRaysPosColumn(const doubli &xPos, const int &sceneHeight,
-                                          const Pos3D &clientPos);
+    static QList<Pos3D> calcRaysPosColumn(const doubli &xPos, const int &sceneHeight, const Pos3D &clientPos);
     void run() override; // process ONE column at a time
     int workerId;
     QSize sceneSize;
@@ -185,8 +178,7 @@ public:
 
 private slots:
     void worldChanged(const WorldChange &change);
-    void onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c,
-                          const int *totalLight);
+    void onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
 
 signals:
     void resultReady(const QImage &image);

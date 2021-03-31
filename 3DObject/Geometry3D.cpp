@@ -2,7 +2,7 @@
 
 void HRect3D::scale(const doubli &scale)
 {
-    Size3D demisizeScaled = getSize() / 2 * scale;
+    const Size3D demisizeScaled = getSize() / 2 * scale;
     const Point3D &middle = getMiddle();
     pMin = middle - demisizeScaled;
     pMax = middle + demisizeScaled;
@@ -29,7 +29,7 @@ bool HRect3D::contains(const Point3D &point) const
 
 QDebug operator<<(QDebug debug, const HRect3D &rect)
 {
-    debug << "HRect3D(" << rect.pMin << "->" << rect.pMax << ")";
+    debug.nospace() << "HRect3D(" << rect.pMin << "->" << rect.pMax << ")";
     return debug;
 }
 
@@ -65,7 +65,7 @@ bool Rect3D::contains(const Point3D &point) const
 
 QDebug operator<<(QDebug debug, const Rect3D &rect)
 {
-    debug << "Rect3D(" << rect.getPointMin() << "->" << rect.getPointMax() << ")";
+    debug.nospace() << "Rect3D(" << rect.getPointMin() << "->" << rect.getPointMax() << ")";
     return debug;
 }
 
@@ -73,10 +73,8 @@ Plan::Plan(const HRect3D &r) : pA(r.getPointMin())
 {
     // les points intermédiaires (B et C) sont à mis distance de A et de D sur Z
     // TODO: sauf si rotation...
-    const Point3D pB(r.getPointMin().x(), (r.getPointMin().y() + r.getPointMax().y()) / 2,
-                     (r.getPointMin().z() + r.getPointMax().z()) / 2);
-    const Point3D pC((r.getPointMin().x() + r.getPointMax().x()) / 2, r.getPointMin().y(),
-                     (r.getPointMin().z() + r.getPointMax().z()) / 2);
+    const Point3D pB(r.getPointMin().x(), r.getMiddle().y(), r.getMiddle().z());
+    const Point3D pC(r.getMiddle().x(), r.getPointMin().y(), r.getMiddle().z());
     calcEquation(pB, pC);
 }
 
@@ -147,7 +145,7 @@ void Plan::calcEquation(const Point3D &pB, const Point3D &pC)
     c = 0;
     d = 0;
     if ((xAB == 0 && yAB == 0 && zAB == 0) || (xAC == 0 && yAC == 0 && zAC == 0)) {
-        // qDebug() << "ERROR Plan vecteur nul";
+        //qDebug() << "ERROR Plan vecteur nul";
         return;
     }
     doubli nOfb = yAB / yAC, nOfc = zAB / zAC;

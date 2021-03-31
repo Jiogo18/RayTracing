@@ -181,9 +181,8 @@ Face::Face() : Object(Pos3D(0, 0, 0, 0, 0))
     variations.append(BLOCK::Variation::front);
     calcFace();
 }
-Face::Face(const Point3D &point, const HRect3D &rect, bool orientation, BLOCK::Material material,
-           QList<BLOCK::Variation> variations)
-    : Object(Pos3D(point, 0, 0))
+Face::Face(const Point3D &point, const HRect3D &rect, bool orientation,
+           BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
 {
     this->rect = rect;
     this->orientation = orientation;
@@ -258,9 +257,8 @@ Rot3D Face::boundRot(const Rot3D &rot) const
 {
     Vec3D P = rot.toVector(), Ori = plan.normale();
 
-    doubli k =
-        P.produitScalaire(Ori); // `/ Ori.distanceOrigine()` normalement mais il est unitaire ici
-    Point3D Op = Ori * (2 * k); // projeté de P sur l'axe de Ori * 2
+    doubli k = P.produitScalaire(Ori); // `/ Ori.distanceOrigine()` normalement mais il est unitaire ici
+    Point3D Op = Ori * (2 * k);        // projeté de P sur l'axe de Ori * 2
 
 #ifdef NAN_VERIF
     if (Op.isInf() || P.isInf() || Op.isNan() || P.isNan()) {
@@ -271,7 +269,7 @@ Rot3D Face::boundRot(const Rot3D &rot) const
     return Rot3D::fromVector(P - Op);
 }
 
-Rot3D Face::refractRot(const Pos3D &pos, float indiceRefrac) const
+Rot3D Face::refractRot(const Rot3D &pos, float indiceRefrac) const
 {
     if (indiceRefrac == 1) return pos; // shortcut, speedOut/speedIn
     if (indiceRefrac == 0 || isnanf(indiceRefrac)) return Rot3D();
@@ -280,6 +278,8 @@ Rot3D Face::refractRot(const Pos3D &pos, float indiceRefrac) const
     Point3D delta = pos.toVector() - Ori;
 
     Point3D Mid = Ori + delta / indiceRefrac;
+    //qDebug() << "refractRot" << Ori << pos << pos.toVectorU() << delta << Mid;
+    // TODO: mauvais calcul sur les faces opposées (il faut juste inverser correctement)
 
 #ifdef NAN_VERIF
     if (Mid.isInf() || Mid.isNan()) {
@@ -323,8 +323,7 @@ Solid::Solid(Pos3D pos, BLOCK::Material material, QList<Face> faces) : Object(po
 Solid::~Solid() {}
 
 Block::Block(Pos3D pos, Size3D size, BLOCK::Material material)
-    : Solid(pos, material, createDefaultFaces(pos, size, material)), size(size)
-{}
+    : Solid(pos, material, createDefaultFaces(pos, size, material)), size(size) {}
 
 bool Block::containsPoint(const Point3D &point) const
 {
@@ -335,32 +334,24 @@ bool Block::containsPoint(const Point3D &point) const
 QList<Face> Block::createDefaultFaces(Point3D posSolid, Size3D size, BLOCK::Material material)
 {
     return {
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), size.dY(), 0)), 0,
-             material, {BLOCK::Variation::bottom}), // BOTTOM
-        Face(posSolid, HRect3D(Point3D(0, 0, size.dZ()), size.toPoint()), 1, material,
-             {BLOCK::Variation::top}), // TOP
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.dY(), size.dZ())), 0,
-             material, {BLOCK::Variation::back}), // SOUTH
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), 0, size.dZ())), 0,
-             material, {BLOCK::Variation::right}), // EAST
-        Face(posSolid, HRect3D(Point3D(size.dX(), 0, 0), size.toPoint()), 1, material,
-             {BLOCK::Variation::front}), // NORTH
-        Face(posSolid, HRect3D(Point3D(0, size.dY(), 0), size.toPoint()), 1, material,
-             {BLOCK::Variation::left}) // WEST
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), size.dY(), 0)), 0, material, {BLOCK::Variation::bottom}), // BOTTOM
+        Face(posSolid, HRect3D(Point3D(0, 0, size.dZ()), size.toPoint()), 1, material, {BLOCK::Variation::top}),              // TOP
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.dY(), size.dZ())), 0, material, {BLOCK::Variation::back}),   // SOUTH
+        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), 0, size.dZ())), 0, material, {BLOCK::Variation::right}),  // EAST
+        Face(posSolid, HRect3D(Point3D(size.dX(), 0, 0), size.toPoint()), 1, material, {BLOCK::Variation::front}),            // NORTH
+        Face(posSolid, HRect3D(Point3D(0, size.dY(), 0), size.toPoint()), 1, material, {BLOCK::Variation::left})              // WEST
     };
 }
 
 Cube::Cube(Pos3D pos, BLOCK::Material material) : Block(pos, Size3D(1, 1, 1), material) {}
 
 Cube::Cube(Pos3D pos, BLOCK::Material material, doubli scale)
-    : Block(pos, Size3D(scale, scale, scale), material)
-{}
+    : Block(pos, Size3D(scale, scale, scale), material) {}
 
 HalfCube::HalfCube(Pos3D pos, BLOCK::Material material) : Block(pos, Size3D(1, 1, 0.5), material) {}
 
 HalfCube::HalfCube(Pos3D pos, BLOCK::Material material, doubli scale)
-    : Block(pos, Size3D(scale, scale, scale * 0.5), material)
-{}
+    : Block(pos, Size3D(scale, scale, scale * 0.5), material) {}
 
 EntityAttribute::EntityAttribute(ENTITY::Type type) { this->type = type; }
 EntityAttribute::EntityAttribute(const EntityAttribute &obj)
