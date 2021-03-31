@@ -1,4 +1,4 @@
-#include "../../3DObject/Pos3D.h"
+#include "../../src/3D/Pos3D.h"
 #include "speeddebug.cpp"
 
 void rotTest()

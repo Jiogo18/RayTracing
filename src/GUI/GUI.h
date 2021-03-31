@@ -1,8 +1,8 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include "map3D.h"
-#include "RayTracing.h"
+#include "src/World/map3D.h"
+#include "src/RayTracing/RayTracing.h"
 #include <QWidget>
 #include <QPaintEvent>
 

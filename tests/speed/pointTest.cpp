@@ -1,4 +1,4 @@
-#include "../../3DObject/Point3D.h"
+#include "../../src/3D/Point3D.h"
 #include "speeddebug.cpp"
 
 void pointTestConstructor()

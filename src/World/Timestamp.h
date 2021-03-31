@@ -5,7 +5,6 @@
 #include <QDebug>
 #include <QDateTime>
 
-
 /*class Timestamp {
 public:
     Timestamp();
@@ -31,8 +30,6 @@ namespace TIMESTAMP {
     //static qint64 getTime() { return QDateTime::currentMSecsSinceEpoch(); }
 }
 
-
-
 /*class Timestamp
 {
     enum type {
@@ -47,6 +44,5 @@ public:
 private:
     Type type;
 };*/
-
 
 #endif // TIMESTAMP_H

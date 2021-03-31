@@ -2,7 +2,6 @@
 #define FENETRE_H
 
 #include "GUI.h"
-#include "map3D.h"
 #include <QTimer>
 #include <QDebug>
 #include <QKeyEvent>

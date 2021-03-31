@@ -1,15 +1,15 @@
 #ifndef RAYTRACING_H
 #define RAYTRACING_H
 
-#include "3DObject/Geometry3D.h"
-#include "3DObject/World3D.h"
+#include "src/3D/Geometry3D.h"
+#include "src/World/World3D.h"
 #include <QVector>
 #include <QPainter>
 #include <QPointer>
 #include <QThread>
-#include "map3D.h"
+#include "src/World/map3D.h"
 
-#include "DebugTime.h"
+#include "src/DebugTime.h"
 
 #define REFRESH_COLUMN // TODO: remove it
 //#define DISABLE_RAYPROCESS

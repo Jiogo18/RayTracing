@@ -1,7 +1,7 @@
 #ifndef WORLD3D_H
 #define WORLD3D_H
 
-#include "Object3D.h"
+#include "src/3D/Object3D.h"
 
 class ChunkPos : public Point3D
 {

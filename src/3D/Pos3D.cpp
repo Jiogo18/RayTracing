@@ -29,12 +29,6 @@ QDebug operator<<(QDebug debug, const Rot3D &rot)
     return debug;
 }
 
-Pos3D *Pos3D::operator=(const Pos3D &p)
-{
-    Point3D::operator=(p);
-    Rot3D::operator=(p);
-    return this;
-}
 Pos3D Pos3D::fromDegree(const doubli &x, const doubli &y, const doubli &z, const radian &rX, const radian &rZ)
 {
     return {x, y, z, degreesToRadians(rX), degreesToRadians(rZ)};
