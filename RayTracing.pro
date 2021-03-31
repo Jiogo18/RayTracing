@@ -37,4 +37,5 @@ RESOURCES += \
 
 DISTFILES += \
     bugs.md \
-    README.md
+    README.md \
+    equations.txt

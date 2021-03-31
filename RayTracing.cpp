@@ -1,23 +1,5 @@
 #include "RayTracing.h"
 
-template<typename T>
-PixScreen<T>::PixScreen(const QSize &size)
-{
-    screen = QList<QList<T>>(size.width());
-    for (int i = 0; i < size.width(); i++) {
-        screen[i] = QList<T>(size.height());
-    }
-}
-
-template<typename T>
-PixScreen<T>::PixScreen(int width, int height)
-{
-    screen = QList<QList<T>>(width);
-    for (int i = 0; i < width; i++) {
-        screen[i] = QList<T>(height);
-    }
-}
-
 RayTracingRessources::RayTracingRessources(const World *world, const Entity *client, DebugTime *dt)
 {
     this->world = world;
@@ -38,7 +20,7 @@ RayTracingRessources::~RayTracingRessources()
     }
 }
 
-void RayTracingRessources::worldChanged() {}
+void RayTracingRessources::onWorldChanged() {}
 
 void RayTracingRessources::resetRessources(const Entity *client)
 {
@@ -47,12 +29,9 @@ void RayTracingRessources::resetRessources(const Entity *client)
     insideMaterial = solid ? solid->getMaterial() : BLOCK::Material::air; // par défaut on est dans l'air
 }
 
-Ray::Ray(Pos3D pos, RayTracingRessources *rtRess)
+Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), rtRess(rtRess)
 {
-    this->rtRess = rtRess;
-
     distParcouru = 0;
-    this->pos = pos;
     insideMaterial = rtRess->insideMaterial;
     float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
     float previousSpeed = 1; // the speed of light in the lens
@@ -212,21 +191,19 @@ const QImage *Ray::getTexture(const QString &file) const
     return rtRess->facesImg->value(file);
 }
 
-RayTracingWorker::RayTracingWorker()
-{
-    workerId = -1;
-    rtRess = nullptr;
-    totalLight = new int[RAYTRACING::ColumnsPerWorker];
-}
+RayTracingWorker::RayTracingWorker() : QThread(), workerId(-1), rtRess(nullptr), totalLight(nullptr) {}
 
-RayTracingWorker::RayTracingWorker(int workerId, RayTracingRessources *rtRess, QObject *parent) : QThread(parent)
-{
-    this->workerId = workerId;
-    this->rtRess = rtRess;
-    totalLight = new int[RAYTRACING::ColumnsPerWorker];
-}
+RayTracingWorker::RayTracingWorker(const int &workerId, RayTracingRessources *rtRess, QObject *parent)
+    : QThread(parent),
+      workerId(workerId),
+      rtRess(rtRess),
+      totalLight(nullptr)
+{}
 
-RayTracingWorker::~RayTracingWorker() { delete[] totalLight; }
+RayTracingWorker::~RayTracingWorker()
+{
+    if (totalLight != nullptr) delete[] totalLight;
+}
 
 RayTracingWorker *RayTracingWorker::operator=(const RayTracingWorker &worker)
 {
@@ -236,31 +213,22 @@ RayTracingWorker *RayTracingWorker::operator=(const RayTracingWorker &worker)
     return this;
 }
 
-RayTracingWorker *RayTracingWorker::setPrimaryWork(const QSize &sceneSize)
+RayTracingWorker *RayTracingWorker::setPrimaryWork(const QSize &sceneSize, const int &nbColumn)
 {
     this->sceneSize = sceneSize;
-    colors = PixScreen<ColorLight>(RAYTRACING::ColumnsPerWorker, sceneSize.height()); //inversement des lignes et des colonnes
-    return this;
-}
-
-QList<Pos3D> RayTracingWorker::calcRaysPosColumn(const doubli &xPos, const int &sceneHeight, const Pos3D &clientPos)
-{
-    QList<Pos3D> raysPos(sceneHeight);
-
-    radian angleH = atan(xPos);
-    for (int y = 0; y < sceneHeight; y++) {
-        // pos en % de pixmap.height/2 * yMax
-        doubli yPos = roundNull(1 - 2.0L * y / sceneHeight) * yMax;
-        raysPos.replace(y, clientPos.getChildRot(angleH, atan(yPos / sqrt(xPos * xPos + 1))));
+    colors = PixScreen<ColorLight>(nbColumn, sceneSize.height()); //inversement des lignes et des colonnes
+    if (this->nbColumn != nbColumn) {
+        this->nbColumn = nbColumn;
+        if (totalLight != nullptr) delete[] totalLight;
+        totalLight = new int[nbColumn];
     }
-
-    return raysPos;
+    return this;
 }
 
 void RayTracingWorker::run()
 {
     int i;
-    for (i = 0; i < getNbColumns(); i++) {
+    for (i = 0; i < getNbColumn(); i++) {
         qint64 start;
         //start = rtRess->dt->getCurrent();
         totalLight[i] = 0;
@@ -323,7 +291,7 @@ RayTracingDistributor::~RayTracingDistributor()
     delete[] workers;
 }
 
-void RayTracingDistributor::start(int processWidth)
+void RayTracingDistributor::start(const int &processWidth)
 {
     this->processWidth = processWidth;
     processStarted = 0;
@@ -358,7 +326,7 @@ void RayTracingDistributor::assignNextRayWork(RayTracingWorker *worker)
     }
     if (processStarted >= processWidth) return;
     worker->setWork(processStarted)->start();
-    processStarted += worker->getNbColumns();
+    processStarted += worker->getNbColumn();
 }
 
 RayTracing::RayTracing(const map3D *map) : QThread()
@@ -366,7 +334,7 @@ RayTracing::RayTracing(const map3D *map) : QThread()
     this->map = map;
     rtRess = new RayTracingRessources(map->getWorld(), map->getClient(), &dt);
 
-    connect(map->getWorld(), &World::changed, this, &RayTracing::worldChanged);
+    connect(map->getWorld(), &World::changed, this, &RayTracing::onWorldChanged);
 
     workerDistributor = new RayTracingDistributor(rtRess);
     RayTracingWorker *rayWorkers = workerDistributor->getWorkers();
@@ -385,7 +353,7 @@ RayTracing::~RayTracing()
     if (lightPerColumn != nullptr) delete[] lightPerColumn;
 }
 
-void RayTracing::onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight)
+void RayTracing::onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight)
 {
     processFinished += nbColumns;
     for (int i = 0; i < nbColumns; i++) {
@@ -406,12 +374,12 @@ void RayTracing::onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLig
 #endif // REFRESH_COLUMN
 }
 
-void RayTracing::worldChanged(const WorldChange &change)
+void RayTracing::onWorldChanged(const WorldChange &change)
 {
     switch (change.type()) {
     case WorldChange::Type::block:
     case WorldChange::Type::chunk: {
-        rtRess->worldChanged();
+        rtRess->onWorldChanged();
         break;
     }
     case WorldChange::Type::entity:
@@ -429,8 +397,14 @@ void RayTracing::run()
     processForUpdate = RAYTRACING::RefreshColumn;
 
     if (calcSize != colors.size()) {
+        // il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
+        // 1920 =>36 colonnes par worker
+        // 150 => 10 colonnes par worker
+        int columnsPerWorker = 20 * std::sqrt(calcSize.width()) / RAYTRACING::WorkerThread;
+        qDebug() << "ColumnsPerWorker" << columnsPerWorker << calcSize.width() << WorkerThread;
+
         for (int i = 0; i < workerDistributor->nb_workers; i++) {
-            workerDistributor->getWorkers()[i].setPrimaryWork(calcSize);
+            workerDistributor->getWorkers()[i].setPrimaryWork(calcSize, columnsPerWorker);
         }
         colors = PixScreen<ColorLight>(calcSize);
         if (lightPerColumn != nullptr) delete[] lightPerColumn;
@@ -449,15 +423,6 @@ void RayTracing::run()
 
     workerDistributor->start(processWidth);
     // N.B. this function takes less than 1 msec
-}
-
-double RayTracing::calcTotalLight() const
-{
-    double totalLight = 0; // une sorte de moyenne pour privilégier le poids des très lumineux
-    for (int i = 0; i < processWidth; i++)
-        totalLight += lightPerColumn[i];
-    return totalLight / colors.rowNumber(); // moyenne par pixel
-    // full screen : 2 msec / 20 appels
 }
 
 void RayTracing::paint()

@@ -26,6 +26,8 @@ Idem, les parenthèses sont importantes (celles à l'intérieur)
 
 | Date       | FPS 150*100 | Time mini frame | FPS Full screen | Time Full screen |
 | :--------- | :---------: | :-------------: | :-------------: | :--------------: |
+| 16/03/2021 |      5      |  194 ms/frame   |      0.12       |  8200 ms/frame   |
 | 29/03/2021 |    21.5     |   46 ms/frame   |      0.28       |  3500 ms/frame   |
-| 30/03/2021 |     24      |   43 ms/frame   |                 |  2800 ms/frame   |
+| 30/03/2021 |     24      |   43 ms/frame   |      0.36       |  2800 ms/frame   |
 | 31/03/2021 |    28.5     |   34 ms/frame   |      0.39       |  2600 ms/frame   |
+| 31/03/2021 |     36      |   27 ms/frame   |      0.38       |  2600 ms/frame   |

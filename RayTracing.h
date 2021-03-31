@@ -25,8 +25,7 @@ namespace RAYTRACING {
     const int ppp = pppV * pppH;
     const int WorkerThread = std::thread::hardware_concurrency() * 2;
     const int RefreshColumn = 200;
-    const int gamma = 2;             // TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
-    const int ColumnsPerWorker = 20; // il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
+    const int gamma = 2; // TODO: réduire modifier ça lorsqu'on aura la lumière du soleil
 } // namespace RAYTRACING
 using namespace RAYTRACING;
 
@@ -34,30 +33,40 @@ template<typename T>
 class PixScreen
 {
 public: // il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
-    PixScreen() {}
-    PixScreen(const QSize &size);
-    PixScreen(int width, int height);
-    PixScreen *operator=(const PixScreen &ps)
+    constexpr inline PixScreen() : screen(0) {}
+    constexpr inline PixScreen(const QSize &size) : screen(size.width()), h(size.height())
+    {
+        for (int i = 0; i < width(); i++)
+            screen[i] = QList<T>(h);
+    }
+    constexpr inline PixScreen(const int &width, const int &height) : screen(width), h(height)
+    {
+        for (int i = 0; i < width; i++)
+            screen[i] = QList<T>(h);
+    }
+    constexpr inline PixScreen *operator=(const PixScreen &ps)
     {
         screen = ps.screen;
+        h = ps.h;
         return this;
     }
 
-    void set(int x, int y, const T &pos) { screen[x][y] = pos; }
-    const T &at(int x, int y) const { return screen[x][y]; }
-    T &operator()(int x, int y) { return screen[x][y]; }
+    constexpr inline void set(const int &x, const int &y, const T &pos) { screen[x][y] = pos; }
+    constexpr inline const T &at(const int &x, const int &y) const { return screen[x][y]; }
+    T &operator()(const int &x, const int &y) { return screen[x][y]; }
 
-    int width() const { return screen.size(); }
-    int height() const { return screen.isEmpty() ? 0 : screen.first().size(); }
-    QSize size() const { return QSize(width(), height()); }
-    int rowNumber() const { return width() * height(); }
+    constexpr inline int width() const { return screen.size(); }
+    constexpr inline const int &height() const { return h; }
+    constexpr inline QSize size() const { return QSize(width(), h); }
+    constexpr inline int rowNumber() const { return width() * h; }
 
-    QList<T> &operator[](const int &x) { return screen[x]; }
-    const QList<T> &getColumn(int x) const { return screen.at(x); }
-    void setColumn(int x, const QList<T> &column) { screen[x] = column; }
+    constexpr inline QList<T> &operator[](const int &x) { return screen[x]; }
+    constexpr inline const QList<T> &getColumn(int x) const { return screen.at(x); }
+    constexpr inline void setColumn(const int &x, const QList<T> &column) { screen[x] = column; }
 
 private:
     QList<QList<T>> screen;
+    int h;
 };
 
 class RayTracingRessources
@@ -67,9 +76,9 @@ public:
     ~RayTracingRessources();
     const World *world = nullptr;
     DebugTime *dt = nullptr;
+    void onWorldChanged();
     Pos3D clientPos;
     QMap<QString, const QImage *> *facesImg = nullptr;
-    void worldChanged();
     BLOCK::Material insideMaterial;
     void resetRessources(const Entity *client);
 };
@@ -77,7 +86,7 @@ public:
 class Ray
 {
 public:
-    Ray(Pos3D pos, RayTracingRessources *rtRess);
+    Ray(const Pos3D &pos, RayTracingRessources *rtRess);
     ColorLight getColor() const;
     void process(const World *world);
 
@@ -108,29 +117,29 @@ class RayTracingWorker : public QThread
     Q_OBJECT
 public:
     RayTracingWorker();
-    RayTracingWorker(int workerId, RayTracingRessources *rtRess, QObject *parent = nullptr);
+    RayTracingWorker(const int &workerId, RayTracingRessources *rtRess, QObject *parent = nullptr);
     ~RayTracingWorker();
     RayTracingWorker *operator=(const RayTracingWorker &worker);
 
-    RayTracingWorker *setPrimaryWork(const QSize &sceneSize);
+    RayTracingWorker *setPrimaryWork(const QSize &sceneSize, const int &nbColumn);
     inline RayTracingWorker *setWork(int xScene)
     {
         this->xScene = xScene;
         return this;
     }
-    inline int getWorkerId() const { return workerId; };
-    inline int getNbColumns() const { return std::min(RAYTRACING::ColumnsPerWorker, sceneSize.width() - xScene); }
+    constexpr inline const int &getWorkerId() const { return workerId; };
+    constexpr inline int getNbColumn() const { return min(nbColumn, sceneSize.width() - xScene); }
 
 signals:
     void resultReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
 
 private:
-    static QList<Pos3D> calcRaysPosColumn(const doubli &xPos, const int &sceneHeight, const Pos3D &clientPos);
     void run() override; // process ONE column at a time
     int workerId;
     QSize sceneSize;
 
     int xScene; // just ONE column, more columns with RAYTRACING::ColumnsPerWorker
+    int nbColumn;
     RayTracingRessources *rtRess;
     int *totalLight = nullptr;
     PixScreen<ColorLight> colors;
@@ -143,12 +152,12 @@ public:
     RayTracingDistributor(RayTracingRessources *rtRess);
     ~RayTracingDistributor();
 
-    void start(int processWidth);
+    void start(const int &processWidth);
     void stop();
 
     RayTracingWorker *getWorkers() const { return workers; }
     const int nb_workers = RAYTRACING::WorkerThread;
-    bool isRunning() const { return QThread::isRunning() || workersInProcess; }
+    inline bool isRunning() const { return QThread::isRunning() || workersInProcess; }
 
 private slots:
     void onRayWorkerFinished();
@@ -177,15 +186,15 @@ public:
     bool isRunning() { return QThread::isRunning() || workerDistributor->isRunning(); }
 
 private slots:
-    void worldChanged(const WorldChange &change);
-    void onRayWorkerReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
+    void onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
+    void onWorldChanged(const WorldChange &change);
 
 signals:
     void resultReady(const QImage &image);
 
 private:
     void run() override;
-    double calcTotalLight() const;
+    constexpr inline double calcTotalLight() const;
     void paint();
     void onAllWorkersFinished();
 
@@ -207,94 +216,13 @@ private:
     QImage image;
 };
 
-/*
-tests: equation du rayon:
-z = sin(aH) * x => mais ça réduit si on augmente aV donc NON
-
-y augmente? quand distance_origine augmente et que aV > 0
-y = sin(aV) * distance_origine = sin(aV) * sqrt(x²+z²)
-t temp en s
-y = sin(aV)*t
-x = cos(aH)*t*cos(aV)
-z = sin(aH)*t*cos(aV)
-<=> t = y/sin(aV) = x/cos(aH)cos(aV) = z/sin(aH)cos(aV)
-<=> z/sin(aH) = x/cos(aH)
-<=> z*cos(aH) = x*sin(aH)
-<=> z = x*sin(aH)/cos(aH)
-mais si aH = 90... ça marche plus
-=> en 2D ça fait la même: y=a ou x=a (on peut pas mettre de x ou de y dans ces cas
-
-un point en 1D? ax+b = 0
-une droite en 2D? ax+by+c = 0
-une plan en 3D? ax+by+cz+d = 0
-il faut trouver l'équation du plan ou du volume du cube (?)
-la droite il faut le point d'origine (client) et calculer un autre point => pour avoir le vecteur
-
-
-equation d'un plan:
-https://www.maxicours.com/se/cours/equation-cartesienne-d-un-plan/
-https://www.youtube.com/watch?v=s4xqI6IPQBY
-intersection d'un plan et d'une droite:
-https://youtu.be/BYBMauyizhE
-
-Pour commencer: #Orthogonal
-verifier que AB et le plan P sont sécants:
-=> si vecteur normal de P est orthogonal à AB alors on s'arrete
-m(a, b, c) est un vecteur normal de P avec l'équation de P: ax+by+cz+d = 0
-xm*xAB + ym*yAB + zm*zAB = 0 ? alors on s'arrete
-
-#Intersection
-Droite:
-x = xA + xAB*t
-y = yA + yAB*t
-z = zA + zAB*t
-Plan:
-ax+by+cz+d = 0
-<=> a*(xAB*t + xA) + b*(yAB*t + yA) + c*(zAB*t + zA) + d = 0
-<=> (a*xAB + b*yAB + c*zAB)*t = -a*xA -b*yA -c*zA - d
-<=> t = -(a*xA + b*yA + c*zA + d)/(a*xAB + b*yAB + c*zAB)
-
-
-plus qu'a trouver a, b et c...
-On connait 4 points du plan, on s'en sert que de 2
-il faut donc trouver un vecteur normal n => perpendiculaire à 2 droites du plan => on prend AB et AC
-
-n perpendiculaire AB et AC (et AB pas colinéaire à AC => pas le meme angle)
-<=> n.AB = a*xAB + b*yAB + c*zAB = 0
-<=> n.AC = a*xAC + b*yAC + c*zAC = 0
-
-
-#EquationPlan
-on a:	n.AB = xAB*a+yAB*b+zAB*c = 0
-        n.AC = xAC*a+yAC*b+zAC*c = 0
-1) on veut yAB*b - n*yAC*b = 0 (n Réel)
-<=> nb = yAB/yAC
-on a:
-n.AB - n*n.AC = xAB*a + zAB*c - n(xAC*a + zAC*c) = 0
-<=> c(zAB-zAC*n) = -(xAB-xAC*n)*a = (xAC*n-xAB)*a
-<=> c = (xAC*n-xAB)*a/(zAB-zAC*n)
-
-2)pareil avec zAB*c - n*zAC*c = 0 (n Réel)
-<=> nc = zAB/zAC
-<=> b = (xAC*n-xAB)*a/(yAB-yAC*n)
-
-test avec -3a+b+2c = 0 et -7a-2b+4c = 0 (maxicours)
-nb = yAB/yAC = 1/-2 = -1/2
-c = (-7*-1/2 - -3)*a/(2 - 4*-1/2)
-  = (7/2 + 3)*a/(2 + 2)
-  = (13)/2*a/4
-  = 13*a/8 OK
-nc = zAB/zAC = 2/4 = 1/2
-b = (-7*1/2 - -3)*a/(1 - -2*1/2)
-  = (-7+6)/2 *a/(1+1)
-  = -1*a/4 = -a/4 OK
-
-après on détermine a comme on veut (1 par exemple)
-
-on cherche d
-on sait que A appartient au plan donc l'équation = 0
-=> a*xA + b*yA + c*zA = -d
-
-*/
+constexpr inline double RayTracing::calcTotalLight() const
+{
+    double totalLight = 0; // une sorte de moyenne pour privilégier le poids des très lumineux
+    for (int i = 0; i < processWidth; i++)
+        totalLight += lightPerColumn[i];
+    return totalLight / colors.rowNumber(); // moyenne par pixel
+    // full screen : 2 msec / 20 appels
+}
 
 #endif // RAYTRACING_H

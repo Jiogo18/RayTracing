@@ -1,6 +1,5 @@
 #include "World3D.h"
 
-Chunk::Chunk(ChunkPos pos) : ChunkPos(pos) { calcMinMaxPoint(); }
 Chunk::~Chunk()
 {
     while (solids.isEmpty())
@@ -87,20 +86,6 @@ bool Chunk::deleteSolid(Solid *block)
     return true;
 }
 
-WorldChange::WorldChange(WorldChange::Type type, Action action)
-{
-    t = type;
-    act = action;
-}
-WorldChange::WorldChange(const WorldChange &change)
-{
-    t = change.t;
-    tchunk = change.tchunk;
-    tblock = change.tblock;
-    tentity = change.tentity;
-}
-
-World::World() {}
 World::~World()
 {
     while (!chunks.isEmpty())
@@ -141,7 +126,7 @@ Solid *World::getSolid(const Point3D &point) const
     return chunk ? chunk->getSolid(point) : nullptr;
 }
 
-bool World::createChunk(ChunkPos posChunk)
+bool World::createChunk(const ChunkPos &posChunk)
 {
     if (haveChunk(posChunk)) return false;
     chunks.append(new Chunk(posChunk));
@@ -159,14 +144,14 @@ void World::deleteChunk(Chunk *chunk)
     change.setChunk(chunk);
     emit changed(change);
 }
-Chunk *World::getChunk(ChunkPos posChunk) const
+Chunk *World::getChunk(const ChunkPos &posChunk) const
 {
     for (int i = 0; i < chunks.size(); i++)
         if (chunks.at(i)->getPoint() == posChunk)
             return chunks.at(i);
     return nullptr;
 }
-bool World::haveChunk(ChunkPos posChunk) const { return getChunk(posChunk) != nullptr; }
+bool World::haveChunk(const ChunkPos &posChunk) const { return getChunk(posChunk) != nullptr; }
 
 bool World::deleteEntity(Entity *entity)
 {
