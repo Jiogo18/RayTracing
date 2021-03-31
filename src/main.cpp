@@ -1,4 +1,4 @@
-#include "GUI/fenetre.h"
+#include "src/GUI/fenetre.h"
 #include <QApplication>
 
 class Application : public QApplication
