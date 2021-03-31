@@ -11,12 +11,12 @@ Rot3D Rot3D::fromVector(const Point3D &v)
         exit(-1);
     }
 #else
-    return {static_cast<radian>(atan2(v.y(), v.x())), static_cast<radian>(asin(v.z() / v.distanceOrigine()))};
-    //return { 2 * atan(v.y() / (v.x() + v.distanceAxeZ())), asin(v.z() / v.distanceOrigine()) };
+    return Rot3D{static_cast<radian>(atan2(v.y(), v.x())), static_cast<radian>(asin(v.z() / v.distanceOrigine()))};
+    //return Rot3D{ 2 * atan(v.y() / (v.x() + v.distanceAxeZ())), asin(v.z() / v.distanceOrigine()) };
 #endif
 }
 
-Vec3D Rot3D::toVector() const { return {cos(rXp) * cos(rZp), sin(rXp) * cos(rZp), sin(rZp)}; }
+Vec3D Rot3D::toVector() const { return Vec3D{cos(rXp) * cos(rZp), sin(rXp) * cos(rZp), sin(rZp)}; }
 
 bool Rot3D::operator==(const Rot3D &rot) const { return rXp == rot.rXp && rZp == rot.rZp; }
 bool Rot3D::operator!=(const Rot3D &rot) const { return rXp != rot.rXp || rZp != rot.rZp; }
@@ -31,7 +31,7 @@ QDebug operator<<(QDebug debug, const Rot3D &rot)
 
 Pos3D Pos3D::fromDegree(const doubli &x, const doubli &y, const doubli &z, const radian &rX, const radian &rZ)
 {
-    return {x, y, z, degreesToRadians(rX), degreesToRadians(rZ)};
+    return Pos3D{x, y, z, degreesToRadians(rX), degreesToRadians(rZ)};
 }
 
 void Pos3D::moveWithRot(const doubli &speed, const radian &rot)
@@ -43,12 +43,12 @@ void Pos3D::moveWithRot(const doubli &speed, const radian &rot)
 
 Point3D Pos3D::pointFromRot(const doubli &d, const radian &rX, const radian &rZ)
 {
-    return Point3D(cos(rZ) * cos(rX), cos(rZ) * sin(rX), sin(rZ) * d) * d;
+    return Point3D{cos(rZ) * cos(rX), cos(rZ) * sin(rX), sin(rZ) * d} * d;
 }
 
 Point3D Pos3D::getNextPoint() const
 {
-    return {cos(rZ()) * cos(rX()) + x(), cos(rZ()) * sin(rX()) + y(), sin(rZ()) + z()};
+    return Point3D{cos(rZ()) * cos(rX()) + x(), cos(rZ()) * sin(rX()) + y(), sin(rZ()) + z()};
     // return getPoint() + toVector();//équivalent
 }
 
@@ -67,7 +67,7 @@ Pos3D Pos3D::getChildRot(const radian &rXRelatif, const radian &rZRelatif) const
         rX += M_PI; // atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         // pas besoin de différentier y car on est à k360° de diff
     }
-    return {static_cast<Point3D>(*this), rX, asin(z2)};
+    return Pos3D{static_cast<Point3D>(*this), rX, asin(z2)};
 }
 
 Point3D Pos3D::changeRef(const Point3D &point, const doubli &srX, const doubli &srZ) const
@@ -77,9 +77,9 @@ Point3D Pos3D::changeRef(const Point3D &point, const doubli &srX, const doubli &
                  crZ = sqrt(1 - srZ * srZ),
                  crX = sqrt(1 - srX * srX),
                  x2 = x * crZ - z * srZ;
-    return {x2 * crX - (point.y() + this->y()) * srX,
-            x2 * srX + (point.y() + this->y()) * crX,
-            x * srZ + z * crZ};
+    return Point3D{x2 * crX - (point.y() + this->y()) * srX,
+                   x2 * srX + (point.y() + this->y()) * crX,
+                   x * srZ + z * crZ};
     // condensé des équations de rotation dans Oxz puis dans Oxy
     // x * sR + y * cR;
     // x * cR - y * sR;
@@ -107,7 +107,7 @@ Pos3D Pos3D::getRotAsVect(const Point3D &p1, const Point3D &p2)
         else
             rX -= M_PI;
     }
-    return {p1, rX, rZ};
+    return Pos3D{p1, rX, rZ};
 }
 
 Pos3D Pos3D::getRotAsPoint(const Point3D &p)
@@ -121,7 +121,7 @@ Pos3D Pos3D::getRotAsPoint(const Point3D &p)
         else
             rX -= M_PI;
     }
-    return {0, 0, 0, rX, rZ};
+    return Pos3D{0, 0, 0, rX, rZ};
 }
 
 QDebug operator<<(QDebug debug, const Pos3D &pos)

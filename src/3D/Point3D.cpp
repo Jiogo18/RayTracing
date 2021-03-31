@@ -44,35 +44,8 @@ bool Point3D::operator==(const Point3D &p) const { return (xp == p.xp) && (yp ==
 bool Point3D::operator!=(const Point3D &p) const { return (xp != p.xp) || (yp != p.yp) || (zp != p.zp); }
 
 bool Point3D::isNull() const { return xp == 0 && yp == 0 && zp == 0; }
-bool Point3D::isInf() const { return isinf(xp) || isinf(yp) || isinf(zp); }
+bool Point3D::isInf() const { return qIsInf((double)xp) || qIsInf((double)yp) || qIsInf((double)zp); }
 bool Point3D::isNan() const { return isnanf(xp + yp + zp); }
-
-Point3D Point3D::operator+(const Point3D &p) const { return {xp + p.xp, yp + p.yp, zp + p.zp}; }
-Point3D Point3D::operator-(const Point3D &p) const { return {xp - p.xp, yp - p.yp, zp - p.zp}; }
-Point3D Point3D::operator*(const Point3D &p) const { return {xp * p.xp, yp * p.yp, zp * p.zp}; }
-Point3D Point3D::operator*(const doubli &n) const { return {xp * n, yp * n, zp * n}; }
-Point3D Point3D::operator/(const Point3D &p) const { return {xp / p.xp, yp / p.yp, zp / p.zp}; }
-Point3D Point3D::operator/(const doubli &n) const { return {xp / n, yp / n, zp / n}; }
-Point3D operator-(const Point3D &p) { return {-p.xp, -p.yp, -p.zp}; }
-
-doubli Point3D::distanceAxeZ() const { return distanceLoxodromique_2(xp, yp); }
-doubli Point3D::distanceOrigine() const { return distanceLoxodromique_3(xp, yp, zp); }
-doubli Point3D::distance(const Point3D &p) const
-{
-    return distanceLoxodromique_3(xp - p.xp, yp - p.yp, zp - p.zp);
-}
-doubli Point3D::distanceMax(const Point3D &p) const
-{
-    return MAX_ABS_3(xp - p.xp, yp - p.yp, zp - p.zp);
-}
-doubli Point3D::distance(const Point3D &pA, const Point3D &pB)
-{
-    return distanceLoxodromique_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
-}
-doubli Point3D::distanceMax(const Point3D &pA, const Point3D &pB)
-{
-    return MAX_ABS_3(pB.xp - pA.xp, pB.yp - pA.yp, pB.zp - pA.zp);
-}
 
 QDebug operator<<(QDebug debug, const Point3D &p)
 {
@@ -81,9 +54,9 @@ QDebug operator<<(QDebug debug, const Point3D &p)
 }
 Point3D qFloor(const Point3D &p)
 {
-    return {std::floor(p.xp), std::floor(p.yp), std::floor(p.zp)};
+    return Point3D{std::floor(p.xp), std::floor(p.yp), std::floor(p.zp)};
 }
 Point3D qCeil(const Point3D &p)
 {
-    return {std::ceil(p.xp), std::ceil(p.yp), std::ceil(p.zp)};
+    return Point3D{std::ceil(p.xp), std::ceil(p.yp), std::ceil(p.zp)};
 }

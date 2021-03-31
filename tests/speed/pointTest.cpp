@@ -57,13 +57,13 @@ void pointTestBasic()
                        p.x();
                    },
                                                   p),
-                   3000, 3310);
+                   2900, 3010);
 
     debugVerifTime("Point3D::getPoint()", verifTime_1([](const Point3D &p) {
                        p.getPoint();
                    },
                                                       p),
-                   3000, 4100);
+                   2900, 4100);
 
     debugVerifTime("Point3D::setX()", verifTime_1([](Point3D p) {
                        p.setX(10);
@@ -87,25 +87,25 @@ void pointTestComparator()
                        return a < b;
                    },
                                                      p, p2),
-                   6980, 7600);
+                   6900, 7600);
 
     debugVerifTime("Point3D::operator>", verifTime_2([](const Point3D &a, const Point3D &b) {
                        return a > b;
                    },
                                                      p, p2),
-                   6980, 7200);
+                   6900, 7200);
 
     debugVerifTime("Point3D::operator<=", verifTime_2([](const Point3D &a, const Point3D &b) {
                        return a <= b;
                    },
                                                       p, p2),
-                   6980, 7110);
+                   6900, 7110);
 
     debugVerifTime("Point3D::operator>=", verifTime_2([](const Point3D &a, const Point3D &b) {
                        return a >= b;
                    },
                                                       p, p2),
-                   6980, 8010);
+                   6900, 8010);
 
     debugVerifTime("Point3D::operator==", verifTime_2([](const Point3D &a, const Point3D &b) {
                        return a == b;
@@ -129,7 +129,7 @@ void pointTestComparator()
                        return a.isInf();
                    },
                                                    p),
-                   7000, 8100);
+                   6900, 8100);
 
     debugVerifTime("Point3D::isNan()", verifTime_1([](const Point3D &a) {
                        a.isNan();
@@ -154,19 +154,19 @@ void pointTestOperator()
                        a - b;
                    },
                                                      p, p2),
-                   37000, 38100);
+                   36900, 38100);
 
     debugVerifTime("Point3D::operator*", verifTime_2([](const Point3D &a, const Point3D &b) {
                        a *b;
                    },
                                                      p, p2),
-                   37000, 38100);
+                   36500, 38100);
 
     debugVerifTime("Point3D::operator*k", verifTime_2([](const Point3D &a, const doubli &k) {
                        a *k;
                    },
                                                       p, k),
-                   37000, 42100);
+                   36500, 39100);
 
     debugVerifTime("Point3D::operator/", verifTime_2([](const Point3D &a, const Point3D &b) {
                        a / b;
@@ -196,37 +196,37 @@ void pointTestDistance()
                        a.distanceAxeZ();
                    },
                                                         p),
-                   13000, 17100);
+                   11900, 14100);
 
     debugVerifTime("Point3D::distanceOrigine", verifTime_1([](const Point3D &a) {
                        a.distanceOrigine();
                    },
                                                            p),
-                   16000, 16100);
+                   14900, 16100);
 
     debugVerifTime("Point3D::distance", verifTime_2([](const Point3D &a, const Point3D &b) {
                        a.distance(b);
                    },
                                                     p, p2),
-                   21900, 23000);
+                   20900, 22100);
 
     debugVerifTime("Point3D::distance2", verifTime_2([](const Point3D &a, const Point3D &b) {
                        Point3D::distance(a, b);
                    },
                                                      p, p2),
-                   21900, 22100);
+                   20900, 23100);
 
     debugVerifTime("Point3D::distanceMax", verifTime_2([](const Point3D &a, const Point3D &b) {
                        a.distanceMax(b);
                    },
                                                        p, p2),
-                   25000, 26100);
+                   24900, 26100);
 
     debugVerifTime("Point3D::distanceMax2", verifTime_2([](const Point3D &a, const Point3D &b) {
                        Point3D::distanceMax(a, b);
                    },
                                                         p, p2),
-                   25000, 26100);
+                   24900, 26100);
     qDebug();
 }
 
@@ -247,6 +247,7 @@ void vecTest()
                        //const doubli x = 1, y = 2, z = 3;
                        //Vec3D a(x, y, z);
                        Vec3D a(1, 2, 3);
+                       return a;
                    }),
                    7000, 8100);
     //}), 19000, 21000);
@@ -262,7 +263,7 @@ void vecTest()
                        return -a;
                    },
                                                   a),
-                   21000, 22100);
+                   38000, 40100);
 
     qDebug();
 }
