@@ -1,22 +1,6 @@
 #include "Pos3D.h"
 
-Rot3D Rot3D::fromVector(const Point3D &v)
-{
-    //https://fr.wikipedia.org/wiki/Coordonn%C3%A9es_polaires
-    //https://wikimedia.org/api/rest_v1/media/math/render/svg/d4a6b8b7e93b05abc00d7789635a762b495d0d67
-#ifdef NAN_VERIF
-    const radian rX = 2 * atan(y / (x + sqrt(x * x + y * y))), rZ = asin(z / vect.distanceOrigine());
-    if (isnanf(rX) || isnanf(rZ)) {
-        qDebug() << "Rot3D::fromVector is nan:" << rX << rZ << vect;
-        exit(-1);
-    }
-#else
-    return Rot3D{static_cast<radian>(atan2(v.y(), v.x())), static_cast<radian>(asin(v.z() / v.distanceOrigine()))};
-    //return Rot3D{ 2 * atan(v.y() / (v.x() + v.distanceAxeZ())), asin(v.z() / v.distanceOrigine()) };
-#endif
-}
 
-Vec3D Rot3D::toVector() const { return Vec3D{cos(rXp) * cos(rZp), sin(rXp) * cos(rZp), sin(rZp)}; }
 
 bool Rot3D::operator==(const Rot3D &rot) const { return rXp == rot.rXp && rZp == rot.rZp; }
 bool Rot3D::operator!=(const Rot3D &rot) const { return rXp != rot.rXp || rZp != rot.rZp; }

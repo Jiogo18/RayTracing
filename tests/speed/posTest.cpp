@@ -18,27 +18,28 @@ void rotTest()
     doubli x = 1, y = 2;
     debugVerifTime("Rot3D::Rot3D(Rot3D)", verifTime_1([](const Rot3D &a) {
                        Rot3D b(a);
+                       return b;
                    },
                                                       Rot3D(x, y)),
-                   2000, 4010);
+                   2000, 3100);
 
     debugVerifTime("Rot3D::fromVector", verifTime_1([](const Vec3D &v) {
                        Rot3D::fromVector(v);
                    },
                                                     Vec3D(1, 2, 3)),
-                   89000, 91000);
+                   87000, 89100);
 
     debugVerifTime("Rot3D::toVector", verifTime_1([](const Rot3D &r) {
                        r.toVector();
                    },
                                                   Rot3D(1, 2)),
-                   221000, 227100);
+                   222000, 225100);
 
     debugVerifTime("Rot3D::operator==", verifTime_2([](const Rot3D &a, const Rot3D &b) {
                        return a == b;
                    },
                                                     Rot3D(1, 2), Rot3D(1, 1)),
-                   3990, 5000);
+                   3990, 4100);
 
     qDebug();
 }

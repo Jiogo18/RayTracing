@@ -42,7 +42,7 @@ namespace maths3D {
 
     constexpr inline bool isNull(const radian &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
     // perfect return : [0;d[ & 3 times faster
-    constexpr inline radian mod(const radian &n, const radian &d) { return (long long int)(n / d) * d; }
+    constexpr inline radian mod(const radian &n, const radian &d) { return n - (long long int)(n / d) * d; }
     // intervalle radian : ]-PI; PI]
     constexpr inline radian modRad(radian d)
     {

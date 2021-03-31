@@ -3,28 +3,28 @@
 
 #include "Point3D.h"
 
+/*****************************************************************************
+  Rot3D
+ *****************************************************************************/
+
 class Rot3D
 {
 public:
     constexpr inline Rot3D() : rXp(0), rZp(0) {}
     constexpr inline Rot3D(const radian &rX, const radian &rZ) : rXp(rX), rZp(rZ) {}
     // constructeur de copie 2* plus rapide
-    static Rot3D fromVector(const Point3D &v);
+    static inline Rot3D fromVector(const Point3D &v);
 
     constexpr inline const radian &rX() const { return rXp; }
     constexpr inline const radian &rZ() const { return rZp; }
     constexpr inline const Rot3D &getRot() const { return *this; }
-    Vec3D toVector() const; // vecteur unitaire
+    inline Vec3D toVector() const; // vecteur unitaire
 
     constexpr inline void setRX(const radian &rX) { rXp = rX; }
     constexpr inline void setRZ(const radian &rZ) { rZp = rZ; }
     constexpr inline void addRX(const radian &rX) { rXp += rX; }
     constexpr inline void addRZ(const radian &rZ) { rZp += rZ; }
-    constexpr inline void setRot(const Rot3D &rot)
-    {
-        rXp = rot.rXp;
-        rZp = rot.rZp;
-    }
+    constexpr inline void setRot(const Rot3D &rot);
 
     bool operator==(const Rot3D &rot) const;
     bool operator!=(const Rot3D &rot) const;
@@ -35,6 +35,39 @@ public:
 private:
     radian rXp, rZp;
 };
+
+/*****************************************************************************
+  Rot3D : constexpr & inline (big) functions
+ *****************************************************************************/
+
+inline Rot3D Rot3D::fromVector(const Point3D &v)
+{
+    //https://fr.wikipedia.org/wiki/Coordonn%C3%A9es_polaires
+    //https://wikimedia.org/api/rest_v1/media/math/render/svg/d4a6b8b7e93b05abc00d7789635a762b495d0d67
+#ifdef NAN_VERIF
+    const radian rX = 2 * atan(y / (x + sqrt(x * x + y * y))), rZ = asin(z / vect.distanceOrigine());
+    if (isnanf(rX) || isnanf(rZ)) {
+        qDebug() << "Rot3D::fromVector is nan:" << rX << rZ << vect;
+        exit(-1);
+    }
+#else
+    return Rot3D{static_cast<radian>(atan2(v.y(), v.x())), static_cast<radian>(asin(v.z() / v.distanceOrigine()))};
+    //return Rot3D{ 2 * atan(v.y() / (v.x() + v.distanceAxeZ())), asin(v.z() / v.distanceOrigine()) };
+#endif
+}
+
+inline Vec3D Rot3D::toVector() const { return Vec3D{cos(rXp) * cos(rZp), sin(rXp) * cos(rZp), sin(rZp)}; }
+
+constexpr inline void Rot3D::setRot(const Rot3D &rot)
+{
+    rXp = rot.rXp;
+    rZp = rot.rZp;
+}
+
+/*****************************************************************************
+  Pos3D
+  The lowest definition of an object : a position and a direction
+ *****************************************************************************/
 
 class Pos3D : public Point3D, public Rot3D
 {
@@ -66,6 +99,10 @@ private:
     static Pos3D getRotAsVect(const Point3D &p1, const Point3D &p2);
     static Pos3D getRotAsPoint(const Point3D &p);
 };
+
+/*****************************************************************************
+  Pos3D : constexpr & inline (big) functions
+ *****************************************************************************/
 
 constexpr inline Pos3D *Pos3D::operator=(const Pos3D &p)
 {
