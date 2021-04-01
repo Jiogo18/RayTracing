@@ -8,8 +8,11 @@ SOURCES += \
     src/DebugTime.cpp \
     src/GUI/GUI.cpp \
     src/GUI/fenetre.cpp \
+    src/RayTracing/Ray.cpp \
     src/RayTracing/RayTracing.cpp \
+    src/RayTracing/Ressources.cpp \
     src/RayTracing/Transfo.cpp \
+    src/RayTracing/Worker.cpp \
     src/World/Timestamp.cpp \
     src/World/World3D.cpp \
     src/World/map3D.cpp \
@@ -24,8 +27,11 @@ HEADERS += \
     src/DebugTime.h \
     src/GUI/GUI.h \
     src/GUI/fenetre.h \
+    src/RayTracing/Ray.h \
     src/RayTracing/RayTracing.h \
+    src/RayTracing/Ressources.h \
     src/RayTracing/Transfo.h \
+    src/RayTracing/Worker.h \
     src/World/Timestamp.h \
     src/World/World3D.h \
     src/World/map3D.h

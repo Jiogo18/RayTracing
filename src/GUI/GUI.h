@@ -5,6 +5,7 @@
 #include "src/RayTracing/RayTracing.h"
 #include <QWidget>
 #include <QPaintEvent>
+#include <QPainter>
 
 class GUI : public QWidget
 {
