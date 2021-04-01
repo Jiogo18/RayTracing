@@ -64,7 +64,7 @@ namespace maths3D {
       Voir tests/trigo https://github.com/Jiogo18/RayTracing/tree/master/tests/trigo
      *****************************************************************************/
 
-#define trigoTaylorLevel 9
+#define trigoTaylorLevel 11
     constexpr inline doubli cosTaylorMin(const radian &x)
     {
         const radian x_trigo = mod(x, M_2PI) - M_PI; // X = x+-M_PI => X sur [-PI;PI[

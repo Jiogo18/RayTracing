@@ -124,55 +124,6 @@ float OBJECT3D::getSpeedOfLight(BLOCK::Material material)
     }
 }
 
-ColorLight::ColorLight() { light = 0; }
-ColorLight::ColorLight(int r, int g, int b, int a, int light)
-{
-    this->r = r;
-    this->g = g;
-    this->b = b;
-    this->a = a > 255 ? 255 : a;
-    this->light = light;
-}
-
-ColorLight::ColorLight(const ColorLight &color)
-{
-    r = color.r;
-    g = color.g;
-    b = color.b;
-    a = color.a;
-    light = color.light;
-}
-
-QColor ColorLight::getColorReduced(double reduce) const
-{
-    return QColor(colorReduced(r, reduce), colorReduced(g, reduce), colorReduced(b, reduce));
-}
-
-void ColorLight::operator+=(const ColorLight &color)
-{
-    // si this a une luminositée importante (plus que color) alors this est +importante
-    // si color a un alpha plus faible (transparent/miroir) alors this est +important
-    if (color.a == 0) return; // avant est opaque
-
-    double poids = (light - color.light + 1.0) * 255.0 / color.a;
-
-    r = (r * poids + color.r) / (1 + poids);
-    g = (g * poids + color.g) / (1 + poids);
-    b = (b * poids + color.b) / (1 + poids);
-    a = std::min(a + color.a, 255);
-    light += color.light;
-}
-
-ColorLight *ColorLight::operator=(const ColorLight &color)
-{
-    r = color.r;
-    g = color.g;
-    b = color.b;
-    a = color.a;
-    light = color.light;
-    return this;
-}
-
 Face::Face() : Object(Pos3D(0, 0, 0, 0, 0))
 {
     rect = HRect3D(Point3D(0, 0, 0), Point3D(0, 0, 0));

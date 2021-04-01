@@ -8,6 +8,7 @@ SOURCES += \
     src/DebugTime.cpp \
     src/GUI/GUI.cpp \
     src/GUI/fenetre.cpp \
+    src/RayTracing/ColorLight.cpp \
     src/RayTracing/Ray.cpp \
     src/RayTracing/RayTracing.cpp \
     src/RayTracing/Ressources.cpp \
@@ -27,6 +28,7 @@ HEADERS += \
     src/DebugTime.h \
     src/GUI/GUI.h \
     src/GUI/fenetre.h \
+    src/RayTracing/ColorLight.h \
     src/RayTracing/Ray.h \
     src/RayTracing/RayTracing.h \
     src/RayTracing/Ressources.h \

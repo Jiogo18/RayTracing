@@ -93,18 +93,30 @@
   - Exemple : watter => mirror => watter, pour l'instant le miroir est plat donc c'est comme si on faisait watter => watter
   - Fix: insideMaterial, permet aussi de choisir entre démarrer dans l'air ou dans l'eau
 
-- [ ] #26 insideMaterial doit faire une réfraction car l'oeil n'est pas direct dans le matériau
+- [x] #26 insideMaterial doit faire une réfraction car l'oeil n'est pas direct dans le matériau
   - Fix : dans le constructeur de Ray
   - Il reste encore le problème de la réfraction en haut/en bas
   - Fix : nouvelle formule
   - Edit : marche toujours pas
+  - Fix : formule avec les vecteurs
 
-- [ ] #27 Verre dans les miroirs n'est pas bien réfracté
+- [x] #27 Verre dans les miroirs n'est pas bien réfracté
+  - Fix : formule avec les vecteurs
 
 - [x] #28 Optimisation : Développement de Taylor
 
 - [ ] #29 Watter et verre vert n'ont pas le bon rendu quand leurs ColorLight est superposée
+  - Solution : ColorLight & ColorFilter
 
 - [x] #30 La réfraction d'entrée est cassée pour les faces en sens négatif
   - Solution : c'est l'axe Ori qui doit être dans l'autre sens
   - Fix : j'avais oublié l'orientation
+
+- [x] #31 Petit point en haut et en bas dans un miroir sutie à #28
+  - Fix : trigoTaylorLevel à 11
+
+- [ ] #32 QImage scaled ne prend que quelques pixels
+  - Solution : QImage en mode jpg ou algo custom pour paint (meilleur solution car prend en compte la light de ColorLight)
+  - Pb : ça va augmenter énormément le process ?
+   => en cas de changement de taille il faut scaled une image
+   => quand le changement est terminé (timeout de 200ms) on peut faire le calcul

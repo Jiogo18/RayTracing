@@ -2,6 +2,7 @@
 #define OBJECT3D_H
 
 #include "Geometry3D.h"
+#include "src/RayTracing/ColorLight.h"
 #include <QImage>
 #include <QMap>
 
@@ -49,33 +50,6 @@ namespace OBJECT3D {
     float getSpeedOfLight(BLOCK::Material material); // fraction de C
 } // namespace OBJECT3D
 using namespace OBJECT3D;
-
-class ColorLight
-{
-public:
-    ColorLight();
-    ColorLight(int r, int g, int b, int a, int light = 0);
-    ColorLight(const ColorLight &color);
-    QColor getColorReduced(double reduce) const;
-    inline int red() const { return r; }
-    inline int green() const { return g; }
-    inline int blue() const { return b; }
-    inline int alpha() const { return a; }
-    inline int getLight() const { return light; }
-    void operator+=(const ColorLight &color); //couleur après + couleur avant = couleur mixé
-    ColorLight *operator=(const ColorLight &color);
-
-private:
-    //entre 0 et 255
-    int r, g, b, a;
-    int light; //entre 0 et infini (0 par défaut et valeur >0 si on arrive à une source de lumière)
-    //bc de light pr le soleil, les sources concentrées (plusieurs Ray)
-    inline int colorReduced(int c, double reduce) const
-    {
-        c = c * light / reduce;
-        return c >= 255 ? 255 : c;
-    }
-};
 
 class Object : public Pos3D, public QObject
 {
