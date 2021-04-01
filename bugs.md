@@ -105,5 +105,6 @@
 
 - [ ] #29 Watter et verre vert n'ont pas le bon rendu quand leurs ColorLight est superposée
 
-- [ ] #30 La réfraction d'entrée est cassée pour les faces en sens négatif
+- [x] #30 La réfraction d'entrée est cassée pour les faces en sens négatif
   - Solution : c'est l'axe Ori qui doit être dans l'autre sens
+  - Fix : j'avais oublié l'orientation

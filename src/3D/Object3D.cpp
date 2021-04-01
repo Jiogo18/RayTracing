@@ -275,11 +275,12 @@ Rot3D Face::refractRot(const Rot3D &pos, float indiceRefrac) const
     if (indiceRefrac == 0 || isnanf(indiceRefrac)) return Rot3D();
 
     Vec3D Ori = plan.normale();
+    if (!orientation) {
+        Ori = -Ori;
+    }
     Point3D delta = pos.toVector() - Ori;
 
     Point3D Mid = Ori + delta / indiceRefrac;
-    //qDebug() << "refractRot" << Ori << pos << pos.toVectorU() << delta << Mid;
-    // TODO: mauvais calcul sur les faces opposées (il faut juste inverser correctement)
 
 #ifdef NAN_VERIF
     if (Mid.isInf() || Mid.isNan()) {
