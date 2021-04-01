@@ -1,7 +1,5 @@
 #include "Pos3D.h"
 
-
-
 bool Rot3D::operator==(const Rot3D &rot) const { return rXp == rot.rXp && rZp == rot.rZp; }
 bool Rot3D::operator!=(const Rot3D &rot) const { return rXp != rot.rXp || rZp != rot.rZp; }
 
@@ -21,30 +19,30 @@ Pos3D Pos3D::fromDegree(const doubli &x, const doubli &y, const doubli &z, const
 void Pos3D::moveWithRot(const doubli &speed, const radian &rot)
 {
     // trigo, on connait l'hypothénuse (speed) et l'angle et on veut coté a ou b => cos ou sin
-    addX(cos(rX() + rot) * speed);
-    addY(sin(rX() + rot) * speed);
+    addX(cosTaylorMin(rX() + rot) * speed);
+    addY(sinTaylorMin(rX() + rot) * speed);
 }
 
 Point3D Pos3D::pointFromRot(const doubli &d, const radian &rX, const radian &rZ)
 {
-    return Point3D{cos(rZ) * cos(rX), cos(rZ) * sin(rX), sin(rZ) * d} * d;
+    return Point3D{cosTaylorMin(rZ) * cosTaylorMin(rX), cosTaylorMin(rZ) * sinTaylorMin(rX), sinTaylorMin(rZ) * d} * d;
 }
 
 Point3D Pos3D::getNextPoint() const
 {
-    return Point3D{cos(rZ()) * cos(rX()) + x(), cos(rZ()) * sin(rX()) + y(), sin(rZ()) + z()};
+    return Point3D{cosTaylorMin(rZ()) * cosTaylorMin(rX()) + x(), cosTaylorMin(rZ()) * sinTaylorMin(rX()) + y(), sinTaylorMin(rZ()) + z()};
     // return getPoint() + toVector();//équivalent
 }
 
 Pos3D Pos3D::getChildRot(const radian &rXRelatif, const radian &rZRelatif) const
 {
     // changeRef de childNext
-    const doubli crZR = cos(rZRelatif),
-                 crZ = cos(rZ()), crX = cos(rX()),
-                 srZ = sin(rZ()), srX = sin(rX());
-    const doubli x1 = crZR * cos(rXRelatif), y1 = crZR * sin(rXRelatif), z1 = sin(rZRelatif); // z1==srZR
-    const doubli x2 = x1 * crZ - z1 * srZ, z2 = x1 * srZ + z1 * crZ;                          // y2==y1
-    const doubli x3 = x2 * crX - y1 * srX, y3 = x2 * srX + y1 * crX;                          // z3==z2
+    const doubli crZR = cosTaylorMin(rZRelatif),
+                 crZ = cosTaylorMin(rZ()), crX = cosTaylorMin(rX()),
+                 srZ = sinTaylorMin(rZ()), srX = sinTaylorMin(rX());
+    const doubli x1 = crZR * cosTaylorMin(rXRelatif), y1 = crZR * sinTaylorMin(rXRelatif), z1 = sinTaylorMin(rZRelatif); // z1==srZR
+    const doubli x2 = x1 * crZ - z1 * srZ, z2 = x1 * srZ + z1 * crZ;                                                     // y2==y1
+    const doubli x3 = x2 * crX - y1 * srX, y3 = x2 * srX + y1 * crX;                                                     // z3==z2
 
     radian rX = atan(y3 / x3);
     if (x3 < 0) {   // sinon on ne voit que tout ce qui est en x3>=0 (rotation de 180° du reste)

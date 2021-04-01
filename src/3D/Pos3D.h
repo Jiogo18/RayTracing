@@ -56,7 +56,7 @@ inline Rot3D Rot3D::fromVector(const Point3D &v)
 #endif
 }
 
-inline Vec3D Rot3D::toVector() const { return Vec3D{cos(rXp) * cos(rZp), sin(rXp) * cos(rZp), sin(rZp)}; }
+inline Vec3D Rot3D::toVector() const { return Vec3D{cosTaylorMin(rXp) * cosTaylorMin(rZp), sinTaylorMin(rXp) * cosTaylorMin(rZp), sinTaylorMin(rZp)}; }
 
 constexpr inline void Rot3D::setRot(const Rot3D &rot)
 {

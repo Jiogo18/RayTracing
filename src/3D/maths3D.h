@@ -42,7 +42,7 @@ namespace maths3D {
 
     constexpr inline bool isNull(const radian &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
     // perfect return : [0;d[ & 3 times faster
-    constexpr inline radian mod(const radian &n, const radian &d) { return n - (long long int)(n / d) * d; }
+    constexpr inline radian mod(const radian &n, const radian &d) { return n - ((long long int)(n / d) - (n < 0)) * d; }
     // intervalle radian : ]-PI; PI]
     constexpr inline radian modRad(radian d)
     {
@@ -56,6 +56,41 @@ namespace maths3D {
         return isNull(d) ? 0 : d;
     }
     constexpr inline float signOf(const radian &d) { return modRad(d) < 0 ? -1 : 1; } // -1 or 1
+
+    /*****************************************************************************
+      Versions optimisées des formules de trigonométrie
+      Utilise le développement de Taylor de façon à optimiser les calculs
+      Les calculs sont 1.7 fois plus rapides avec une précision à 5 décimales
+      Voir tests/trigo https://github.com/Jiogo18/RayTracing/tree/master/tests/trigo
+     *****************************************************************************/
+
+#define trigoTaylorLevel 9
+    constexpr inline doubli cosTaylorMin(const radian &x)
+    {
+        const radian x_trigo = mod(x, M_2PI) - M_PI; // X = x+-M_PI => X sur [-PI;PI[
+        const radian x2 = x_trigo * x_trigo;
+#if trigoTaylorLevel <= 10
+        return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800)))));
+#elif trigoTaylorLevel <= 12
+        return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800 - x2 * (1.0 / 479001600))))));
+#else //if trigoTaylorLevel <= 14
+        return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800 - x2 * (1.0 / 479001600 - x2 * (1.0 / 87178291200)))))));
+#endif
+    }
+    constexpr inline doubli sinTaylorMin(const radian &x)
+    {
+        const radian x_trigo = mod(x, M_2PI) - M_PI; // X = x+-M_PI => X sur [-PI;PI[
+        const radian x2 = x_trigo * x_trigo;
+#if trigoTaylorLevel <= 9
+        return x_trigo * (-1 + x2 * (1.0 / 6 - x2 * (1.0 / 120 - x2 * (1.0 / 5040 - x2 * (1.0 / 362880)))));
+#elif trigoTaylorLevel <= 11
+        return x_trigo * (-1 + x2 * (1.0 / 6 - x2 * (1.0 / 120 - x2 * (1.0 / 5040 - x2 * (1.0 / 362880 - x2 * (1.0 / 39916800))))));
+#elif trigoTaylorLevel <= 13
+        return x_trigo * (-1 + x2 * (1.0 / 6 - x2 * (1.0 / 120 - x2 * (1.0 / 5040 - x2 * (1.0 / 362880 - x2 * (1.0 / 39916800 - x2 * (1.0 / 6227020800)))))));
+#else
+        return x_trigo * (-1 + x2 * (1.0 / 6 - x2 * (1.0 / 120 - x2 * (1.0 / 5040 - x2 * (1.0 / 362880 - x2 * (1.0 / 39916800 - x2 * (1.0 / 6227020800 - x2 * (1.0 / 1307674368000))))))));
+#endif
+    }
 
 } // namespace maths3D
 

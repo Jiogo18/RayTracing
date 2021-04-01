@@ -74,7 +74,8 @@
   - il faut mettre un obstacle (en ghost on se voit pas donc c'est inifini)
   - fix : opacité de 10 % au lieu de 0 %
 
-- [ ] #21 optimisation : on peut retirer les doubli ?
+- [x] #21 optimisation : on peut retirer les doubli ?
+  - fix : refusé
 
 - [x] #22 arrondi : passé le sqrt(1+...) à sqrt(0.55+...) ça corrige un peu la distorsion, mais c'est toujours bizarre
   - (cf l'image des miroirs du 21/02/2021)
@@ -99,3 +100,10 @@
   - Edit : marche toujours pas
 
 - [ ] #27 Verre dans les miroirs n'est pas bien réfracté
+
+- [x] #28 Optimisation : Développement de Taylor
+
+- [ ] #29 Watter et verre vert n'ont pas le bon rendu quand leurs ColorLight est superposée
+
+- [ ] #30 La réfraction d'entrée est cassée pour les faces en sens négatif
+  - Solution : c'est l'axe Ori qui doit être dans l'autre sens
