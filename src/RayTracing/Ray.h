@@ -7,7 +7,7 @@ class Ray
 {
 public:
     Ray(const Pos3D &pos, RayTracingRessources *rtRess);
-    ColorLight getColor() const;
+    ColorLight getColor(const int &baseLight) const;
     void process(const World *world);
 
 private:

@@ -32,3 +32,4 @@ Idem, les parenthèses sont importantes (celles à l'intérieur)
 | 31/03/2021 |    28.5     |   34 ms/frame   |      0.39       |  2600 ms/frame   |
 | 31/03/2021 |     36      |   27 ms/frame   |      0.38       |  2600 ms/frame   |
 | 31/03/2021 |     37      |   27 ms/frame   |      0.41       |  2450 ms/frame   |
+| 02/04/2021 |     38      |   26 ms/frame   |      0.41       |  2400 ms/frame   |

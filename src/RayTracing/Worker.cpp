@@ -63,16 +63,10 @@ void RayTracingWorker::run()
 #endif // DISABLE_RAYPROCESS
 
             //start2 = rtRess->dt->getCurrent();
-            ColorLight colorL = ray.getColor();
-            int red = colorL.red() * colorL.alpha() / 255;
-            int green = colorL.green() * colorL.alpha() / 255;
-            int blue = colorL.blue() * colorL.alpha() / 255;
-            int light = colorL.getLight();
+            ColorLight colorL = ray.getColor(RAYTRACING::gamma);
 
-            light += RAYTRACING::gamma;
-
-            totalLight[i] += light;
-            colors.set(i, y, ColorLight(red, green, blue, 255, light));
+            totalLight[i] += colorL.getLight();
+            colors.set(i, y, colorL);
             //rtRess->dt->addValue("RayTracingWorker::run_3_ColorLight", rtRess->dt->getCurrent() - start2);//150ms
         }
         rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);

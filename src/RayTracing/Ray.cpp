@@ -18,11 +18,11 @@ Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), rtRess(rtRe
 #endif // NAN_VERIF
 }
 
-ColorLight Ray::getColor() const
+ColorLight Ray::getColor(const int &baseLight) const
 {
-    if (colors.isEmpty()) return ColorLight(0, 0, 0, 255, 0);
-    ColorLight retour = colors.last();
-    for (int i = colors.size() - 2; i >= 0; i--)
+    ColorLight retour{0, 0, 0, 0, baseLight};
+    if (colors.isEmpty()) return retour;
+    for (int i = colors.size() - 1; i >= 0; i--)
         retour += colors.at(i);
     return retour;
 }

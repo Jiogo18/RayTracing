@@ -107,6 +107,7 @@
 
 - [ ] #29 Watter et verre vert n'ont pas le bon rendu quand leurs ColorLight est superposée
   - Solution : ColorLight & ColorFilter
+  - Fix temporaire : changement du calcul (mais ne prend plus en compte l'intensité lumineuse de la source...)
 
 - [x] #30 La réfraction d'entrée est cassée pour les faces en sens négatif
   - Solution : c'est l'axe Ori qui doit être dans l'autre sens
