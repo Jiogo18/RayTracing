@@ -6,7 +6,7 @@
 class Ray
 {
 public:
-    Ray(const Pos3D &pos, RayTracingRessources *rtRess);
+    constexpr inline Ray(const Pos3D &pos, RayTracingRessources *rtRess);
     ColorLight getColor(const int &baseLight) const;
     void process(const World *world);
 
@@ -29,7 +29,22 @@ private:
     bool enter = false;
     BLOCK::Material insideMaterial;
     RayTracingRessources *rtRess = nullptr;
-    const QImage *getTexture(const QString &file) const;
 };
+
+constexpr inline Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), distParcouru(0), insideMaterial(rtRess->insideMaterial), rtRess(rtRess)
+{
+    float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
+    //float previousSpeed = 1; // the speed of light in the lens
+    if (newSpeed != 1) {
+        // calcul de la réfraction (le regard est normal au plan)
+        this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed));
+    }
+#ifdef NAN_VERIF
+    if (this->pos.isNan()) {
+        qDebug() << "Ray::Ray pos is nan" << this->pos;
+        exit(-1);
+    }
+#endif // NAN_VERIF
+}
 
 #endif // RAY_H

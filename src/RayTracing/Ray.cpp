@@ -1,23 +1,5 @@
 #include "Ray.h"
 
-Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), rtRess(rtRess)
-{
-    distParcouru = 0;
-    insideMaterial = rtRess->insideMaterial;
-    float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
-    float previousSpeed = 1; // the speed of light in the lens
-    if (newSpeed != previousSpeed) {
-        // calcul de la réfraction (le regard est normal au plan)
-        this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed / previousSpeed));
-    }
-#ifdef NAN_VERIF
-    if (this->pos.isNan()) {
-        qDebug() << "Ray::Ray pos is nan" << this->pos;
-        exit(-1);
-    }
-#endif // NAN_VERIF
-}
-
 ColorLight Ray::getColor(const int &baseLight) const
 {
     ColorLight retour{0, 0, 0, 0, baseLight};
@@ -40,7 +22,7 @@ void Ray::process(const World *world)
         lastFace = face;
 
         const QPointF pTexture = face->getPlan()->projeteOrtho(pInter) - face->getPointC();
-        ColorLight color = face->getColor(pTexture, getTexture(face->getTexture()));
+        const ColorLight color = face->getColor(pTexture);
         colors.append(color);
 
         opacity += color.alpha();
@@ -147,17 +129,4 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
     }
     pInter = pInterMin;
     return faceMin;
-}
-
-const QImage *Ray::getTexture(const QString &file) const
-{
-    if (!rtRess->facesImg->contains(file)) {
-        QImage img = OBJECT3D::getTexture(file);
-        if (img.isNull()) {
-            rtRess->facesImg->insert(file, nullptr);
-        } else {
-            rtRess->facesImg->insert(file, new QImage(img));
-        }
-    }
-    return rtRess->facesImg->value(file);
 }

@@ -44,10 +44,27 @@ namespace ENTITY {
 } // namespace ENTITY
 
 namespace OBJECT3D {
+    static QMap<QString, const QImage *> loadedTextures;
+    static QImage missingTexture;
+
     QString getFileTexture(BLOCK::Material material, QList<BLOCK::Variation> variations);
-    QImage getTexture(QString file);
+    const QImage *getTexture(const QString &file);
     int getLight(BLOCK::Material material, QList<BLOCK::Variation> variations);
-    float getSpeedOfLight(BLOCK::Material material); // fraction de C
+    constexpr inline float getSpeedOfLight(BLOCK::Material material)
+    {
+        switch (material) {
+        case BLOCK::Material::air:
+            return 1;
+        case BLOCK::Material::watter:
+            return 0.75; // 1/1.33
+        case BLOCK::Material::glass:
+        case BLOCK::Material::green_glass:
+        case BLOCK::Material::mirror:
+            return 0.667; // 1/1.5
+        default:
+            return 0;
+        }
+    } // fraction de C
 } // namespace OBJECT3D
 using namespace OBJECT3D;
 
@@ -82,8 +99,9 @@ public:
     const QPointF &getPointC() const { return pC; }
     bool getOrientation() const { return orientation; }
     bool isValid() const { return material != BLOCK::Material::none; }
-    ColorLight getColor(const QPointF &point, const QImage *img) const;
-    QString getTexture() const { return texture; }
+    ColorLight getColor(const QPointF &point) const;
+    const QString &getTexture() const { return texture; }
+    const QImage *getTextureImg() const { return textureImg; }
     BLOCK::Material getMaterial() const override { return material; }
     Rot3D boundRot(const Rot3D &rot) const;
     Rot3D refractRot(const Rot3D &pos, float indiceRefrac) const;
@@ -97,6 +115,7 @@ private:
     BLOCK::Material material;
     QList<BLOCK::Variation> variations;
     QString texture;
+    const QImage *textureImg = nullptr;
     Plan plan;
     QPointF pC;
     bool orientation; // true dans le sens positif du plan

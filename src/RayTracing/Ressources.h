@@ -67,12 +67,10 @@ class RayTracingRessources
 {
 public:
     RayTracingRessources(const World *world, const Entity *client, DebugTime *dt);
-    ~RayTracingRessources();
     const World *world = nullptr;
     DebugTime *dt = nullptr;
     void onWorldChanged();
     Pos3D clientPos;
-    QMap<QString, const QImage *> *facesImg = nullptr;
     BLOCK::Material insideMaterial;
     void resetRessources(const Entity *client);
 };

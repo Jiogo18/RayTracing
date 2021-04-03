@@ -1,23 +1,8 @@
 #include "Ressources.h"
 
-RayTracingRessources::RayTracingRessources(const World *world, const Entity *client, DebugTime *dt)
+RayTracingRessources::RayTracingRessources(const World *world, const Entity *client, DebugTime *dt) : world(world), dt(dt)
 {
-    this->world = world;
-    facesImg = new QMap<QString, const QImage *>;
-    this->dt = dt;
     resetRessources(client);
-}
-
-RayTracingRessources::~RayTracingRessources()
-{
-    if (facesImg != nullptr) {
-        QMapIterator<QString, const QImage *> i(*facesImg);
-        while (i.hasNext()) {
-            i.next();
-            delete i.value();
-        }
-        delete facesImg;
-    }
 }
 
 void RayTracingRessources::onWorldChanged() {}

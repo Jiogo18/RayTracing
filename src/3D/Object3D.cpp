@@ -78,24 +78,29 @@ QString OBJECT3D::getFileTexture(BLOCK::Material material, QList<BLOCK::Variatio
 
     return texture;
 }
-QImage OBJECT3D::getTexture(QString file)
+const QImage *OBJECT3D::getTexture(const QString &file)
 {
-    QImage img;
-    if (img.load(":/ressourcepacks/default/textures/" + file + ".png")) {
-        if (img.format() != QImage::Format_RGBA64) {
-            img = img.convertToFormat(QImage::Format_RGBA64);
+    if (loadedTextures.contains(file)) {
+        return loadedTextures.value(file, nullptr);
+    }
+    QImage *img = new QImage();
+    if (img->load(":/ressourcepacks/default/textures/" + file + ".png")) {
+        if (img->format() != QImage::Format_RGBA64) {
+            *img = img->convertToFormat(QImage::Format_RGBA64);
         }
+        loadedTextures.insert(file, img);
         return img;
     }
     qWarning() << "[OBJECT3D::getTexture] can't load this texture:" << file;
     /*if(img.load(":/ressourcepacks/default/textures/blocks/block_nul.png"))
         return img;*/
-    img = QImage(2, 2, QImage::Format_RGBA64);
-    img.fill(QColor(0, 0, 0, 100));
-    img.setPixelColor(0, 0, QColor(255, 0, 255, 100));
-    img.setPixelColor(1, 1, QColor(255, 0, 255, 100));
-
-    return img;
+    if (missingTexture.isNull()) {
+        missingTexture = QImage(2, 2, QImage::Format_RGBA64);
+        missingTexture.fill(QColor(0, 0, 0, 100));
+        missingTexture.setPixelColor(0, 0, QColor(255, 0, 255, 100));
+        missingTexture.setPixelColor(1, 1, QColor(255, 0, 255, 100));
+    }
+    return &missingTexture;
 }
 int OBJECT3D::getLight(BLOCK::Material material, QList<BLOCK::Variation> variations)
 {
@@ -108,100 +113,78 @@ int OBJECT3D::getLight(BLOCK::Material material, QList<BLOCK::Variation> variati
     }
 }
 
-float OBJECT3D::getSpeedOfLight(BLOCK::Material material)
+Face::Face() : Object(Pos3D(0, 0, 0, 0, 0)), rect(Point3D(0, 0, 0), Point3D(0, 0, 0)), material(BLOCK::Material::none), variations{BLOCK::Variation::front}
 {
-    switch (material) {
-    case BLOCK::Material::air:
-        return 1;
-    case BLOCK::Material::watter:
-        return 0.75; // 1/1.33
-    case BLOCK::Material::glass:
-    case BLOCK::Material::green_glass:
-    case BLOCK::Material::mirror:
-        return 0.667; // 1/1.5
-    default:
-        return 0;
-    }
+    calcFace();
 }
+Face::Face(const Point3D &point,
+           const HRect3D &rect, bool orientation,
+           BLOCK::Material material,
+           QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0)),
+                                                 rect(rect), material(material), variations(variations), orientation(orientation)
+{
+    calcFace();
+}
+Face::Face(const Face &face) : Object(face),
+                               rect(face.rect),
+                               maxGeometry(face.maxGeometry),
+                               middleGeometry(face.middleGeometry),
+                               material(face.material),
+                               variations(face.variations),
+                               texture(face.texture),
+                               textureImg(face.textureImg),
+                               plan(face.plan),
+                               pC(face.pC),
+                               orientation(face.orientation)
+{}
 
-Face::Face() : Object(Pos3D(0, 0, 0, 0, 0))
+ColorLight Face::getColor(const QPointF &point) const
 {
-    rect = HRect3D(Point3D(0, 0, 0), Point3D(0, 0, 0));
-    material = BLOCK::Material::none;
-    variations.clear();
-    variations.append(BLOCK::Variation::front);
-    calcFace();
-}
-Face::Face(const Point3D &point, const HRect3D &rect, bool orientation,
-           BLOCK::Material material, QList<BLOCK::Variation> variations) : Object(Pos3D(point, 0, 0))
-{
-    this->rect = rect;
-    this->orientation = orientation;
-    this->material = material;
-    this->variations = variations;
-    calcFace();
-}
-Face::Face(const Face &face) : Object(face)
-{
-    rect = face.rect;
-    material = face.material;
-    variations = face.variations;
-    maxGeometry = face.maxGeometry;
-    middleGeometry = face.middleGeometry;
-    texture = face.texture;
-    plan = face.plan;
-    orientation = face.orientation;
-    pC = face.pC;
-}
-ColorLight Face::getColor(const QPointF &point, const QImage *img) const
-{
-    if (img != nullptr && !img->isNull()) {
-        QColor color;
+#define FacegetColor 1
+#if FacegetColor == 1 // image
+    if (textureImg != nullptr) {
         if (0 <= point.x() && point.x() <= 1 && 0 <= point.y() && point.y() <= 1) {
             // switch selon les positions ? => via fichier + peut etre
-            int x = qFloor(point.x() * img->width());
-            int y = qFloor(point.y() * img->height());
-            if (img->width() <= x) x = img->width() - 1;
-            if (img->height() <= y) y = img->height() - 1;
-            color = img->pixelColor(x, y);
+            return ColorLight{textureImg->pixelColor(maths3D::min(point.x() * textureImg->width(), textureImg->width() - 1),
+                                                     maths3D::min(point.y() * textureImg->height(), textureImg->height() - 1)),
+                              OBJECT3D::getLight(getMaterial(), variations)};
         } else {
-            color = img->pixelColor(0, 0);
             qDebug() << "Face::getColor point pas dans le cadre:" << point;
+            return ColorLight{textureImg->pixelColor(0, 0), OBJECT3D::getLight(getMaterial(), variations)};
         }
-        return ColorLight(color.red(), color.green(), color.blue(), color.alpha(),
-                          OBJECT3D::getLight(getMaterial(), variations));
     }
-
-    /*int casesDone = 0;
-    for(int i=0; i<variations.size(); i++) {
+#elif FacegetColor == 2 // colored
+    //int casesDone = 0;
+    for (int i = 0; i < variations.size(); i++) {
         switch (variations.at(i)) {
         case BLOCK::Variation::top:
-            if(casesDone & 1) continue;
-            casesDone = casesDone | 1;
-            return ColorLight(100, 100, 200, 255, 1);
+            //if(casesDone & 1) continue;
+            //casesDone = casesDone | 1;
+            return ColorLight{100, 100, 200, 250, 1};
         case BLOCK::Variation::bottom:
-            if(casesDone & 2) continue;
-            casesDone = casesDone | 2;
-            return ColorLight(200, 200, 100, 255, 1);
+            //if(casesDone & 2) continue;
+            //casesDone = casesDone | 2;
+            return ColorLight{200, 200, 100, 250, 1};
         case BLOCK::Variation::front:
-            if(casesDone & 4) continue;
-            casesDone = casesDone | 4;
-            return ColorLight(200, 100, 100, 255, 1);
+            //if(casesDone & 4) continue;
+            //casesDone = casesDone | 4;
+            return ColorLight{200, 100, 100, 250, 1};
         case BLOCK::Variation::back:
-            if(casesDone & 8) continue;
-            casesDone = casesDone | 8;
-            return ColorLight(100, 200, 200, 255, 1);
+            //if(casesDone & 8) continue;
+            //casesDone = casesDone | 8;
+            return ColorLight{100, 200, 200, 250, 1};
         case BLOCK::Variation::left:
-            if(casesDone & 16) continue;
-            casesDone = casesDone | 16;
-            return ColorLight(100, 200, 100, 255, 1);
+            //if(casesDone & 16) continue;
+            //casesDone = casesDone | 16;
+            return ColorLight{100, 200, 100, 250, 1};
         case BLOCK::Variation::right:
-            if(casesDone & 32) continue;
-            casesDone = casesDone | 32;
-            return ColorLight(200, 100, 200, 255, 1);
+            //if(casesDone & 32) continue;
+            //casesDone = casesDone | 32;
+            return ColorLight{200, 100, 200, 250, 1};
         }
-    }*/
-    return ColorLight(0, 0, 0, 255, 0);
+    }
+#endif                  // FacegetColor
+    return ColorLight{0, 0, 0, 255, 0};
 }
 
 Rot3D Face::boundRot(const Rot3D &rot) const
@@ -252,6 +235,8 @@ void Face::calcFace()
     maxGeometry = rect + getPoint();
     middleGeometry = maxGeometry.getMiddle();
     texture = OBJECT3D::getFileTexture(material, variations);
+    textureImg = OBJECT3D::getTexture(texture);
+    if (textureImg != nullptr && textureImg->isNull()) textureImg = nullptr;
 
     plan = Plan(maxGeometry);
 
