@@ -12,10 +12,10 @@ ColorLight Ray::getColor(const int &baseLight) const
 void Ray::process()
 {
     while (distParcouru < viewDistance) { // pas exactement view distance mais pas loins (2*..?)
-        qint64 start = rtRess->dt->getCurrent();
+        //qint64 start = rtRess->dt->getCurrent();
         Point3D pInter;
         const Face *face = getFirstIntersection(pInter);
-        rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
+        //rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
         if (face == nullptr || !face->isValid()) break; // c'est normal si on va dans le vide
 
         lastMoved = pInter != pos;
@@ -78,7 +78,7 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
         const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
         if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
-        qint64 start1 = rtRess->dt->getCurrent();
+        //qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
             Solid *block = chunk->getSolids()->at(i2);
             if (block->getPoint().distance(pos) > viewDistance)
@@ -127,7 +127,7 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
                 //(on peu prendre l'un ou l'autre)
             }
         }
-        rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
+        //rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
     }
     pInter = pInterMin;
     return faceMin;
