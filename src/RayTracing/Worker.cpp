@@ -48,7 +48,7 @@ void RayTracingWorker::run()
 
         start = rtRess->dt->getCurrent();
         for (int y = 0; y < sceneSize.height(); y++) {
-            //qint64 start2;
+            qint64 start2;
 
             //start2 = rtRess->dt->getCurrent();
             //pos en % de pixmap.height/2 * yMax
@@ -57,9 +57,9 @@ void RayTracingWorker::run()
             //rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() - start2);//1080ms
 
 #ifndef DISABLE_RAYPROCESS
-            //start2 = rtRess->dt->getCurrent();
-            ray.process(rtRess->world);
-            //rtRess->dt->addValue("RayTracingWorker::run_2_process", rtRess->dt->getCurrent() - start2);
+            start2 = rtRess->dt->getCurrent();
+            ray.process();
+            rtRess->dt->addValue("RayTracingWorker::run_2_process", rtRess->dt->getCurrent() - start2);
 #endif // DISABLE_RAYPROCESS
 
             //start2 = rtRess->dt->getCurrent();

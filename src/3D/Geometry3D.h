@@ -43,19 +43,20 @@ public:
     constexpr inline HRect3D(const Point3D &pA, const Size3D &s) : pMin(pA), pMax(pA + s) {}
     constexpr inline HRect3D(const HRect3D &r) : pMin(r.pMin), pMax(r.pMax) {}
 
-    constexpr inline Size3D getSize() const { return Size3D(pMin, pMax); }
+    constexpr inline Size3D getSize() const { return Size3D{pMin, pMax}; }
     constexpr inline const Point3D &getPointMin() const { return pMin; }
     constexpr inline const Point3D &getPointMax() const { return pMax; }
-    inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
+    constexpr inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
     //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(const doubli &scale);
-    HRect3D operator+(const Point3D &pointAdd) const { return HRect3D(pMin + pointAdd, pMax + pointAdd); }
+    HRect3D operator+(const Point3D &pointAdd) const { return HRect3D{pMin + pointAdd, pMax + pointAdd}; }
     HRect3D *operator=(const HRect3D &rect);
     bool operator==(const HRect3D &rect) const;
 
     bool contains(const Point3D &point) const;
+    bool containsLine(const Point3D &pA, const Point3D &pB);
 
     friend QDebug operator<<(QDebug debug, const HRect3D &rect);
 
@@ -72,15 +73,15 @@ public:
     constexpr inline Rect3D(const Point3D &pA, const Point3D &pB, const Size3D &s) : HRect3D(pA, s), pB(pB) { calcMinMax(); }
     constexpr inline Rect3D(const Rect3D &r) : HRect3D(r), pB(r.pB), pMin(r.pMin), pMax(r.pMax) {}
 
-    constexpr inline Size3D getSize() const { return Size3D(pMin, pMax); }
+    constexpr inline Size3D getSize() const { return Size3D{pMin, pMax}; }
     constexpr inline const Point3D &getPointMin() const { return pMin; }
     constexpr inline const Point3D &getPointMax() const { return pMax; }
-    inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
+    constexpr inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
 
     //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
     //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(const doubli &scale);
-    Rect3D operator+(const Point3D &pAdd) const { return Rect3D(pA + pAdd, pB + pAdd, pC + pAdd); }
+    Rect3D operator+(const Point3D &pAdd) const { return Rect3D{pA + pAdd, pB + pAdd, pC + pAdd}; }
     Rect3D *operator=(const Rect3D &rect);
     bool operator==(const Rect3D &rect) const;
 

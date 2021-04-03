@@ -3,7 +3,7 @@
 void HRect3D::scale(const doubli &scale)
 {
     const Size3D demisizeScaled = getSize() / 2 * scale;
-    const Point3D &middle = getMiddle();
+    const Point3D middle = getMiddle();
     pMin = middle - demisizeScaled;
     pMax = middle + demisizeScaled;
 }
@@ -21,10 +21,32 @@ bool HRect3D::operator==(const HRect3D &rect) const
 
 bool HRect3D::contains(const Point3D &point) const
 {
-    if (point.x() < pMin.x() || pMax.x() < point.x()) return false;
-    if (point.y() < pMin.y() || pMax.y() < point.y()) return false;
-    if (point.z() < pMin.z() || pMax.z() < point.z()) return false;
-    return true;
+    return pMin.x() <= point.x() && point.x() <= pMax.x()
+           && pMin.y() <= point.y() && point.y() <= pMax.y()
+           && pMin.z() <= point.z() && point.z() <= pMax.z();
+}
+
+bool HRect3D::containsLine(const Point3D &pA, const Point3D &pB)
+{
+    // est ce que la droite peut atteindre le block ?
+    // voir # Calculs pour HRect3D::containsLine
+    // https://github.com/Jiogo18/RayTracing/blob/master/tests/equations.txt
+    const doubli a = pB.x() - pA.x(), b = pB.y() - pA.y(), c = pB.z() - pA.z();
+
+    const doubli t1X = (pMin.x() - pA.x()) / a, t2X = (pMax.x() - pA.x()) / a;
+    const doubli t1Y = (pMin.y() - pA.y()) / b, t2Y = (pMax.y() - pA.y()) / b;
+    const doubli t1Z = (pMin.z() - pA.z()) / c, t2Z = (pMax.z() - pA.z()) / c;
+
+    const doubli tMaxX = maths3D::max(t1X, t2X), tMinX = maths3D::min(t1X, t2X);
+    const doubli tMaxY = maths3D::max(t1Y, t2Y), tMinY = maths3D::min(t1Y, t2Y);
+    const doubli tMaxZ = maths3D::max(t1Z, t2Z), tMinZ = maths3D::min(t1Z, t2Z);
+
+    const doubli tMin = maths3D::max(tMinX, tMinY, tMinZ);
+    const doubli tMax = maths3D::min(tMaxX, tMaxY, tMaxZ);
+    return tMin <= tMax;
+    // t \in [tMin;tMax] // TODO: calculer avec les t ! ça sera plus simple ?
+    // oui, surtout pour savoir la quantitée de matière traversée
+    // ça sera plus simple pour les HRect mais pour les autres formes..?
 }
 
 QDebug operator<<(QDebug debug, const HRect3D &rect)
@@ -57,10 +79,9 @@ bool Rect3D::operator==(const Rect3D &rect) const
 
 bool Rect3D::contains(const Point3D &point) const
 {
-    if (point.x() < pMin.x() || pMax.x() < point.x()) return false;
-    if (point.y() < pMin.y() || pMax.y() < point.y()) return false;
-    if (point.z() < pMin.z() || pMax.z() < point.z()) return false;
-    return true;
+    return pMin.x() <= point.x() && point.x() <= pMax.x()
+           && pMin.y() <= point.y() && point.y() <= pMax.y()
+           && pMin.z() <= point.z() && point.z() <= pMax.z();
 }
 
 QDebug operator<<(QDebug debug, const Rect3D &rect)

@@ -147,7 +147,7 @@ class Block : public Solid
 public:
     Block(Pos3D pos, Size3D size, BLOCK::Material material);
     HRect3D getMaxGeometry() const override { return HRect3D(getPoint(), size); }
-    HRect3D getSolidGeometry() const override { return HRect3D(Point3D(0, 0, 0), size); }
+    HRect3D getSolidGeometry() const override { return HRect3D{Point3D{0, 0, 0}, size}; }
     bool containsPoint(const Point3D &point) const override;
 
 private:
@@ -167,7 +167,7 @@ class HalfCube : public Block
 public:
     HalfCube(Pos3D pos, BLOCK::Material material);
     HalfCube(Pos3D pos, BLOCK::Material material, doubli scale);
-    HRect3D getMaxGeometry() const override { return HRect3D(getPoint(), Size3D(1, 1, 0.5)); }
+    HRect3D getMaxGeometry() const override { return HRect3D{getPoint(), Size3D{1, 1, 0.5}}; }
 };
 
 class EntityAttribute

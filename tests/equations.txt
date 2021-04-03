@@ -88,3 +88,74 @@ on sait que A appartient au plan donc l'équation = 0
 => a*xA + b*yA + c*zA = -d
 
 */
+
+
+
+
+# Calculs pour HRect3D::containsLine
+TODO: est ce que le point peut atteindre le block ? => sphère ? semble le plus opti
+on veut la distance la plus courte entre la droite et le centre => sphère
+pC = pB + t(a, b, c)
+on cherche t lorsque pC est au plus proche de getPoint()
+
+const doubli distance = sqrt( sqr(offset.x() + t*a) + sqr(offset.y() + t*b) + sqr(offset.y() + t*c) );
+= sqrt( offset.x()² + offset.y()² + offset.z()² + t*(offset.x()*a + offset.y()*b + offset.z()*c) + t²*(a²+b²+c²) );
+dD/dt = 1/(2*sqrt(...)) * ( (offset.x()*a + offset.y()*b + offset.z()*c) + 2t*(a²+b²+c²) )  == 0 ?
+=> (offset.x()*a + offset.y()*b + offset.z()*c) + 2t*(a²+b²+c²) == 0
+=> t = -(offset.x()*a + offset.y()*b + offset.z()*c) / (2*(a²+b²+c²))
+
+Sans calculs : 2.4s
+
+Calculs V1 : 1.7s
+```
+const doubli a = pB.x() - pA.x(), b = pB.y() - pA.y(), c = pB.z() - pA.z();
+
+const Point3D offset = pA - getMiddle();
+// point le plus proche du centre
+const doubli t = - (offset.x() * a + offset.y() * b + offset.z() * c) / (a*a+ b*b+c*c);
+
+// distance de sphère => réduit très efficacement les possibilitées
+const doubli distance = sqrt( sqr(offset.x() + t*a) + sqr(offset.y() + t*b) + sqr(offset.z() + t*c) );
+if(distance > 1) return false;
+return true;
+
+// distance de losange => réduit encore les possibilitées
+const doubli distance2 = abs(offset.x() + t*a) + abs(offset.y() + t*b) + abs(offset.z() + t*c);
+return distance2 < 1.732051; // ~sqrt(3) distance en diagonal
+```
+
+calculs V2 : 1.2s !!!!!
+à noter : le plus proche n'est pas forcément dans le cadre => on peut pas utiliser contains()
+sinon il faudrait obtenir t tel que contains soit valide ?
+=> oui ça serait plus opti..., là le mieux qu'on puisse faire c'est la sphère et le losange
+On veut un t tel que le point soit dans le HRect
+pA.x() + t*a \in [pMin.x(); pMax.x()]
+pA.y() + t*b \in [pMin.y(); pMax.y()]
+pA.z() + t*c \in [pMin.z(); pMax.z()]
+t \in [(pMin.x() - pA.x()) / a; (pMax.x() - pA.x()) / a]
+t \in [(pMin.y() - pA.y()) / b; (pMax.y() - pA.y()) / b]
+t \in [(pMin.z() - pA.z()) / c; (pMax.z() - pA.z()) / c]
+
+```
+const doubli a = pB.x() - pA.x(), b = pB.y() - pA.y(), c = pB.z() - pA.z();
+
+const doubli t1X = (pMin.x() - pA.x()) / a,
+        t2X = (pMax.x() - pA.x()) / a,
+        t1Y = (pMin.y() - pA.y()) / b,
+        t2Y = (pMax.y() - pA.y()) / b,
+        t1Z = (pMin.z() - pA.z()) / c,
+        t2Z = (pMax.z() - pA.z()) / c;
+const doubli tMaxX = maths3D::max(t1X, t2X), tMinX = maths3D::min(t1X, t2X);
+const doubli tMaxY = maths3D::max(t1Y, t2Y), tMinY = maths3D::min(t1Y, t2Y);
+const doubli tMaxZ = maths3D::max(t1Z, t2Z), tMinZ = maths3D::min(t1Z, t2Z);
+
+doubli tMin = maths3D::max(tMinX, tMinY, tMinZ);
+doubli tMax = maths3D::min(tMaxX, tMaxY, tMaxZ);
+if(tMax < tMin) return false;
+return true;//t \in [tMin;tMax] // TODO: calculer avec les t ! ça sera plus simple ?
+// pour les HRect en tout cas...
+```
+
+
+
+

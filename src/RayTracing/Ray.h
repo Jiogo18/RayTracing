@@ -8,7 +8,7 @@ class Ray
 public:
     constexpr inline Ray(const Pos3D &pos, RayTracingRessources *rtRess);
     ColorLight getColor(const int &baseLight) const;
-    void process(const World *world);
+    void process();
 
 private:
     Pos3D pos;
@@ -19,7 +19,7 @@ private:
     // vector objTraverse;
     doubli distParcouru;
     void moveTo(const Point3D &newPos);
-    const Face *getFirstIntersection(const World *world, Point3D &pInterMin) const;
+    const Face *getFirstIntersection(Point3D &pInterMin) const;
     // black list (et white list pour transparence) du dernier objet traversé
     // par défaut: sortie du client (pour pas le retapper)
     // si rebond: dernier objet en mode "sortie"

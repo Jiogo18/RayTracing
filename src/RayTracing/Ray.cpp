@@ -9,13 +9,13 @@ ColorLight Ray::getColor(const int &baseLight) const
     return retour;
 }
 
-void Ray::process(const World *world)
+void Ray::process()
 {
     while (distParcouru < viewDistance) { // pas exactement view distance mais pas loins (2*..?)
-        //qint64 start = rtRess->dt->getCurrent();
+        qint64 start = rtRess->dt->getCurrent();
         Point3D pInter;
-        const Face *face = getFirstIntersection(world, pInter);
-        //rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
+        const Face *face = getFirstIntersection(pInter);
+        rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
         if (face == nullptr || !face->isValid()) break; // c'est normal si on va dans le vide
 
         lastMoved = pInter != pos;
@@ -61,7 +61,7 @@ void Ray::moveTo(const Point3D &newPos)
     pos.setPoint(newPos);
 }
 
-const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
+const Face *Ray::getFirstIntersection(Point3D &pInter) const
 {
     const Face *faceMin = nullptr;
     Point3D posNextPoint = pos.getNextPoint();
@@ -74,14 +74,16 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
     Point3D pInterMin;
     doubli distanceInterMin = 0; // seront set car !faceMin.isValid() au début
     doubli distanceSolidMin = 0;
-    for (int iChunk = 0; iChunk < world->getChunks().size(); iChunk++) {
-        const Chunk *chunk = world->getChunks().at(iChunk);
+    for (int iChunk = 0; iChunk < rtRess->world->getChunks().size(); iChunk++) {
+        const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
         if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
-        //qint64 start1 = rtRess->dt->getCurrent();
+        qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
             Solid *block = chunk->getSolids()->at(i2);
             if (block->getPoint().distance(pos) > viewDistance)
+                continue;
+            if (!block->getMaxGeometry().containsLine(pos, posNextPoint))
                 continue;
             for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
                 const Face *face = &block->getFaces()->at(i3);
@@ -125,7 +127,7 @@ const Face *Ray::getFirstIntersection(const World *world, Point3D &pInter) const
                 //(on peu prendre l'un ou l'autre)
             }
         }
-        //rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
+        rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
     }
     pInter = pInterMin;
     return faceMin;
