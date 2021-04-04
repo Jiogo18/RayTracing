@@ -1,7 +1,8 @@
 #ifndef WORLD3D_H
 #define WORLD3D_H
 
-#include "src/3D/Object3D.h"
+#include "src/3D/Solid.h"
+#include "src/3D/Entity.h"
 
 class ChunkPos : public Point3D
 {

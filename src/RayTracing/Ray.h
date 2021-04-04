@@ -27,13 +27,13 @@ private:
     // si un objet dans l'objet entré est touché alors on sort du premier objet au point P et on rentre ds le 2
     // puis on resort du 2 on rerentre ds le 1 et resort du 1 (de l'autre coté de 2)
     bool enter = false;
-    BLOCK::Material insideMaterial;
+    SOLID::Material insideMaterial;
     RayTracingRessources *rtRess = nullptr;
 };
 
 constexpr inline Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), distParcouru(0), insideMaterial(rtRess->insideMaterial), rtRess(rtRess)
 {
-    float newSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
+    float newSpeed = SOLID::getSpeedOfLight(insideMaterial);
     //float previousSpeed = 1; // the speed of light in the lens
     if (newSpeed != 1) {
         // calcul de la réfraction (le regard est normal au plan)

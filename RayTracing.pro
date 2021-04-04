@@ -1,10 +1,12 @@
 QT += widgets opengl openglwidgets #winextras
 
 SOURCES += \
+    src/3D/Entity.cpp \
     src/3D/Geometry3D.cpp \
     src/3D/Object3D.cpp \
     src/3D/Point3D.cpp \
     src/3D/Pos3D.cpp \
+    src/3D/Solid.cpp \
     src/DebugTime.cpp \
     src/GUI/GUI.cpp \
     src/GUI/fenetre.cpp \
@@ -20,10 +22,12 @@ SOURCES += \
     src/main.cpp
 
 HEADERS += \
+    src/3D/Entity.h \
     src/3D/Geometry3D.h \
     src/3D/Object3D.h \
     src/3D/Point3D.h \
     src/3D/Pos3D.h \
+    src/3D/Solid.h \
     src/3D/maths3D.h \
     src/DebugTime.h \
     src/GUI/GUI.h \

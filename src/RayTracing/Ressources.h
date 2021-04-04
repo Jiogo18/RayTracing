@@ -71,7 +71,7 @@ public:
     DebugTime *dt = nullptr;
     void onWorldChanged();
     Pos3D clientPos;
-    BLOCK::Material insideMaterial;
+    SOLID::Material insideMaterial;
     void resetRessources(const Entity *client);
 };
 

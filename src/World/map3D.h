@@ -27,7 +27,7 @@ public:
     void moveRZ(radian rZ) { client->moveRZ(rZ); }
     void moveClient(const Pos3D &pos) { client->moveTo(pos); }
 
-    int fillCube(const Point3D &posMin, const Point3D &posMax, BLOCK::Material blockMaterial);
+    int fillCube(const Point3D &posMin, const Point3D &posMax, SOLID::Material blockMaterial);
 
 signals:
     void clientChanged(const Entity *client);

@@ -11,5 +11,5 @@ void RayTracingRessources::resetRessources(const Entity *client)
 {
     clientPos = client->getPos();
     const Solid *solid = world->getSolid(clientPos);
-    insideMaterial = solid ? solid->getMaterial() : BLOCK::Material::air; // par défaut on est dans l'air
+    insideMaterial = solid ? solid->getMaterial() : SOLID::Material::air; // par défaut on est dans l'air
 }

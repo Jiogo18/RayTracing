@@ -29,12 +29,12 @@ void Ray::process()
         if (opacity >= 255) break; // le rayon est saturé (solide opaque)
 
         moveTo(pInter);
-        if (face->getMaterial() == BLOCK::Material::mirror) {
+        if (face->getMaterial() == SOLID::Material::mirror) {
             pos.setRot(face->boundRot(pos.getRot()));
         } else {
-            float newSpeed = OBJECT3D::getSpeedOfLight(face->getMaterial());
+            float newSpeed = SOLID::getSpeedOfLight(face->getMaterial());
             if (newSpeed <= 0) break; // un solide
-            float previousSpeed = OBJECT3D::getSpeedOfLight(insideMaterial);
+            float previousSpeed = SOLID::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
             pos.setRot(face->refractRot(pos, newSpeed / previousSpeed));
             //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
