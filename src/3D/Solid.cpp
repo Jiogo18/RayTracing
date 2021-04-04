@@ -60,23 +60,35 @@ int SOLID::getLight(SOLID::Material material, QList<SOLID::Variation> variations
     }
 }
 
-Face::Face() : Object(Pos3D(0, 0, 0, 0, 0)), rect(Point3D(0, 0, 0), Point3D(0, 0, 0)), material(SOLID::Material::none), variations{SOLID::Variation::front}
+/*****************************************************************************
+  Object
+ *****************************************************************************/
+
+Object *Object::operator=(const Object &obj)
+{
+    setPos(obj);
+    maxGeometry = obj.maxGeometry;
+    return this;
+}
+
+/*****************************************************************************
+  Face
+ *****************************************************************************/
+
+Face::Face() : SolidBase(Pos3D(0, 0, 0, 0, 0)), rect(Point3D(0, 0, 0), Point3D(0, 0, 0)), variations{SOLID::Variation::front}
 {
     calcFace();
 }
 Face::Face(const Point3D &point,
            const HRect3D &rect, bool orientation,
-           SOLID::Material material,
-           QList<SOLID::Variation> variations) : Object(Pos3D(point, 0, 0)),
-                                                 rect(rect), material(material), variations(variations), orientation(orientation)
+           const SOLID::Material &material,
+           QList<SOLID::Variation> variations) : SolidBase(Pos3D(point, 0, 0), material),
+                                                 rect(rect), variations(variations), orientation(orientation)
 {
     calcFace();
 }
-Face::Face(const Face &face) : Object(face),
+Face::Face(const Face &face) : SolidBase(face),
                                rect(face.rect),
-                               maxGeometry(face.maxGeometry),
-                               middleGeometry(face.middleGeometry),
-                               material(face.material),
                                variations(face.variations),
                                texture(face.texture),
                                textureImg(face.textureImg),
@@ -190,32 +202,15 @@ void Face::calcFace()
     pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
 }
 
-Object::Object(const Pos3D &pos) : Pos3D(pos), QObject() {}
-Object::Object(const Object &obj) : Pos3D(obj), QObject(obj.parent()) {}
-Object::~Object() {}
-Object *Object::operator=(const Object &obj)
-{
-    setPos(obj.getPos());
-    return this;
-}
+/*****************************************************************************
+  Block
+ *****************************************************************************/
 
-Solid::Solid(Pos3D pos, SOLID::Material material, QList<Face> faces) : Object(pos)
-{
-    this->material = material;
-    this->faces = faces;
-}
-Solid::~Solid() {}
+Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material)
+    : Solid(pos, HRect3D{pos, size}, material, createDefaultFaces(pos, size, material)), size(size)
+{}
 
-Block::Block(Pos3D pos, Size3D size, SOLID::Material material)
-    : Solid(pos, material, createDefaultFaces(pos, size, material)), size(size) {}
-
-bool Block::containsPoint(const Point3D &point) const
-{
-    return HRect3D(getPoint(), size).contains(point);
-    // TODO: prendre en compte la rotation
-}
-
-QList<Face> Block::createDefaultFaces(Point3D posSolid, Size3D size, SOLID::Material material)
+QList<Face> Block::createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material)
 {
     return {
         Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), size.dY(), 0)), 0, material, {SOLID::Variation::bottom}), // BOTTOM
@@ -227,10 +222,18 @@ QList<Face> Block::createDefaultFaces(Point3D posSolid, Size3D size, SOLID::Mate
     };
 }
 
+/*****************************************************************************
+  Cube
+ *****************************************************************************/
+
 Cube::Cube(Pos3D pos, SOLID::Material material) : Block(pos, Size3D(1, 1, 1), material) {}
 
 Cube::Cube(Pos3D pos, SOLID::Material material, doubli scale)
     : Block(pos, Size3D(scale, scale, scale), material) {}
+
+/*****************************************************************************
+  HalfCube
+ *****************************************************************************/
 
 HalfCube::HalfCube(Pos3D pos, SOLID::Material material) : Block(pos, Size3D(1, 1, 0.5), material) {}
 

@@ -18,6 +18,10 @@ namespace ENTITY {
     doubli baseSpeed(ENTITY::Type type, ENTITY::Direction dir);
 } // namespace ENTITY
 
+/*****************************************************************************
+  EntityAttribute
+ *****************************************************************************/
+
 class EntityAttribute
 {
 public:
@@ -43,6 +47,10 @@ private:
     QMap<int, doubli> speed;
     ENTITY::Type type;
 };
+
+/*****************************************************************************
+  Entity
+ *****************************************************************************/
 
 class Entity : public Object
 {

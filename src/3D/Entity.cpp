@@ -1,5 +1,9 @@
 #include "Entity.h"
 
+/*****************************************************************************
+  Static functions
+ *****************************************************************************/
+
 doubli ENTITY::baseSpeed(ENTITY::Type type, ENTITY::Direction dir)
 {
     doubli speed = 0;
@@ -30,6 +34,10 @@ doubli ENTITY::baseSpeed(ENTITY::Type type, ENTITY::Direction dir)
     return roundNull(speed);
 }
 
+/*****************************************************************************
+  EntityAttribute
+ *****************************************************************************/
+
 EntityAttribute::EntityAttribute(ENTITY::Type type) { this->type = type; }
 EntityAttribute::EntityAttribute(const EntityAttribute &obj)
 {
@@ -43,5 +51,9 @@ doubli EntityAttribute::getSpeed(ENTITY::Direction dir) const
     else
         return baseSpeed(type, dir);
 }
+
+/*****************************************************************************
+  Entity
+ *****************************************************************************/
 
 Entity::Entity(const Pos3D &pos, ENTITY::Type type) : Object(pos) { attribute.setType(type); }

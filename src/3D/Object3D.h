@@ -15,21 +15,26 @@ namespace OBJECT3D {
 } // namespace OBJECT3D
 using namespace OBJECT3D;
 
-class Object : public Pos3D, public QObject
+/*****************************************************************************
+  Object : anything wich is an object in the world
+ *****************************************************************************/
+
+class Object : public Pos3D
 {
 public:
-    Object(const Pos3D &pos);
-    Object(const Object &obj);
-    virtual ~Object();
+    constexpr inline Object(const Pos3D &pos) : Pos3D(pos), maxGeometry(pos, Size3D(0, 0, 0)) {}
+    constexpr inline Object(const Pos3D &pos, const HRect3D &maxGeometry) : Pos3D(pos), maxGeometry(maxGeometry) {}
+    constexpr inline Object(const Object &obj) : Pos3D(obj), maxGeometry(obj.maxGeometry) {}
+    virtual ~Object() {}
     Object *operator=(const Object &obj);
 
-    Point3D getPoint() const { return static_cast<Point3D>(*this); }
-    Pos3D getPos() const { return static_cast<Pos3D>(*this); }
-    void setPoint(const Point3D &point) { Point3D::operator=(point); }
-    void setPos(const Pos3D &pos) { Pos3D::operator=(pos); }
+    virtual HRect3D getMaxGeometry() const { return maxGeometry; }
+    constexpr const Point3D &getMiddleGeometry() const { return middleGeometry; }
+    virtual bool containsPoint(const Point3D &point) const { return maxGeometry.contains(point); }
 
-    virtual HRect3D getMaxGeometry() const { return HRect3D{getPoint(), getPoint()}; }
-    virtual bool containsPoint(const Point3D &point) const { return point == getPoint(); }
+protected:
+    HRect3D maxGeometry;
+    Point3D middleGeometry;
 };
 
 #endif // OBJECT3D_H

@@ -45,33 +45,51 @@ namespace SOLID {
 
 }; // namespace SOLID
 
-class Face : public Object
+/*****************************************************************************
+  BaseSolid : An object with some properties of a solid
+ *****************************************************************************/
+
+class SolidBase : public Object
+{
+public:
+    constexpr inline SolidBase(const Pos3D &pos) : Object(pos) {}
+    constexpr inline SolidBase(const Pos3D &pos, const SOLID::Material &material) : Object(pos), material(material) {}
+    constexpr inline SolidBase(const Pos3D &pos, const HRect3D &maxGeometry) : Object(pos, maxGeometry) {}
+    constexpr inline SolidBase(const Pos3D &pos, const HRect3D &maxGeometry, const SOLID::Material &material) : Object(pos, maxGeometry), material(material) {}
+    constexpr inline SolidBase(const SolidBase &obj) : Object(obj), material(obj.material) {}
+
+    constexpr inline const SOLID::Material &getMaterial() const { return material; }
+
+protected:
+    SOLID::Material material = SOLID::Material::none;
+};
+
+/*****************************************************************************
+  Face : A face of a solid
+ *****************************************************************************/
+
+class Face : public SolidBase
 {
 public:
     Face();
     Face(const Point3D &point, const HRect3D &rect, bool orientation,
-         SOLID::Material material, QList<SOLID::Variation> variations);
+         const SOLID::Material &material, QList<SOLID::Variation> variations);
     Face(const Face &face);
-    HRect3D getMaxGeometry() const override { return maxGeometry; }
-    Point3D getMiddleGeometry() const { return middleGeometry; }
-    const Plan *getPlan() const { return &plan; }
-    const QPointF &getPointC() const { return pC; }
-    bool getOrientation() const { return orientation; }
-    bool isValid() const { return material != SOLID::Material::none; }
+
+    constexpr inline const Plan *getPlan() const { return &plan; }
+    constexpr inline const QPointF &getPointC() const { return pC; }
+    constexpr inline bool getOrientation() const { return orientation; }
+    constexpr inline bool isValid() const { return material != SOLID::Material::none; }
     ColorLight getColor(const QPointF &point) const;
-    const QString &getTexture() const { return texture; }
-    const QImage *getTextureImg() const { return textureImg; }
-    SOLID::Material getMaterial() const { return material; }
+    constexpr inline const QString &getTexture() const { return texture; }
+    constexpr inline const QImage *getTextureImg() const { return textureImg; }
     Rot3D boundRot(const Rot3D &rot) const;
     Rot3D refractRot(const Rot3D &pos, float indiceRefrac) const;
     bool containsPoint(const Point3D &point) const override;
 
 private:
     HRect3D rect;
-    HRect3D maxGeometry;
-    Point3D middleGeometry;
     void calcFace();
-    SOLID::Material material;
     QList<SOLID::Variation> variations;
     QString texture;
     const QImage *textureImg = nullptr;
@@ -80,39 +98,43 @@ private:
     bool orientation; // true dans le sens positif du plan
 };
 
-class Solid : public Object
+/*****************************************************************************
+  Solid : any object with a volume
+ *****************************************************************************/
+
+class Solid : public SolidBase
 {
 public:
-    Solid(Pos3D pos, SOLID::Material material, QList<Face>);
-    ~Solid() override;
+    Solid(const Pos3D &pos, const HRect3D &maxGeometry, const SOLID::Material &material, const QList<Face> &faces)
+        : SolidBase(pos, maxGeometry, material), faces(faces) {}
+    ~Solid() {}
 
-    virtual HRect3D getSolidGeometry() const { return HRect3D{}; }
-    HRect3D getMaxGeometry() const override { return getSolidGeometry() + getPoint(); }
-    Point3D getMiddleGeometry() const { return getMaxGeometry().getMiddle(); }
+    Point3D getMiddleGeometry() const { return maxGeometry.getMiddle(); }
     const QList<Face> *getFaces() const { return &faces; }
 
-    SOLID::Material getMaterial() const { return material; }
-
-    bool containsPoint(const Point3D &point) const override { return getMaxGeometry().contains(point); }
-
-private:
-    SOLID::Material material;
+protected:
     QList<Face> faces;
 };
 
+/*****************************************************************************
+  Block : Any Cuboid (pavé droit)
+ *****************************************************************************/
+
 class Block : public Solid
 {
-    // any Cuboid (pavé droit)
 public:
-    Block(Pos3D pos, Size3D size, SOLID::Material material);
-    HRect3D getMaxGeometry() const override { return HRect3D{getPoint(), size}; }
-    HRect3D getSolidGeometry() const override { return HRect3D{Point3D{0, 0, 0}, size}; }
-    bool containsPoint(const Point3D &point) const override;
+    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material);
 
 private:
     Size3D size;
-    static QList<Face> createDefaultFaces(Point3D posSolid, Size3D size, SOLID::Material material);
+    static QList<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material);
 };
+
+/*****************************************************************************
+  Specials Blocks
+   - Cube
+   - HalfCube (horizontal)
+ *****************************************************************************/
 
 class Cube : public Block
 {
@@ -126,7 +148,6 @@ class HalfCube : public Block
 public:
     HalfCube(Pos3D pos, SOLID::Material material);
     HalfCube(Pos3D pos, SOLID::Material material, doubli scale);
-    HRect3D getMaxGeometry() const override { return HRect3D{getPoint(), Size3D{1, 1, 0.5}}; }
 };
 
 #endif // SOLID_H

@@ -79,12 +79,16 @@ public:
                            const radian &rX, const radian &rZ) : Point3D(p), Rot3D(rX, rZ) {}
     constexpr inline Pos3D(const Point3D &p, const Rot3D &r) : Point3D(p), Rot3D(r) {}
     constexpr inline Pos3D(const Pos3D &p) : Point3D(p), Rot3D(p) {}
-    constexpr Pos3D *operator=(const Pos3D &p);
     static Pos3D fromDegree(const doubli &x, const doubli &y, const doubli &z,
                             const radian &rX, const radian &rZ);
 
+    constexpr Pos3D *operator=(const Pos3D &p);
+    constexpr void setPos(const Pos3D &p);
+
     void moveWithRot(const doubli &speed, const radian &rot);
     static Point3D pointFromRot(const doubli &d, const radian &rX, const radian &rZ);
+
+    constexpr const Pos3D &getPos() const { return *this; }
     Point3D getNextPoint() const;
     Pos3D getChildRot(const radian &rXRelatif, const radian &rZRelatif) const;
     Point3D changeRef(const Point3D &point, const doubli &srX, const doubli &srZ) const;
@@ -109,6 +113,12 @@ constexpr inline Pos3D *Pos3D::operator=(const Pos3D &p)
     Point3D::operator=(p);
     Rot3D::operator=(p);
     return this;
+}
+
+constexpr inline void Pos3D::setPos(const Pos3D &p)
+{
+    Point3D::operator=(p);
+    Rot3D::operator=(p);
 }
 
 #endif // POS3D_H
