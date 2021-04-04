@@ -65,6 +65,8 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
 {
     const Face *faceMin = nullptr;
     Point3D posNextPoint = pos.getNextPoint();
+    Vec3D vecDirNextPoint(posNextPoint - static_cast<Point3D>(pos));
+
 #ifdef NAN_VERIF
     if (posNextPoint.isNan()) {
         qDebug() << "Ray::getFirstIntersection posNextPoint is nan" << posNextPoint;
@@ -78,14 +80,14 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
         const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
         if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
-        if (!chunk->getMaxGeometry().containsLine(pos, posNextPoint))
+        if (!chunk->getMaxGeometry().containsLine(pos, vecDirNextPoint))
             continue;
         //qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
             const Solid *block = chunk->getSolids()->at(i2);
             if (block->getPoint().distance(pos) > viewDistance)
                 continue;
-            if (!block->getMaxGeometry().containsLine(pos, posNextPoint))
+            if (!block->getMaxGeometry().containsLine(pos, vecDirNextPoint))
                 continue;
             for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
                 const Face *face = &block->getFaces()->at(i3);
@@ -96,7 +98,7 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
                 if (!plan->isValid())
                     continue;
 
-                Point3DCancelable pInter = plan->intersection(pos, posNextPoint);
+                const Point3DCancelable pInter = plan->intersection(pos, posNextPoint);
 
                 if (!pInter.isValid() || !face->getMaxGeometry().contains(pInter))
                     continue;

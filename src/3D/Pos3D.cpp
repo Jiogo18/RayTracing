@@ -28,12 +28,6 @@ Point3D Pos3D::pointFromRot(const doubli &d, const radian &rX, const radian &rZ)
     return Point3D{cosTaylorMin(rZ) * cosTaylorMin(rX), cosTaylorMin(rZ) * sinTaylorMin(rX), sinTaylorMin(rZ) * d} * d;
 }
 
-Point3D Pos3D::getNextPoint() const
-{
-    return Point3D{cosTaylorMin(rZ()) * cosTaylorMin(rX()) + x(), cosTaylorMin(rZ()) * sinTaylorMin(rX()) + y(), sinTaylorMin(rZ()) + z()};
-    // return getPoint() + toVector();//équivalent
-}
-
 Pos3D Pos3D::getChildRot(const radian &rXRelatif, const radian &rZRelatif) const
 {
     // changeRef de childNext

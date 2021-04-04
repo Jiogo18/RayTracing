@@ -9,8 +9,8 @@ class ChunkPos : public Point3D
 public:
     static const int chunkSize = 8;
 
-    static ChunkPos fromBlockPos(const Point3D &blockPos) { return qFloor(blockPos / ChunkPos::chunkSize); }
-    Point3D chunkOrigin() const { return qFloor(static_cast<Point3D>(*this) * ChunkPos::chunkSize); }
+    static ChunkPos fromBlockPos(const Point3D &blockPos) { return qRound(blockPos / ChunkPos::chunkSize); }
+    Point3D chunkOrigin() const { return qRound(Point3D::operator*(ChunkPos::chunkSize)); }
     constexpr inline ChunkPos(const ChunkPos &pos) : Point3D(pos) {}
 
 private:

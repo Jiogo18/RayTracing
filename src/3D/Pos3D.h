@@ -89,7 +89,8 @@ public:
     static Point3D pointFromRot(const doubli &d, const radian &rX, const radian &rZ);
 
     constexpr const Pos3D &getPos() const { return *this; }
-    Point3D getNextPoint() const;
+    constexpr inline Point3D getNextPoint() const;
+    constexpr inline Point3D getNextPointRelatif() const;
     Pos3D getChildRot(const radian &rXRelatif, const radian &rZRelatif) const;
     Point3D changeRef(const Point3D &point, const doubli &srX, const doubli &srZ) const;
 
@@ -120,5 +121,12 @@ constexpr inline void Pos3D::setPos(const Pos3D &p)
     Point3D::operator=(p);
     Rot3D::operator=(p);
 }
+
+constexpr inline Point3D Pos3D::getNextPoint() const
+{
+    return Point3D{cosTaylorMin(rZ()) * cosTaylorMin(rX()) + x(), cosTaylorMin(rZ()) * sinTaylorMin(rX()) + y(), sinTaylorMin(rZ()) + z()};
+}
+
+constexpr inline Point3D Pos3D::getNextPointRelatif() const { return Point3D{cosTaylorMin(rZ()) * cosTaylorMin(rX()), cosTaylorMin(rZ()) * sinTaylorMin(rX()), sinTaylorMin(rZ())}; }
 
 #endif // POS3D_H

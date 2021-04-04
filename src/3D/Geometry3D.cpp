@@ -13,16 +13,15 @@ bool HRect3D::operator==(const HRect3D &rect) const
     return pMin == rect.pMin && pMax == rect.pMax;
 }
 
-bool HRect3D::containsLine(const Point3D &pA, const Point3D &pB) const
+bool HRect3D::containsLine(const Point3D &pA, const Vec3D &vDir) const
 {
     // est ce que la droite peut atteindre le block ?
     // voir # Calculs pour HRect3D::containsLine
     // https://github.com/Jiogo18/RayTracing/blob/master/tests/equations.txt
-    const doubli a = pB.x() - pA.x(), b = pB.y() - pA.y(), c = pB.z() - pA.z();
 
-    const doubli t1X = (pMin.x() - pA.x()) / a, t2X = (pMax.x() - pA.x()) / a;
-    const doubli t1Y = (pMin.y() - pA.y()) / b, t2Y = (pMax.y() - pA.y()) / b;
-    const doubli t1Z = (pMin.z() - pA.z()) / c, t2Z = (pMax.z() - pA.z()) / c;
+    const doubli t1X = (pMin.x() - pA.x()) / vDir.x(), t2X = (pMax.x() - pA.x()) / vDir.x();
+    const doubli t1Y = (pMin.y() - pA.y()) / vDir.y(), t2Y = (pMax.y() - pA.y()) / vDir.y();
+    const doubli t1Z = (pMin.z() - pA.z()) / vDir.z(), t2Z = (pMax.z() - pA.z()) / vDir.z();
 
     const doubli tMaxX = maths3D::max(t1X, t2X), tMinX = maths3D::min(t1X, t2X);
     const doubli tMaxY = maths3D::max(t1Y, t2Y), tMinY = maths3D::min(t1Y, t2Y);
@@ -94,13 +93,6 @@ Plan *Plan::operator=(const Plan &plan)
     c = plan.c;
     d = plan.d;
     return this;
-}
-
-bool Plan::paralleleDroite(const Size3D &vect) const
-{
-    // voir #Orthogonal
-    doubli scalaireAvecVectNormal = a * vect.dX() + b * vect.dY() + c * vect.dZ();
-    return isNull(scalaireAvecVectNormal);
 }
 
 Point3DCancelable Plan::intersection(const Point3D &pA, const Point3D &pB) const

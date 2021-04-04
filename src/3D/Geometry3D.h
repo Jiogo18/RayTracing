@@ -72,7 +72,7 @@ public:
 
     bool operator==(const HRect3D &rect) const;
     constexpr inline bool contains(const Point3D &point) const;
-    bool containsLine(const Point3D &pA, const Point3D &pB) const;
+    bool containsLine(const Point3D &pA, const Vec3D &vDir) const;
 
     friend QDebug operator<<(QDebug debug, const HRect3D &rect);
 
@@ -155,7 +155,7 @@ public:
     constexpr inline Plan(const Plan &p) : pA(p.pA), a(p.a), b(p.b), c(p.c), d(p.d) {}
     Plan *operator=(const Plan &p);
     // mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
-    bool paralleleDroite(const Size3D &vect) const;
+    constexpr inline bool paralleleDroite(const Size3D &vect) const;
     Point3DCancelable intersection(const Point3D &pA, const Point3D &pB) const;
     QPointF projeteOrtho(const Point3D &pA) const;
     Point3D projeteOrtho3D(const Point3D &pA) const;
@@ -172,5 +172,12 @@ private:
     doubli a = 0, b = 0, c = 0, d = 0;
     void calcEquation(const Point3D &pB, const Point3D &pC); // ax + by + cz + d = 0
 };
+
+constexpr inline bool Plan::paralleleDroite(const Size3D &vect) const
+{
+    // voir #Orthogonal
+    // scalaireAvecVectNormal, plus opti qu'avec un Vec3D
+    return (a * vect.dX() + b * vect.dY() + c * vect.dZ()) == 0;
+}
 
 #endif // GEOMETRY3D_H

@@ -60,3 +60,7 @@ Point3D qCeil(const Point3D &p)
 {
     return Point3D{std::ceil(p.xp), std::ceil(p.yp), std::ceil(p.zp)};
 }
+Point3D qRound(const Point3D &p)
+{
+    return Point3D{std::round(p.xp), std::round(p.yp), std::round(p.zp)};
+}

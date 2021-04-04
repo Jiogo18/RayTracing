@@ -61,6 +61,7 @@ public:
     friend QDebug operator<<(QDebug debug, const Point3D &p);
     friend Point3D qFloor(const Point3D &p);
     friend Point3D qCeil(const Point3D &p);
+    friend Point3D qRound(const Point3D &p);
 
 private:
     doubli xp, yp, zp;
@@ -122,7 +123,9 @@ class Vec3D : public Point3D
 {
 public:
     constexpr inline Vec3D(const doubli &x, const doubli &y, const doubli &z) : Point3D(x, y, z) {}
+    constexpr inline Vec3D(const Point3D &p) : Point3D(p) {}
     constexpr inline doubli produitScalaire(const Vec3D &vec) const;
+    constexpr inline doubli produitScalaire(const doubli &x, const doubli &y, const doubli &z) const;
 };
 
 /*****************************************************************************
@@ -130,6 +133,7 @@ public:
  *****************************************************************************/
 
 constexpr inline doubli Vec3D::produitScalaire(const Vec3D &vec) const { return xp * vec.xp + yp * vec.yp + zp * vec.zp; }
+constexpr inline doubli Vec3D::produitScalaire(const doubli &x, const doubli &y, const doubli &z) const { return xp * x + yp * y + zp * z; }
 
 constexpr inline Vec3D operator-(const Vec3D &p) { return Vec3D{-p.xp, -p.yp, -p.zp}; }
 
