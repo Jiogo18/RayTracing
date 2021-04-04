@@ -56,7 +56,7 @@ public:
     bool operator==(const HRect3D &rect) const;
 
     bool contains(const Point3D &point) const;
-    bool containsLine(const Point3D &pA, const Point3D &pB);
+    bool containsLine(const Point3D &pA, const Point3D &pB) const;
 
     friend QDebug operator<<(QDebug debug, const HRect3D &rect);
 

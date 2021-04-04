@@ -26,7 +26,7 @@ bool HRect3D::contains(const Point3D &point) const
            && pMin.z() <= point.z() && point.z() <= pMax.z();
 }
 
-bool HRect3D::containsLine(const Point3D &pA, const Point3D &pB)
+bool HRect3D::containsLine(const Point3D &pA, const Point3D &pB) const
 {
     // est ce que la droite peut atteindre le block ?
     // voir # Calculs pour HRect3D::containsLine

@@ -78,9 +78,11 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
         const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
         if (chunk->getPoint().distance(pos) > viewDistance)
             continue;
+        if (!chunk->getMaxGeometry().containsLine(pos, posNextPoint))
+            continue;
         //qint64 start1 = rtRess->dt->getCurrent();
         for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
-            Solid *block = chunk->getSolids()->at(i2);
+            const Solid *block = chunk->getSolids()->at(i2);
             if (block->getPoint().distance(pos) > viewDistance)
                 continue;
             if (!block->getMaxGeometry().containsLine(pos, posNextPoint))
