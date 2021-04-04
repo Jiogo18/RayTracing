@@ -54,8 +54,8 @@ public:
         : Point3D(pA + Size3D(pA, pB) / 2), Size3D(pA, pB),
           pMin(min(pA.x(), pB.x()), min(pA.y(), pB.y()), min(pA.z(), pB.z())),
           pMax(max(pA.x(), pB.x()), max(pA.y(), pB.y()), max(pA.z(), pB.z())) {}
-    constexpr inline HRect3D(const Point3D &pA, const Size3D &s)
-        : Point3D(pA + s / 2), Size3D(s), pMin(pA), pMax(pA + s) {}
+    constexpr inline HRect3D(const Point3D &pMid, const Size3D &s)
+        : Point3D(pMid), Size3D(s), pMin(pMid - s / 2), pMax(pMid + s / 2) {}
     constexpr inline HRect3D(const HRect3D &r) : Point3D(r), Size3D(r), pMin(r.pMin), pMax(r.pMax) {}
 
     constexpr inline const Size3D &getSize() const { return *this; }
@@ -64,7 +64,10 @@ public:
     constexpr inline const Point3D &getMiddle() const { return *this; }
 
     void scale(const doubli &scale);
-    constexpr inline HRect3D operator+(const Point3D &pointAdd) const { return HRect3D{pMin + pointAdd, pMax + pointAdd}; }
+    constexpr inline HRect3D operator+(const Point3D &pointAdd) const { return HRect3D{static_cast<Point3D>(*this) + pointAdd, static_cast<Size3D>(*this)}; }
+    constexpr inline HRect3D operator-(const Point3D &pointAdd) const { return HRect3D{static_cast<Point3D>(*this) - pointAdd, static_cast<Size3D>(*this)}; }
+    constexpr inline HRect3D operator+(const Size3D &sizeAdd) const { return HRect3D{static_cast<Point3D>(*this) + sizeAdd, static_cast<Size3D>(*this)}; }
+    constexpr inline HRect3D operator-(const Size3D &sizeAdd) const { return HRect3D{static_cast<Point3D>(*this) - sizeAdd, static_cast<Size3D>(*this)}; }
     constexpr inline HRect3D *operator=(const HRect3D &rect);
 
     bool operator==(const HRect3D &rect) const;

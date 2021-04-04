@@ -76,9 +76,9 @@ Object *Object::operator=(const Object &obj)
  *****************************************************************************/
 
 Face::Face(const Point3D &point,
-           const HRect3D &rect, bool orientation,
+           const HRect3D &solidGeometry, bool orientation,
            const SOLID::Material &material,
-           QList<SOLID::Variation> variations) : SolidBase(Pos3D(point, 0, 0), HRect3D(rect + point), material),
+           QList<SOLID::Variation> variations) : SolidBase(Pos3D(point, 0, 0), HRect3D(solidGeometry + point), material),
                                                  variations(variations), orientation(orientation)
 {
     texture = SOLID::getFileTexture(material, variations);
@@ -205,12 +205,12 @@ Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material)
 QList<Face> Block::createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material)
 {
     return {
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), size.dY(), 0)), 0, material, {SOLID::Variation::bottom}), // BOTTOM
-        Face(posSolid, HRect3D(Point3D(0, 0, size.dZ()), size.toPoint()), 1, material, {SOLID::Variation::top}),              // TOP
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(0, size.dY(), size.dZ())), 0, material, {SOLID::Variation::back}),   // SOUTH
-        Face(posSolid, HRect3D(Point3D(0, 0, 0), Point3D(size.dX(), 0, size.dZ())), 0, material, {SOLID::Variation::right}),  // EAST
-        Face(posSolid, HRect3D(Point3D(size.dX(), 0, 0), size.toPoint()), 1, material, {SOLID::Variation::front}),            // NORTH
-        Face(posSolid, HRect3D(Point3D(0, size.dY(), 0), size.toPoint()), 1, material, {SOLID::Variation::left})              // WEST
+        Face(posSolid, HRect3D(Point3D(0, 0, -size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 0, material, {SOLID::Variation::bottom}), // BOTTOM
+        Face(posSolid, HRect3D(Point3D(0, 0, +size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 1, material, {SOLID::Variation::top}),    // TOP
+        Face(posSolid, HRect3D(Point3D(+size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 1, material, {SOLID::Variation::front}),  // NORTH
+        Face(posSolid, HRect3D(Point3D(-size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 0, material, {SOLID::Variation::back}),   // SOUTH
+        Face(posSolid, HRect3D(Point3D(0, -size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 0, material, {SOLID::Variation::right}),  // EAST
+        Face(posSolid, HRect3D(Point3D(0, +size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 1, material, {SOLID::Variation::left})    // WEST*/
     };
 }
 

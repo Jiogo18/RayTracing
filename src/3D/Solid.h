@@ -71,7 +71,7 @@ protected:
 class Face : public SolidBase
 {
 public:
-    Face(const Point3D &point, const HRect3D &rect, bool orientation,
+    Face(const Point3D &point, const HRect3D &solidGeometry, bool orientation,
          const SOLID::Material &material, QList<SOLID::Variation> variations);
     Face(const Face &face);
 

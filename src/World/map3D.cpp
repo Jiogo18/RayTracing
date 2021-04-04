@@ -11,7 +11,7 @@ map3D::map3D() : QObject()
     //client->moveTo(Pos3D::fromDegree(0.5L, 1.5, 2.5L, -90, -30));//vue miroir verre blanc
     //client->moveTo(Pos3D::fromDegree(1.2L, 0.5, 2.5L, -180, -30));//vue miroir verre vert
     //client->moveTo(Pos3D::fromDegree(0.5L, 4, 1.2L, -90, -10));//vue miroir glowstone
-    client->moveTo(Pos3D::fromDegree(1, 3, 1.4L, -70, -10)); //belle vue mirroir
+    client->moveTo(Pos3D::fromDegree(0.5, 3, 0.9L, -70, -10)); //belle vue mirroir
     //client->moveTo(Pos3D::fromDegree(0.5, 1.5, 2.5, 0, -90));//verre au dessus
 
     world->addSolid(new Cube(Pos3D(0, 0, 0, 0, 0), SOLID::Material::oak_log));
@@ -19,7 +19,7 @@ map3D::map3D() : QObject()
     world->addSolid(new Cube(Pos3D(0, 0, 1, 0, 0), SOLID::Material::stone));
     world->addSolid(new Cube(Pos3D(0, 1, 1, 0, 0), SOLID::Material::glass));
     world->addSolid(new Cube(Pos3D(1, 0, 0, 0, 0), SOLID::Material::green_glass));
-    world->addSolid(new HalfCube(Pos3D(0, 2, 0, 0, 0), SOLID::Material::glowstone));
+    world->addSolid(new HalfCube(Pos3D(0, 2, -0.25, 0, 0), SOLID::Material::glowstone));
     world->addSolid(new Cube(Pos3D(0, 0, 2, 0, 0), SOLID::Material::mirror));
 
     //mur de miroir entouré de stone
