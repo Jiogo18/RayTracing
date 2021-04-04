@@ -44,7 +44,7 @@ namespace ENTITY {
 } // namespace ENTITY
 
 namespace OBJECT3D {
-    static QMap<QString, const QImage *> loadedTextures;
+    static QMap<QString, QImage> loadedTextures;
     static QImage missingTexture;
 
     QString getFileTexture(BLOCK::Material material, QList<BLOCK::Variation> variations);
@@ -81,7 +81,7 @@ public:
     void setPoint(const Point3D &point) { Point3D::operator=(point); }
     void setPos(const Pos3D &pos) { Pos3D::operator=(pos); }
 
-    virtual HRect3D getMaxGeometry() const { return HRect3D(getPoint(), getPoint()); }
+    virtual HRect3D getMaxGeometry() const { return HRect3D{getPoint(), getPoint()}; }
     virtual bool containsPoint(const Point3D &point) const { return point == getPoint(); }
     virtual BLOCK::Material getMaterial() const { return BLOCK::Material::none; }
 };
@@ -127,7 +127,7 @@ public:
     Solid(Pos3D pos, BLOCK::Material material, QList<Face>);
     ~Solid() override;
 
-    virtual HRect3D getSolidGeometry() const { return HRect3D(); }
+    virtual HRect3D getSolidGeometry() const { return HRect3D{}; }
     HRect3D getMaxGeometry() const override { return getSolidGeometry() + getPoint(); }
     Point3D getMiddleGeometry() const { return getMaxGeometry().getMiddle(); }
     const QList<Face> *getFaces() const { return &faces; }
@@ -146,7 +146,7 @@ class Block : public Solid
     // any Cuboid (pavé droit)
 public:
     Block(Pos3D pos, Size3D size, BLOCK::Material material);
-    HRect3D getMaxGeometry() const override { return HRect3D(getPoint(), size); }
+    HRect3D getMaxGeometry() const override { return HRect3D{getPoint(), size}; }
     HRect3D getSolidGeometry() const override { return HRect3D{Point3D{0, 0, 0}, size}; }
     bool containsPoint(const Point3D &point) const override;
 

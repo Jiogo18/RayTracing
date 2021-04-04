@@ -81,15 +81,15 @@ QString OBJECT3D::getFileTexture(BLOCK::Material material, QList<BLOCK::Variatio
 const QImage *OBJECT3D::getTexture(const QString &file)
 {
     if (loadedTextures.contains(file)) {
-        return loadedTextures.value(file, nullptr);
+        return &loadedTextures[file];
     }
-    QImage *img = new QImage();
-    if (img->load(":/ressourcepacks/default/textures/" + file + ".png")) {
-        if (img->format() != QImage::Format_RGBA64) {
-            *img = img->convertToFormat(QImage::Format_RGBA64);
+    QImage img;
+    if (img.load(":/ressourcepacks/default/textures/" + file + ".png")) {
+        if (img.format() != QImage::Format_RGBA64) {
+            img = img.convertToFormat(QImage::Format_RGBA64);
         }
         loadedTextures.insert(file, img);
-        return img;
+        return &loadedTextures[file];
     }
     qWarning() << "[OBJECT3D::getTexture] can't load this texture:" << file;
     /*if(img.load(":/ressourcepacks/default/textures/blocks/block_nul.png"))
@@ -100,6 +100,8 @@ const QImage *OBJECT3D::getTexture(const QString &file)
         missingTexture.setPixelColor(0, 0, QColor(255, 0, 255, 100));
         missingTexture.setPixelColor(1, 1, QColor(255, 0, 255, 100));
     }
+    loadedTextures.insert(file, missingTexture); // ne pas rappeller plusieurs fois
+
     return &missingTexture;
 }
 int OBJECT3D::getLight(BLOCK::Material material, QList<BLOCK::Variation> variations)
@@ -244,7 +246,7 @@ void Face::calcFace()
 }
 
 Object::Object(const Pos3D &pos) : Pos3D(pos), QObject() {}
-Object::Object(const Object &obj) : Pos3D(obj), QObject() {}
+Object::Object(const Object &obj) : Pos3D(obj), QObject(obj.parent()) {}
 Object::~Object() {}
 Object *Object::operator=(const Object &obj)
 {
