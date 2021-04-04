@@ -28,6 +28,8 @@ map3D::map3D() : QObject()
 
     world->addSolid(new Cube(Pos3D(0, 3, 0, 0, 0), SOLID::Material::mirror));
     world->addSolid(new Cube(Pos3D(1, 3, 0, 0, 0), SOLID::Material::watter));
+
+    world->addSolid(new HalfCube(Pos3D(-1, -1, -1, 0, 0), SOLID::Material::glowstone));
 }
 
 map3D::~map3D()

@@ -26,9 +26,10 @@
   - si la distance de la géométrie min du block est trop grande alors on le skip
   - fix chunkG, chunkGMid...
 
-- [ ] #7 résultat de #1 il faudrait savoir si un chunk est derrière (demi-droite...)
+- [x] #7 résultat de #1 il faudrait savoir si un chunk est derrière (demi-droite...)
   - pas prioritaire (optimisation)
   - possible: faire une sphère autour de l'objet, prendre le cercle perpendiculaire au ray et faire son carré le plus grand, comme pour une face
+  - Fix : containsLine
 
 - [x] #8 se mettre sur une face fait un rendu de la permière face sans passer à travers
   - fix : variable "enter" mis à false et si c'est le même point alors on prend pas
@@ -68,7 +69,8 @@
 
 - [x] #18 ico
 
-- [ ] #19 les blocks en z=-1 sont pas affichés
+- [x] #19 les blocks en z=-1 sont pas affichés
+  - Fix : pour l'arrondit il faut faire -0.5 pour les nombres négatifs
 
 - [x] #20 dans le miroir on a une ligne sur le plan xz
   - il faut mettre un obstacle (en ghost on se voit pas donc c'est inifini)

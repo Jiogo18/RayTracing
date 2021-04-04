@@ -5,15 +5,15 @@
 
 #define M_2PI 2 * M_PI // 6.28318530717958647692
 #define M_1_2PI 1 / (2 * M_PI)
-#define DOUBLI_MIN 1e-6
+#define DOUBLI_MIN 1e-10
 
 namespace maths3D {
     typedef long double doubli; // un nombre pour gérer 6 décimales max (arrondit)
 
     constexpr inline bool isNull(const doubli &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
     constexpr inline doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; } // plus opti que round
-    constexpr inline doubli round(const doubli &d) { return (long long int)(d * 1e+6 + 0.5) * DOUBLI_MIN; }
     constexpr inline doubli signOf(const doubli &d) { return d < 0 ? -1 : 1; }
+    constexpr inline doubli round(const doubli &d) { return (long long int)(d / DOUBLI_MIN + signOf(d) * 0.5) * DOUBLI_MIN; }
     constexpr inline doubli sqr(const doubli &d) { return d * d; }
     constexpr inline doubli sqrtCExpr(const doubli &d) { return std::sqrt(d); }
     constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b) { return sqrtCExpr(a * a + b * b); }
