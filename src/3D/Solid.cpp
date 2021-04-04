@@ -75,20 +75,21 @@ Object *Object::operator=(const Object &obj)
   Face
  *****************************************************************************/
 
-Face::Face() : SolidBase(Pos3D(0, 0, 0, 0, 0)), rect(Point3D(0, 0, 0), Point3D(0, 0, 0)), variations{SOLID::Variation::front}
-{
-    calcFace();
-}
 Face::Face(const Point3D &point,
            const HRect3D &rect, bool orientation,
            const SOLID::Material &material,
-           QList<SOLID::Variation> variations) : SolidBase(Pos3D(point, 0, 0), material),
-                                                 rect(rect), variations(variations), orientation(orientation)
+           QList<SOLID::Variation> variations) : SolidBase(Pos3D(point, 0, 0), HRect3D(rect + point), material),
+                                                 variations(variations), orientation(orientation)
 {
-    calcFace();
+    texture = SOLID::getFileTexture(material, variations);
+    textureImg = OBJECT3D::getTexture(texture);
+    if (textureImg != nullptr && textureImg->isNull()) textureImg = nullptr;
+
+    plan = Plan(maxGeometry);
+
+    pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
 }
 Face::Face(const Face &face) : SolidBase(face),
-                               rect(face.rect),
                                variations(face.variations),
                                texture(face.texture),
                                textureImg(face.textureImg),
@@ -189,25 +190,16 @@ bool Face::containsPoint(const Point3D &point) const
     return plan.containsPoint(point); // TODO: par rapport aux points ?
 }
 
-void Face::calcFace()
-{
-    maxGeometry = rect + getPoint();
-    middleGeometry = maxGeometry.getMiddle();
-    texture = SOLID::getFileTexture(material, variations);
-    textureImg = OBJECT3D::getTexture(texture);
-    if (textureImg != nullptr && textureImg->isNull()) textureImg = nullptr;
-
-    plan = Plan(maxGeometry);
-
-    pC = plan.projeteOrtho(maxGeometry.getPointMax()) - QPointF(1, 1);
-}
-
 /*****************************************************************************
   Block
  *****************************************************************************/
 
 Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material)
-    : Solid(pos, HRect3D{pos, size}, material, createDefaultFaces(pos, size, material)), size(size)
+    : Solid(pos,
+            HRect3D{pos, size},
+            material,
+            createDefaultFaces(pos, size, material)),
+      size(size)
 {}
 
 QList<Face> Block::createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material)

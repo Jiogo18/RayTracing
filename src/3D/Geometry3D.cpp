@@ -8,22 +8,9 @@ void HRect3D::scale(const doubli &scale)
     pMax = middle + demisizeScaled;
 }
 
-HRect3D *HRect3D::operator=(const HRect3D &rect)
-{
-    pMin = rect.pMin;
-    pMax = rect.pMax;
-    return this;
-}
 bool HRect3D::operator==(const HRect3D &rect) const
 {
     return pMin == rect.pMin && pMax == rect.pMax;
-}
-
-bool HRect3D::contains(const Point3D &point) const
-{
-    return pMin.x() <= point.x() && point.x() <= pMax.x()
-           && pMin.y() <= point.y() && point.y() <= pMax.y()
-           && pMin.z() <= point.z() && point.z() <= pMax.z();
 }
 
 bool HRect3D::containsLine(const Point3D &pA, const Point3D &pB) const

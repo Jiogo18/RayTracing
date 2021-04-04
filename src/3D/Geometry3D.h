@@ -4,6 +4,12 @@
 #include <QPointF>
 #include "Pos3D.h"
 
+/*****************************************************************************
+  Size3D : delta from a point to another
+    delta X, delta Y, delta Z
+    (or width, depth, height)
+ *****************************************************************************/
+
 class Size3D
 {
 public:
@@ -33,37 +39,62 @@ private:
     doubli dXp, dYp, dZp; // delta
 };
 
-class HRect3D
+/*****************************************************************************
+  HRect3D : a horizontal cuboid wich can't rotate
+    => the faces are parallel to Oxy, Oxz & Oyz
+    Point3D : point of the middle
+    Size3D : the size between two opposite points
+ *****************************************************************************/
+
+class HRect3D : public Point3D, public Size3D
 {
 public:
-    constexpr inline HRect3D() {} // a horizontal cuboid
+    constexpr inline HRect3D() {}
     constexpr inline HRect3D(const Point3D &pA, const Point3D &pB)
-        : pMin(min(pA.x(), pB.x()), min(pA.y(), pB.y()), min(pA.z(), pB.z())),
+        : Point3D(pA + Size3D(pA, pB) / 2), Size3D(pA, pB),
+          pMin(min(pA.x(), pB.x()), min(pA.y(), pB.y()), min(pA.z(), pB.z())),
           pMax(max(pA.x(), pB.x()), max(pA.y(), pB.y()), max(pA.z(), pB.z())) {}
-    constexpr inline HRect3D(const Point3D &pA, const Size3D &s) : pMin(pA), pMax(pA + s) {}
-    constexpr inline HRect3D(const HRect3D &r) : pMin(r.pMin), pMax(r.pMax) {}
+    constexpr inline HRect3D(const Point3D &pA, const Size3D &s)
+        : Point3D(pA + s / 2), Size3D(s), pMin(pA), pMax(pA + s) {}
+    constexpr inline HRect3D(const HRect3D &r) : Point3D(r), Size3D(r), pMin(r.pMin), pMax(r.pMax) {}
 
-    constexpr inline Size3D getSize() const { return Size3D{pMin, pMax}; }
+    constexpr inline const Size3D &getSize() const { return *this; }
     constexpr inline const Point3D &getPointMin() const { return pMin; }
     constexpr inline const Point3D &getPointMax() const { return pMax; }
-    constexpr inline Point3D getMiddle() const { return (pMin + pMax) / 2; }
+    constexpr inline const Point3D &getMiddle() const { return *this; }
 
-    //void setPointMin(const Point3D &pointMin) { this->pointMin = pointMin; }//pas recommandé
-    //void setPointMax(const Point3D &pointMax) { this->pointMax = pointMax; }//pas recommandé
     void scale(const doubli &scale);
-    HRect3D operator+(const Point3D &pointAdd) const { return HRect3D{pMin + pointAdd, pMax + pointAdd}; }
-    HRect3D *operator=(const HRect3D &rect);
-    bool operator==(const HRect3D &rect) const;
+    constexpr inline HRect3D operator+(const Point3D &pointAdd) const { return HRect3D{pMin + pointAdd, pMax + pointAdd}; }
+    constexpr inline HRect3D *operator=(const HRect3D &rect);
 
-    bool contains(const Point3D &point) const;
+    bool operator==(const HRect3D &rect) const;
+    constexpr inline bool contains(const Point3D &point) const;
     bool containsLine(const Point3D &pA, const Point3D &pB) const;
 
     friend QDebug operator<<(QDebug debug, const HRect3D &rect);
 
 private:
     Point3D pMin, pMax;
-    // TODO pb: on a pas assez d'info, la on a qu'une droite de modélisé, pas du tout un rectangle
 };
+
+constexpr inline HRect3D *HRect3D::operator=(const HRect3D &rect)
+{
+    pMin = rect.pMin;
+    pMax = rect.pMax;
+    return this;
+}
+
+constexpr inline bool HRect3D::contains(const Point3D &point) const
+{
+    return pMin.x() <= point.x() && point.x() <= pMax.x()
+           && pMin.y() <= point.y() && point.y() <= pMax.y()
+           && pMin.z() <= point.z() && point.z() <= pMax.z();
+}
+
+/*****************************************************************************
+  Rect3D : a cuboid wich can rotate
+    TODO: to rotate a Solid
+ *****************************************************************************/
 
 class Rect3D : public HRect3D
 {
@@ -105,6 +136,13 @@ constexpr void Rect3D::calcMinMax()
                    min(HRect3D::getPointMin().z(), pB.z()));
 }
 
+/*****************************************************************************
+  Plan
+    a, b, c, d : cartesian equation of a plane
+    (a, b, c) is a unit normal of the plane
+    pA : a point of the plan (to calc faster)
+ *****************************************************************************/
+
 class Plan
 {
 public:
@@ -118,13 +156,13 @@ public:
     Point3DCancelable intersection(const Point3D &pA, const Point3D &pB) const;
     QPointF projeteOrtho(const Point3D &pA) const;
     Point3D projeteOrtho3D(const Point3D &pA) const;
-    inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
+    constexpr inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
     bool containsPoint(const Point3D &point) const;
 
     // sens positif (ne plus utiliser)
     //radian getRX() const { return a >= 0 ? atan(a / b) : M_PI + atan(a / b); }
     //radian getRZ() const { return atan(c / sqrt(a * a + b * b)); }
-    constexpr inline Vec3D normale() const { return Vec3D(a, b, c); } // (calculé unitaire)
+    constexpr inline Vec3D normale() const { return Vec3D{a, b, c}; } // (calculé unitaire)
 
 private:
     Point3D pA;

@@ -28,13 +28,12 @@ public:
     virtual ~Object() {}
     Object *operator=(const Object &obj);
 
-    virtual HRect3D getMaxGeometry() const { return maxGeometry; }
-    constexpr const Point3D &getMiddleGeometry() const { return middleGeometry; }
+    constexpr inline const HRect3D &getMaxGeometry() const { return maxGeometry; }
+    constexpr inline const Point3D &getMiddleGeometry() const { return maxGeometry; }
     virtual bool containsPoint(const Point3D &point) const { return maxGeometry.contains(point); }
 
 protected:
     HRect3D maxGeometry;
-    Point3D middleGeometry;
 };
 
 #endif // OBJECT3D_H

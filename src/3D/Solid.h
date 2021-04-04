@@ -46,7 +46,7 @@ namespace SOLID {
 }; // namespace SOLID
 
 /*****************************************************************************
-  BaseSolid : An object with some properties of a solid
+  SolidBase : An object with some properties of a solid
  *****************************************************************************/
 
 class SolidBase : public Object
@@ -54,11 +54,11 @@ class SolidBase : public Object
 public:
     constexpr inline SolidBase(const Pos3D &pos) : Object(pos) {}
     constexpr inline SolidBase(const Pos3D &pos, const SOLID::Material &material) : Object(pos), material(material) {}
-    constexpr inline SolidBase(const Pos3D &pos, const HRect3D &maxGeometry) : Object(pos, maxGeometry) {}
     constexpr inline SolidBase(const Pos3D &pos, const HRect3D &maxGeometry, const SOLID::Material &material) : Object(pos, maxGeometry), material(material) {}
     constexpr inline SolidBase(const SolidBase &obj) : Object(obj), material(obj.material) {}
 
     constexpr inline const SOLID::Material &getMaterial() const { return material; }
+    constexpr inline bool isValid() const { return material != SOLID::Material::none; }
 
 protected:
     SOLID::Material material = SOLID::Material::none;
@@ -71,7 +71,6 @@ protected:
 class Face : public SolidBase
 {
 public:
-    Face();
     Face(const Point3D &point, const HRect3D &rect, bool orientation,
          const SOLID::Material &material, QList<SOLID::Variation> variations);
     Face(const Face &face);
@@ -79,7 +78,6 @@ public:
     constexpr inline const Plan *getPlan() const { return &plan; }
     constexpr inline const QPointF &getPointC() const { return pC; }
     constexpr inline bool getOrientation() const { return orientation; }
-    constexpr inline bool isValid() const { return material != SOLID::Material::none; }
     ColorLight getColor(const QPointF &point) const;
     constexpr inline const QString &getTexture() const { return texture; }
     constexpr inline const QImage *getTextureImg() const { return textureImg; }
@@ -88,11 +86,9 @@ public:
     bool containsPoint(const Point3D &point) const override;
 
 private:
-    HRect3D rect;
-    void calcFace();
     QList<SOLID::Variation> variations;
     QString texture;
-    const QImage *textureImg = nullptr;
+    const QImage *textureImg = nullptr; // TODO : object Texture avec les ColorLight direct dedans
     Plan plan;
     QPointF pC;
     bool orientation; // true dans le sens positif du plan
