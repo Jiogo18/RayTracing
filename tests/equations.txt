@@ -159,3 +159,17 @@ return true;//t \in [tMin;tMax] // TODO: calculer avec les t ! ça sera plus sim
 
 
 
+# signOf
+équivalent à x/|x|
+Si x = 0 on prend 1 ou -1, peu importe (1 de préférence)
+```
+const doubli v = 1, v2 = -1;
+constexpr inline doubli signOf2(doubli x) { return (x >= 0) - (x < 0); }            // 12 ns / call
+constexpr inline doubli signOf1(doubli d) { return d < 0 ? -1 : 1; }                // 9.5 ns / call
+constexpr inline doubli signOf2_bis(const doubli &x) { return (x >= 0) - (x < 0); } // 6.8 ns / call
+constexpr inline doubli signOf1_bis(const doubli &d) { return d < 0 ? -1 : 1; }     // 5.1 ns / call
+constexpr inline const doubli &signOf4(const doubli &d) { return d < 0 ? v2 : v; }  // 3.8 ns / call
+```
+
+
+

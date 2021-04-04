@@ -9,10 +9,13 @@
 
 namespace maths3D {
     typedef long double doubli; // un nombre pour gérer 6 décimales max (arrondit)
+    const float signPlus = 1;
+    const float signMoins = -1;
+    const doubli nul = 0;
 
     constexpr inline bool isNull(const doubli &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
-    constexpr inline doubli roundNull(const doubli d) { return isNull(d) ? 0 : d; } // plus opti que round
-    constexpr inline doubli signOf(const doubli &d) { return d < 0 ? -1 : 1; }
+    constexpr inline const doubli &roundNull(const doubli &d) { return isNull(d) ? nul : d; } // plus opti que round
+    constexpr inline const float &signOf(const doubli &d) { return d < 0 ? signMoins : signPlus; }
     constexpr inline doubli round(const doubli &d) { return (long long int)(d / DOUBLI_MIN + signOf(d) * 0.5) * DOUBLI_MIN; }
     constexpr inline doubli sqr(const doubli &d) { return d * d; }
     constexpr inline doubli sqrtCExpr(const doubli &d) { return std::sqrt(d); }
@@ -31,10 +34,10 @@ namespace maths3D {
 #define MAX_ABS_3(a, b, c) (MAX_3(ABS(a), ABS(b), ABS(c)))
     //
 
-    constexpr doubli max(const doubli &a, const doubli &b) { return a > b ? a : b; }
-    constexpr doubli max(const doubli &a, const doubli &b, const doubli &c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
-    constexpr doubli min(const doubli &a, const doubli &b) { return a < b ? a : b; }
-    constexpr doubli min(const doubli &a, const doubli &b, const doubli &c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
+    constexpr const doubli &max(const doubli &a, const doubli &b) { return a > b ? a : b; }
+    constexpr const doubli &max(const doubli &a, const doubli &b, const doubli &c) { return a > b ? (a > c ? a : c) : (b > c ? b : c); }
+    constexpr const doubli &min(const doubli &a, const doubli &b) { return a < b ? a : b; }
+    constexpr const doubli &min(const doubli &a, const doubli &b, const doubli &c) { return a < b ? (a < c ? a : c) : (b < c ? b : c); }
 
     typedef double radian;
     inline radian degreesToRadians(const doubli &deg) { return fmodf(deg, 360) * doubli(M_PI) / 180; }
@@ -52,10 +55,10 @@ namespace maths3D {
     // plus opti que round :
     constexpr inline radian roundNull(radian d)
     {
-        d = modRad(d);
+        d = mod(d, M_2PI);
         return isNull(d) ? 0 : d;
     }
-    constexpr inline float signOf(const radian &d) { return modRad(d) < 0 ? -1 : 1; } // -1 or 1
+    constexpr inline const float &signOf(const radian &d) { return (modRad(d) < 0) ? signMoins : signPlus; }
 
     /*****************************************************************************
       Versions optimisées des formules de trigonométrie
