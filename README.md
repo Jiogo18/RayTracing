@@ -15,14 +15,23 @@ Le projet est terminé, je souhaite continuer pour optimiser encore.
 
 | Dimensions de l'écran | Temps de calcul moyen |
 | --------------------- | --------------------- |
-| 148*100 pixels        | 27 msec, 37 fps       |
-| 1920*1080 pixels      | 2.5 secondes          |
+| 148*100 pixels        | 10 ms, 100 FPS        |
+| 1920*1080 pixels      | 600 ms, 1.65 FPS      |
 
-- Chaque pixel correspond à 1 rayon mais il est possible d'en mettre plus.
-- Seul le processeur est utilisé pour générer l'image
-  - Auttant de threads que le nombre de coeur du cpu
-  - Le CPU est à 100 % pendant le calcul de l'image, le rafraichissement est donc limité
-- Le GPU est un peu utilisé afin d'afficher l'image à l'écran mais il n'y a pas besoin d'une carte graphique dédiée
+- Chaque pixel correspond à 1 rayon, mais il est possible d'en mettre plus.
+- Seul le processeur est utilisé pour générer l'image avec
+  - Deux threads par coeurs du CPU
+  - 100 % du CPU par rafraichissement (le rafraichissement automatique est donc limité par un timer)
+- Le GPU est un peu utilisé afin d'afficher l'image à l'écran, mais il n'y a pas besoin d'une carte graphique dédiée
+
+---
+
+## Fonctionnalités
+
+- Déplacement dans un monde de cubes et de dalles
+- Réflexion
+- Réfraction
+- Gestion du niveau de luminosité
 
 ---
 

@@ -11,12 +11,12 @@ ColorLight Ray::getColor(const int &baseLight) const
 
 void Ray::process()
 {
-    while (distParcouru < viewDistance) { // pas exactement view distance mais pas loins (2*..?)
+    while (distParcouru < viewDistance) {
         //qint64 start = rtRess->dt->getCurrent();
         Point3D pInter;
         const Face *face = getFirstIntersection(pInter);
         //rtRess->dt->addValue("Ray::process_face", rtRess->dt->getCurrent() - start);
-        if (face == nullptr || !face->isValid()) break; // c'est normal si on va dans le vide
+        if (face == nullptr || !face->isValid()) break; // on va dans le vide
 
         lastMoved = pInter != pos;
         lastFace = face;
@@ -37,17 +37,12 @@ void Ray::process()
             float previousSpeed = SOLID::getSpeedOfLight(insideMaterial);
             // calcul de la réfraction
             pos.setRot(face->refractRot(pos, newSpeed / previousSpeed));
-            //moveTo(Pos3D(pInter, pos.getRX(), pos.getRZ()));
             insideMaterial = face->getMaterial();
-            // on ne "rentre" pas dans le miroir (ou sinon c'est juste la couche de verre)
+            // on ne "rentre" pas dans le miroir
         }
-
-        //break;// TODO empecher de calculer après pour les tests (avoir que la première face)
-        // Tips: transparant il faut penser à passer sur la face de l'autre coté... trop complexe :'(
 
 #ifdef NAN_VERIF
         if (pos.isNan()) {
-            //étrangement dans le constructeur il est pas nan ?
             qDebug() << "Ray::process pos is nan" << pos;
             exit(-1);
         }
@@ -100,7 +95,8 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
                     continue;
                 if (!enter && pInter == pos && !lastMoved)
                     continue; // on viens de sortir (ou par défaut) et on se retrouve sur le même point
-                doubli distanceInter = pos.distance(pInter), distanceSolid = 0;
+                const doubli distanceInter = pos.distance(pInter);
+                doubli distanceSolid;
                 if (faceMin != nullptr && faceMin->isValid()) {
                     if (distanceInter > distanceInterMin)
                         continue;
@@ -122,9 +118,9 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
                 pInterMin = pInter;
                 distanceInterMin = distanceInter;
                 distanceSolidMin = distanceSolid;
-                // il est possible qu'un même distance soit pour le meme block, pour des faces diff (de meme distance)
+                // il est possible que pour un même solid plusieurs faces aient la même distance
                 // mais c'est pas grave car ça arrive quand c'est VRAIMENT indéterminant
-                //(on peu prendre l'un ou l'autre)
+                // on peu prendre l'un ou l'autre (z-fighting ?)
             }
         }
         //rtRess->dt->addValue("Ray::firstIntersection_1", rtRess->dt->getCurrent() - start1);
