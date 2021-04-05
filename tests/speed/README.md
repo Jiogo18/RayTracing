@@ -37,3 +37,12 @@ Idem, les parenthèses sont importantes (celles à l'intérieur)
 | 03/04/2021 |     65      |   15 ms/frame   |      0.83       |  1200 ms/frame   |
 | 03/04/2021 |     79      |   12 ms/frame   |       1.1       |   900 ms/frame   |
 | 04/04/2021 |     96      |   10 ms/frame   |       1.4       |   720 ms/frame   |
+| 05/04/2021 |     102     |   9 ms/frame    |      1.45       |   690 ms/frame   |
+
+# Speed without process
+
+Speed max if the ray.process is 0 % of the time (max of # Speed)
+
+| Date       | FPS 150*100 | Time mini frame | FPS Full screen | Time Full screen |
+| :--------- | :---------: | :-------------: | :-------------: | :--------------: |
+| 04/04/2021 |     140     |   7 ms/frame    |       3.7       |   270 ms/frame   |

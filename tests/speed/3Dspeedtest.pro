@@ -9,6 +9,7 @@ SOURCES += \
     ../../src/3D/Point3D.cpp \
     ../../src/3D/Pos3D.cpp \
     ../../src/3D/Geometry3D.cpp \
+    geometryTest.cpp \
     main.cpp \
     pointTest.cpp \
     posTest.cpp \

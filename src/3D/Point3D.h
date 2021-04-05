@@ -108,7 +108,7 @@ public:
     constexpr inline Point3DCancelable(const doubli &x, const doubli &y, const doubli &z)
         : Point3D(x, y, z), valid(true) {}
     constexpr inline Point3DCancelable(const Point3D &p) : Point3D(p), valid(true) {}
-    constexpr inline bool isValid() const { return valid; }
+    constexpr inline const bool &isValid() const { return valid; }
 
 private:
     const bool valid;

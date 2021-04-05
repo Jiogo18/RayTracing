@@ -74,23 +74,19 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
     }
 #endif // NAN_VERIF
     Point3D pInterMin;
-    doubli distanceInterMin = 0; // seront set car !faceMin.isValid() au début
-    doubli distanceSolidMin = 0;
+    doubli distanceInterMin = viewDistance; // seront set car !faceMin.isValid() au début
+    doubli distanceSolidMin = viewDistance;
     for (int iChunk = 0; iChunk < rtRess->world->getChunks().size(); iChunk++) {
         const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
-        if (chunk->getPoint().distance(pos) > viewDistance)
-            continue;
-        if (!chunk->getMaxGeometry().containsLine(pos, vecDirNextPoint))
+        if (!chunk->getMaxGeometry().containsLine(pos, vecDirNextPoint, distanceInterMin))
             continue;
         //qint64 start1 = rtRess->dt->getCurrent();
-        for (int i2 = 0; i2 < chunk->getSolids()->size(); i2++) {
-            const Solid *block = chunk->getSolids()->at(i2);
-            if (block->getPoint().distance(pos) > viewDistance)
+        for (int iBlock = 0; iBlock < chunk->getSolids()->size(); iBlock++) {
+            const Solid *block = chunk->getSolids()->at(iBlock);
+            if (!block->getMaxGeometry().containsLine(pos, vecDirNextPoint, distanceInterMin))
                 continue;
-            if (!block->getMaxGeometry().containsLine(pos, vecDirNextPoint))
-                continue;
-            for (int i3 = 0; i3 < block->getFaces()->size(); i3++) {
-                const Face *face = &block->getFaces()->at(i3);
+            for (int iFace = 0; iFace < block->getFaces()->size(); iFace++) {
+                const Face *face = &block->getFaces()->at(iFace);
                 if (face == lastFace)
                     continue;
                 const Plan *plan = face->getPlan();

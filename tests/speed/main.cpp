@@ -1,5 +1,6 @@
 #include "pointTest.cpp"
 #include "posTest.cpp"
+#include "geometryTest.cpp"
 
 int main()
 {
@@ -7,9 +8,11 @@ int main()
 
     //pointTest();
     //vecTest();
-    rotTest();
+    //rotTest();
 
-    posTest();
+    //posTest();
+
+    geometryTest();
 
     return 0;
 }

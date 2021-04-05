@@ -13,26 +13,34 @@ bool HRect3D::operator==(const HRect3D &rect) const
     return pMin == rect.pMin && pMax == rect.pMax;
 }
 
-bool HRect3D::containsLine(const Point3D &pA, const Vec3D &vDir) const
+bool HRect3D::containsLine(const Point3D &pA, const Vec3D &vDir, const doubli &dMax) const
 {
     // est ce que la droite peut atteindre le block ?
     // voir # Calculs pour HRect3D::containsLine
     // https://github.com/Jiogo18/RayTracing/blob/master/tests/equations.txt
 
-    const doubli t1X = (pMin.x() - pA.x()) / vDir.x(), t2X = (pMax.x() - pA.x()) / vDir.x();
-    const doubli t1Y = (pMin.y() - pA.y()) / vDir.y(), t2Y = (pMax.y() - pA.y()) / vDir.y();
-    const doubli t1Z = (pMin.z() - pA.z()) / vDir.z(), t2Z = (pMax.z() - pA.z()) / vDir.z();
+    const doubli t1X = (pMin.x() - pA.x()) / vDir.x();
+    const doubli t2X = (pMax.x() - pA.x()) / vDir.x();
+    const doubli t1Y = (pMin.y() - pA.y()) / vDir.y();
+    const doubli t2Y = (pMax.y() - pA.y()) / vDir.y();
+    const doubli t1Z = (pMin.z() - pA.z()) / vDir.z();
+    const doubli t2Z = (pMax.z() - pA.z()) / vDir.z();
 
-    const doubli tMaxX = maths3D::max(t1X, t2X), tMinX = maths3D::min(t1X, t2X);
-    const doubli tMaxY = maths3D::max(t1Y, t2Y), tMinY = maths3D::min(t1Y, t2Y);
-    const doubli tMaxZ = maths3D::max(t1Z, t2Z), tMinZ = maths3D::min(t1Z, t2Z);
-
+    const doubli tMinX = maths3D::min(t1X, t2X);
+    const doubli tMinY = maths3D::min(t1Y, t2Y);
+    const doubli tMinZ = maths3D::min(t1Z, t2Z);
     const doubli tMin = maths3D::max(tMinX, tMinY, tMinZ);
+    if (dMax < tMin) return false;
+    // si la droite rentre dans un rect plus tôt
+    // si la droite rentre après la view distance
+
+    const doubli tMaxX = maths3D::max(t1X, t2X);
+    const doubli tMaxY = maths3D::max(t1Y, t2Y);
+    const doubli tMaxZ = maths3D::max(t1Z, t2Z);
     const doubli tMax = maths3D::min(tMaxX, tMaxY, tMaxZ);
-    return tMin <= tMax;
-    // t \in [tMin;tMax] // TODO: calculer avec les t ! ça sera plus simple ?
-    // oui, surtout pour savoir la quantitée de matière traversée
-    // ça sera plus simple pour les HRect mais pour les autres formes..?
+    return tMin <= tMax; // si la droite ne passe pas dans le rectangle
+    // alors la droite rentre et sort du rectangle
+    // t \in [tMin;tMax] => avec un peu de chance (ça dépend de la forme) le tMin est celui d'une face
 }
 
 QDebug operator<<(QDebug debug, const HRect3D &rect)
