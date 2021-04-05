@@ -99,14 +99,17 @@ void RayTracing::run()
 void RayTracing::paint()
 {
     qint64 start = dt.getCurrent();
-    double totalLight = calcTotalLight();
+    int y;
+    const double totalLight = calcTotalLight(); // < 1 ms
     qDebug() << "RayTracing::paint #totalLight" << totalLight;
 
-    for (int x = 0; x < colors.width() && x < processFinished; x++) {
-        for (int y = 0; y < colors.height(); y++) {
-            ColorLight cl = colors.at(x, y);
-            QColor color = cl.getColorReduced(totalLight);
-            image.setPixelColor(x, y, color);
+    // 18 ms en full screen
+    for (int x = 0; x < colors.width(); x++) {
+        const QList<ColorLight> &column = colors.getColumn(x);
+        for (y = 0; y < colors.height(); y++) {
+            const ColorLight &cl = column.at(y);
+            const uint color = cl.getColorReduced(totalLight);
+            image.setPixel(x, y, color);
         }
     }
 

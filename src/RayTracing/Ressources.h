@@ -5,7 +5,7 @@
 #include "src/World/map3D.h"
 #include "src/DebugTime.h"
 
-#define REFRESH_COLUMN // TODO: remove it
+//#define REFRESH_COLUMN // TODO: remove it
 //#define DISABLE_RAYPROCESS
 
 namespace RAYTRACING {

@@ -41,7 +41,7 @@ public:
     constexpr inline ColorLight(const int &r, const int &g, const int &b, const int &a, const int &light = 0) : r(r), g(g), b(b), a(a > 255 ? 255 : a), light(light) {}
     inline ColorLight(const QColor &c, const int &light = 0) : r(c.red()), g(c.green()), b(c.blue()), a(maths3D::min(c.alpha(), 255)), light(light) {}
     constexpr inline ColorLight(const ColorLight &c) : r(c.r), g(c.g), b(c.b), a(c.a), light(c.light) {}
-    constexpr inline QColor getColorReduced(const double &reduce) const;
+    constexpr inline uint getColorReduced(const double &reduce) const;
     constexpr inline int red() const { return r; }
     constexpr inline int green() const { return g; }
     constexpr inline int blue() const { return b; }
@@ -57,9 +57,9 @@ private:
     constexpr inline int colorReduced(const int &c, const double &reduce) const;
 };
 
-constexpr inline QColor ColorLight::getColorReduced(const double &reduce) const
+constexpr inline uint ColorLight::getColorReduced(const double &reduce) const
 {
-    return QColor{colorReduced(r, reduce), colorReduced(g, reduce), colorReduced(b, reduce)};
+    return ((a << 24) | (colorReduced(r, reduce) << 16) | (colorReduced(g, reduce) << 8) | colorReduced(b, reduce));
 }
 
 constexpr inline void ColorLight::operator+=(const ColorLight &c)
