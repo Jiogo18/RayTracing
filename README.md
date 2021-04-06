@@ -50,6 +50,7 @@ Via le code source :
 ## Comment l'utiliser ?
 
 - F5 : Actualiser l'image à tout moment
+- F6 : Compteur de FPS
 - F7 : 2 secondes de rafraichissement continue pour calculer le FPS
 - zqsd : Déplacer la caméra
 - espace/shift : Monter et descendre

@@ -21,7 +21,7 @@ fenetre::fenetre(map3D *map, QWidget *parent) : GUI(map, parent)
     timerRefresh.setSingleShot(true);
     QObject::connect(&timerRefresh, &QTimer::timeout, this, &GUI::refresh);
 
-    timerKeyPress.setInterval(40);
+    timerKeyPress.setInterval(40); // 25 FPS max (vitesse de déplacement & de rafraichissement auto)
     QObject::connect(&timerKeyPress, &QTimer::timeout, this, &fenetre::updatePressPosition);
     grabKeyboard();
 }
@@ -40,6 +40,9 @@ void fenetre::keyPressEvent(QKeyEvent *event)
         switch (event->key()) {
         case Qt::Key_F5:
             refresh();
+            break;
+        case Qt::Key_F6:
+            switchFPSCounterVisible();
             break;
         case Qt::Key_F7:
             speedTest();

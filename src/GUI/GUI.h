@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QTimer>
 
 class GUI : public QWidget
 {
@@ -16,6 +17,7 @@ public:
 
     void refresh();
     inline bool isPainting() const { return workerThread->isRunning(); }
+    void switchFPSCounterVisible();
 
 signals:
     void workStarted();
@@ -25,10 +27,15 @@ private:
     void paintEvent(QPaintEvent *event) override;
     void handleWorkerResults(const QImage &image);
     QSize getRayTracingSize() const;
+    void onFPSTimeout();
 
     QImage lastImage;
     RayTracing *workerThread;
     const map3D *map;
+    bool showFPSCounter = false;
+    int previousFPS;
+    int frameCounter;
+    QTimer timerFPS;
 };
 
 #endif // GUI_H
