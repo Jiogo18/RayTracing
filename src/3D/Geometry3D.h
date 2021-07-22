@@ -150,7 +150,7 @@ class Plan
 {
 public:
     constexpr inline Plan() : pA() {}
-    constexpr inline Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC) : pA(pA) { calcEquation(pB, pC); }
+    inline Plan(const Point3D &pA, const Point3D &pB, const Point3D &pC) : pA(pA) { calcEquation(pB, pC); }
     Plan(const HRect3D &r);
     constexpr inline Plan(const Plan &p) : pA(p.pA), a(p.a), b(p.b), c(p.c), d(p.d) {}
     Plan *operator=(const Plan &p);

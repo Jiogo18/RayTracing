@@ -16,11 +16,11 @@ namespace maths3D {
     constexpr inline bool isNull(const doubli &d) { return -DOUBLI_MIN < d && d < DOUBLI_MIN; }
     constexpr inline const doubli &roundNull(const doubli &d) { return isNull(d) ? nul : d; } // plus opti que round
     constexpr inline const float &signOf(const doubli &d) { return d < 0 ? signMoins : signPlus; }
-    constexpr inline doubli round(const doubli &d) { return (long long int)(d / DOUBLI_MIN + signOf(d) * 0.5) * DOUBLI_MIN; }
+    constexpr inline doubli roundDoubli(const doubli &d) { return (long long int)(d / DOUBLI_MIN + signOf(d) * 0.5) * DOUBLI_MIN; }
     constexpr inline doubli sqr(const doubli &d) { return d * d; }
-    constexpr inline doubli sqrtCExpr(const doubli &d) { return std::sqrt(d); }
-    constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b) { return sqrtCExpr(a * a + b * b); }
-    constexpr inline doubli distanceLoxodromique(const doubli &a, const doubli &b, const doubli &c) { return sqrtCExpr(a * a + b * b + c * c); }
+    inline doubli sqrtCExpr(const doubli &d) { return std::sqrt(d); }
+    inline doubli distanceLoxodromique(const doubli &a, const doubli &b) { return sqrtCExpr(a * a + b * b); }
+    inline doubli distanceLoxodromique(const doubli &a, const doubli &b, const doubli &c) { return sqrtCExpr(a * a + b * b + c * c); }
 // les fonctions define sont plus rapide (2*) mais empchent d'avoir le constexpr
 #define sqrD(x) ((x) * (x))
 #define distanceLoxodromique_2(a, b) (sqrtf(sqrD(a) + sqrD(b)))

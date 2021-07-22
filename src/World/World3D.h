@@ -20,7 +20,7 @@ private:
 class Chunk : public ChunkPos
 {
 public:
-    constexpr inline Chunk(ChunkPos pos) : ChunkPos(pos) { calcMinMaxPoint(); }
+    inline Chunk(ChunkPos pos) : ChunkPos(pos) { calcMinMaxPoint(); }
     ~Chunk();
     constexpr inline const ChunkPos &getPoint() const { return *this; }
 
@@ -94,6 +94,8 @@ public:
     const QList<Entity *> &getEntities() const { return entities; }
 
     Solid *getSolid(const Point3D &point) const;
+
+    bool removeSolid(const Point3D &solidPos);
 
 signals:
     void changed(const WorldChange &change);

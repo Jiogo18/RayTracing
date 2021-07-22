@@ -15,6 +15,7 @@ namespace SOLID {
         green_glass,
         mirror,
         watter,
+        hologramme,
     };
     enum Variation {
         front,
@@ -22,7 +23,15 @@ namespace SOLID {
         left,
         right,
         top,
-        bottom
+        bottom,
+        BIN1,
+        BIN2,
+        BIN3,
+        BIN4,
+        BIN5,
+        BIN6,
+        BIN7,
+        BIN8
     };
 
     QString getFileTexture(SOLID::Material material, QList<SOLID::Variation> variations);
@@ -31,6 +40,7 @@ namespace SOLID {
     {
         switch (material) {
         case SOLID::Material::air:
+        case SOLID::Material::hologramme:
             return 1;
         case SOLID::Material::watter:
             return 0.75; // 1/1.33
@@ -119,11 +129,11 @@ protected:
 class Block : public Solid
 {
 public:
-    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material);
+    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, const QList<SOLID::Variation> &globalVariations = {});
 
 private:
     Size3D size;
-    static QList<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material);
+    static QList<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, const QList<SOLID::Variation> &globalVariations);
 };
 
 /*****************************************************************************

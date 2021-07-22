@@ -3,7 +3,7 @@
 bool Rot3D::operator==(const Rot3D &rot) const { return rXp == rot.rXp && rZp == rot.rZp; }
 bool Rot3D::operator!=(const Rot3D &rot) const { return rXp != rot.rXp || rZp != rot.rZp; }
 
-bool Rot3D::isNan() const { return isnanf(rXp + rZp); }
+bool Rot3D::isNan() const { return qIsNaN(rXp + rZp); }
 
 QDebug operator<<(QDebug debug, const Rot3D &rot)
 {
@@ -43,7 +43,7 @@ Pos3D Pos3D::getChildRot(const radian &rXRelatif, const radian &rZRelatif) const
         rX += M_PI; // atan retourne -89.5 alors qu'il faut 90.5 (mais ça reste la meme chose)
         // pas besoin de différentier y car on est à k360° de diff
     }
-    return Pos3D{static_cast<Point3D>(*this), rX, asin(z2)};
+    return Pos3D{static_cast<Point3D>(*this), rX, (radian)asin(z2)};
 }
 
 Point3D Pos3D::changeRef(const Point3D &point, const doubli &srX, const doubli &srZ) const

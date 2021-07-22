@@ -18,7 +18,7 @@ class Point3D
 public:
     constexpr inline Point3D() : xp(0), yp(0), zp(0) {}
     constexpr inline Point3D(const doubli &x, const doubli &y, const doubli &z)
-        : xp(round(x)), yp(round(y)), zp(round(z)) {}
+        : xp(roundDoubli(x)), yp(roundDoubli(y)), zp(roundDoubli(z)) {}
     // constructeur de copie 2* plus lent
 
     constexpr inline const doubli &x() const { return xp; }

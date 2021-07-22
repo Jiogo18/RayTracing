@@ -45,7 +45,7 @@ bool Point3D::operator!=(const Point3D &p) const { return (xp != p.xp) || (yp !=
 
 bool Point3D::isNull() const { return xp == 0 && yp == 0 && zp == 0; }
 bool Point3D::isInf() const { return qIsInf((double)xp) || qIsInf((double)yp) || qIsInf((double)zp); }
-bool Point3D::isNan() const { return isnanf(xp + yp + zp); }
+bool Point3D::isNan() const { return qIsNaN((double)(xp + yp + zp)); }
 
 QDebug operator<<(QDebug debug, const Point3D &p)
 {

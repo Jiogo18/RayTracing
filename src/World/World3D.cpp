@@ -2,7 +2,7 @@
 
 Chunk::~Chunk()
 {
-    while (solids.isEmpty())
+    while (!solids.isEmpty())
         deleteSolid(solids.first());
 }
 
@@ -124,6 +124,16 @@ Solid *World::getSolid(const Point3D &point) const
 {
     const Chunk *chunk = getChunk(ChunkPos::fromBlockPos(point));
     return chunk ? chunk->getSolid(point) : nullptr;
+}
+
+bool World::removeSolid(const Point3D &solidPos)
+{
+    Chunk *c = getChunk(ChunkPos::fromBlockPos(solidPos));
+    if(!c) return false;
+    Solid *s = c->getSolid(solidPos);
+    if(!s) return false;
+    if(!c->removeSolid(solidPos)) return false;
+    return true;
 }
 
 bool World::createChunk(const ChunkPos &posChunk)
