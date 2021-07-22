@@ -30,8 +30,8 @@ fenetre::~fenetre() {}
 
 void fenetre::keyPressEvent(QKeyEvent *event)
 {
+    if (event->isAutoRepeat()) return;
     if (KEY::keyConfig.contains(event->key())) {
-        if (event->isAutoRepeat()) return;
         keysPressed |= (1 << KEY::keyConfig.value(event->key())); // add the key
         if (keysPressed && !timerKeyPress.isActive()) {
             timerKeyPress.start();
@@ -47,14 +47,17 @@ void fenetre::keyPressEvent(QKeyEvent *event)
         case Qt::Key_F7:
             speedTest();
             break;
+        case Qt::Key_F8:
+            loadMapFile();
+            break;
         }
     }
 }
 
 void fenetre::keyReleaseEvent(QKeyEvent *event)
 {
+    if (event->isAutoRepeat()) return;
     if (KEY::keyConfig.contains(event->key())) {
-        if (event->isAutoRepeat()) return;
         keysPressed ^= (1 << KEY::keyConfig.value(event->key())); // remove the key
         if (!keysPressed && timerKeyPress.isActive()) {
             timerKeyPress.stop();
@@ -69,6 +72,17 @@ void fenetre::speedTest()
     testSpeedCounter = 0;
     testSpeedTime = QDateTime::currentMSecsSinceEpoch();
     qDebug() << "speedTest started for 1000 msec";
+    refresh();
+}
+
+void fenetre::loadMapFile()
+{
+    QString mapName = "Perlin3D_32_2.txt";
+    if (map->load(mapName)) {
+        qDebug() << "successfully reloaded !";
+    } else {
+        qDebug() << "Can't load the map" << mapName;
+    }
     refresh();
 }
 

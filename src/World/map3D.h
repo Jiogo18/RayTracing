@@ -6,6 +6,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QThread>
+#include <QRegularExpression>
+#include <QFile>
 
 class map3D : public QObject
 {
@@ -28,6 +30,8 @@ public:
     void moveClient(const Pos3D &pos) { client->moveTo(pos); }
 
     int fillCube(const Point3D &posMin, const Point3D &posMax, SOLID::Material blockMaterial);
+
+    bool load(QString mapFileName);
 
 signals:
     void clientChanged(const Entity *client);

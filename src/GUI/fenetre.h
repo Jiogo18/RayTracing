@@ -51,6 +51,7 @@ public:
     //QPoint MidWindow();
     //void moveMouseMidWindow();
     void speedTest();
+    void loadMapFile();
 
 private slots:
     void onWorkStarted();
