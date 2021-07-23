@@ -96,6 +96,7 @@ RayTracingDistributor::~RayTracingDistributor()
 
 void RayTracingDistributor::start(const int &processWidth)
 {
+    timeStart = DebugTime::getCurrent();
     this->processWidth = processWidth;
     processStarted = 0;
     workersInProcess = true;
@@ -110,6 +111,7 @@ void RayTracingDistributor::stop()
     processWidth = 0;
     processStarted = 0;
     workersInProcess = false;
+    qDebug() << "RayTracingDistributor stopped after" << DebugTime::getCurrent() - timeStart << "us";
 }
 
 void RayTracingDistributor::onRayWorkerFinished()

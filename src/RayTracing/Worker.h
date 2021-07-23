@@ -61,6 +61,7 @@ private:
     int processWidth = 0;
     int processStarted = 0;
     bool workersInProcess = false;
+    qint64 timeStart;
 };
 
 #endif // WORKER_H
