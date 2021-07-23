@@ -12,6 +12,7 @@ SOURCES += \
     src/GUI/fenetre.cpp \
     src/RayTracing/ColorLight.cpp \
     src/RayTracing/Ray.cpp \
+    src/RayTracing/RayImage.cpp \
     src/RayTracing/RayTracing.cpp \
     src/RayTracing/Ressources.cpp \
     src/RayTracing/Transfo.cpp \
@@ -34,6 +35,7 @@ HEADERS += \
     src/GUI/fenetre.h \
     src/RayTracing/ColorLight.h \
     src/RayTracing/Ray.h \
+    src/RayTracing/RayImage.h \
     src/RayTracing/RayTracing.h \
     src/RayTracing/Ressources.h \
     src/RayTracing/Transfo.h \

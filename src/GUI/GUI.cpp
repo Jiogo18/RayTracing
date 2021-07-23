@@ -1,13 +1,9 @@
 #include "GUI.h"
 
-GUI::GUI(const map3D *map, QWidget *parent) : QWidget(parent)
+GUI::GUI(const map3D *map, QWidget *parent) : QWidget(parent), workerThread(new RayTracing(map)), map(map), rayImage(workerThread->getImage())
 {
-    this->map = map;
-
-    workerThread = new RayTracing(map);
     connect(workerThread, &RayTracing::resultReady, this, &GUI::handleWorkerResults);
 
-    lastImage = workerThread->getImage();
     previousFPS = 0;
     frameCounter = 0;
     timerFPS.setInterval(1000);
@@ -48,7 +44,7 @@ void GUI::paintEvent(QPaintEvent *event)
     Q_UNUSED(event)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.drawImage(0, 0, lastImage.scaled(size()));
+    painter.drawImage(0, 0, rayImage->toQImage(size()));
     if (showFPSCounter) {
         painter.setPen(Qt::white);
         painter.drawText(0, 10, QString::number(previousFPS));
@@ -57,9 +53,8 @@ void GUI::paintEvent(QPaintEvent *event)
 }
 
 // toute l'image a été actualisée (par le GUIWorker)
-void GUI::handleWorkerResults(const QImage &image)
+void GUI::handleWorkerResults()
 {
-    lastImage = image;
     frameCounter++;
     repaint();
     if (!isPainting()) {
@@ -67,7 +62,6 @@ void GUI::handleWorkerResults(const QImage &image)
     }
 }
 
-// pourquoi je m'embete avec des ppp quand je peux juste faire un scale down ?
 QSize GUI::getRayTracingSize() const
 {
     return QSize(width() * RAYTRACING::pppH, height() * RAYTRACING::pppV);

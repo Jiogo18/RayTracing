@@ -40,6 +40,7 @@ Idem, les parenthèses sont importantes (celles à l'intérieur)
 | 05/04/2021 |     102     |   9 ms/frame    |      1.45       |   690 ms/frame   |
 | 05/04/2021 |     102     |   9 ms/frame    |      1.65       |   600 ms/frame   |
 | 22/07/2021 |     112     |   8 ms/frame    |      3.26       |   305 ms/frame   |
+| 23/07/2021 |     125     |   8 ms/frame    |      3.51       |   284 ms/frame   |
 
 # Speed without process
 
@@ -49,3 +50,13 @@ Speed max if the ray.process is 0 % of the time (max of # Speed)
 | :--------- | :---------: | :-------------: | :-------------: | :--------------: |
 | 04/04/2021 |     140     |   7 ms/frame    |       3.7       |   270 ms/frame   |
 | 05/04/2021 |     140     |   7 ms/frame    |       15        |   67 ms/frame    |
+| 23/07/2021 |     136     |   7 ms/frame    |       20        |   49 ms/frame    |
+
+# Speed without worker distributor
+
+Speed max if the Worker Distributor isn't started (no process)
+The time is mostly used by "paint" (with setPixel)
+
+| Date       | FPS 150*100 | Time mini frame | FPS Full screen | Time Full screen |
+| :--------- | :---------: | :-------------: | :-------------: | :--------------: |
+| 23/07/2021 |    1127     |   0 ms/frame    |       74        |   13 ms/frame    |

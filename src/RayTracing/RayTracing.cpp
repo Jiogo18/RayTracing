@@ -12,9 +12,6 @@ RayTracing::RayTracing(const map3D *map) : QThread()
     for (int i = 0; i < workerDistributor->nb_workers; i++) {
         connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
     }
-
-    image = QImage(1, 1, QImage::Format::Format_RGB32);
-    image.fill(Qt::black);
 }
 
 RayTracing::~RayTracing()
@@ -72,7 +69,7 @@ void RayTracing::run()
         // 1920 =>36 colonnes par worker
         // 150 => 10 colonnes par worker
         int columnsPerWorker = 20 * std::sqrt(calcSize.width()) / RAYTRACING::WorkerThread;
-        qDebug() << "ColumnsPerWorker" << columnsPerWorker << calcSize.width() << WorkerThread;
+        qDebug() << "ColumnsPerWorker" << columnsPerWorker << calcSize << WorkerThread;
 
         for (int i = 0; i < workerDistributor->nb_workers; i++) {
             workerDistributor->getWorkers()[i].setPrimaryWork(calcSize, columnsPerWorker);
@@ -82,39 +79,49 @@ void RayTracing::run()
         lightPerColumn = new int[processWidth];
         for (int i = 0; i < processWidth; i++)
             lightPerColumn[i] = 0;
+#ifdef REFRESH_COLUMN
         image = image.scaled(calcSize);
+#else
+        image = RayImage(calcSize);
+#endif // REFRESH_COLUMN
     }
 
+#ifdef REFRESH_COLUMN
     for (int x = 0; x < image.width(); x++) {
         image.setPixelColor(x, 0, Qt::white);
         image.setPixelColor(x, 1, Qt::white);
     }
+#endif // REFRESH_COLUMN
 
     rtRess->resetRessources(map->getClient()); // reset the pos
 
+#ifdef DISABLE_WORKER_DISTRIBUTOR
+    onAllWorkersFinished();
+#else
     workerDistributor->start(processWidth);
+#endif // DISABLE_WORKER_DISTRIBUTOR
+
     // N.B. this function takes less than 1 msec
 }
 
 void RayTracing::paint()
 {
     qint64 start = dt.getCurrent();
-    int y;
+    int x, y;
     const double totalLight = calcTotalLight(); // < 1 ms
-    qDebug() << "RayTracing::paint #totalLight" << totalLight;
 
-    // 18 ms en full screen
-    for (int x = 0; x < colors.width(); x++) {
-        const QList<ColorLight> &column = colors.getColumn(x);
+    const QList<ColorLight> *column;
+
+    // 10 ms en full screen
+    for (x = 0; x < colors.width(); x++) {
+        column = &colors.getColumn(x);
         for (y = 0; y < colors.height(); y++) {
-            const ColorLight &cl = column.at(y);
-            const uint color = cl.getColorReduced(totalLight);
-            image.setPixel(x, y, color);
+            image.setPixel(x, y, column->at(y).getColorReduced(totalLight));
         }
     }
 
     dt.addValue("paint", dt.getCurrent() - start);
-    emit resultReady(image);
+    emit resultReady();
 }
 
 void RayTracing::onAllWorkersFinished()

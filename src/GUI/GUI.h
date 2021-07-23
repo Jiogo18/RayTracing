@@ -25,17 +25,17 @@ signals:
 
 private:
     void paintEvent(QPaintEvent *event) override;
-    void handleWorkerResults(const QImage &image);
+    void handleWorkerResults();
     QSize getRayTracingSize() const;
     void onFPSTimeout();
 
-    QImage lastImage;
     RayTracing *workerThread;
     const map3D *map;
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
     QTimer timerFPS;
+    const RayImage *rayImage;
 };
 
 #endif // GUI_H

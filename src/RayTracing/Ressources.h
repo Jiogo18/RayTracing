@@ -7,6 +7,7 @@
 
 //#define REFRESH_COLUMN // TODO: remove it
 //#define DISABLE_RAYPROCESS
+//#define DISABLE_WORKER_DISTRIBUTOR
 
 namespace RAYTRACING {
     const doubli viewDistance = 100;

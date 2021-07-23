@@ -2,6 +2,7 @@
 #define RAYTRACING_H
 
 #include "Worker.h"
+#include "RayImage.h"
 
 class RayTracing : public QThread
 {
@@ -15,7 +16,7 @@ public:
         if (!isRunning()) calcSize = size;
         return this;
     }
-    const QImage &getImage() const { return image; }
+    const RayImage *getImage() const { return &image; }
     bool isRunning() { return QThread::isRunning() || workerDistributor->isRunning(); }
 
 private slots:
@@ -23,7 +24,7 @@ private slots:
     void onWorldChanged(const WorldChange &change);
 
 signals:
-    void resultReady(const QImage &image);
+    void resultReady();
 
 private:
     void run() override;
@@ -46,7 +47,7 @@ private:
     int processFinished = 0;
     int processForUpdate;
 
-    QImage image;
+    RayImage image;
 };
 
 constexpr inline double RayTracing::calcTotalLight() const
