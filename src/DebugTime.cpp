@@ -20,6 +20,11 @@ void DebugTime::addValue(QString name, qint64 time)
     values[name].addValue(time);
 }
 
+qint64 DebugTime::getCurrent()
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 QDebug operator<<(QDebug debug, const DebugTime &d)
 {
     debug << "DebugTime {";

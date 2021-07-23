@@ -29,7 +29,7 @@ public:
     DebugTime() {}
     void addValue(QString name, qint64 time);
     QMap<QString, DebugTimePart> getValues() const { return values; }
-    static qint64 getCurrent() { return QDateTime::currentMSecsSinceEpoch(); }
+    static qint64 getCurrent();
     void clear() { values.clear(); }
 
 private:
