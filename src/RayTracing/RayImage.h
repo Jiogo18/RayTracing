@@ -29,7 +29,6 @@ private:
 
     uchar *d;
     QImage image;
-    QPixmap *pixmap;
 };
 
 #endif // RAYIMAGE_H

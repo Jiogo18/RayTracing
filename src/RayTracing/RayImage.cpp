@@ -30,7 +30,7 @@ RayImage::RayImage(const RayImage &that) : m_width(that.m_width),
                                            d(new uchar[that.getDataLength()]),
                                            image(d, m_width, m_height, ImageFormat)
 {
-    memcpy(d, that.d, that.getDataLength());
+    memcpy(d, that.d, that.getDataLength() * sizeof(uchar));
 }
 RayImage::~RayImage()
 {
@@ -49,7 +49,7 @@ RayImage &RayImage::operator=(const RayImage &that)
         image = QImage(d, m_width, m_height, ImageFormat);
     }
 
-    memcpy(d, that.d, that.getDataLength());
+    memcpy(d, that.d, that.getDataLength() * sizeof(uchar));
 
     return *this;
 }
