@@ -17,7 +17,9 @@ RayImage::RayImage(int width, int height) : m_width(width),
         d[cnt] = 0;
         cnt++;
         d[cnt] = 0;
-        cnt++; // Black
+        cnt++;        // Black
+        d[cnt] = 255; // Alpha
+        cnt++;
     }
 }
 
