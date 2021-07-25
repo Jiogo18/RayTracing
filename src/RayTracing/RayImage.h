@@ -19,11 +19,12 @@ public:
     RayImage scaled(const QSize &size) const;
     QImage toQImage(const QSize &size) const;
 
+    uchar *operator()(int x, int y);
     void setPixel(int x, int y, RGB24 color);
+    int getDataLength() const;
 
 private:
     constexpr int getDataCnt(int x, int y) const;
-    constexpr int getDataLength() const;
     int m_width;
     int m_height;
 

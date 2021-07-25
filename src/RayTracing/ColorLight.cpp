@@ -14,13 +14,3 @@
 //    a = std::min(a + color.a, 255);
 //    light += color.light;
 //}
-
-ColorLight *ColorLight::operator=(const ColorLight &c)
-{
-    r = c.r;
-    g = c.g;
-    b = c.b;
-    a = c.a;
-    light = c.light;
-    return this;
-}

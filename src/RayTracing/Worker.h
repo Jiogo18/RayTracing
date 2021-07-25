@@ -3,6 +3,7 @@
 
 #include <QThread>
 #include "Ressources.h"
+#include "PixScreen.h"
 #include "Ray.h"
 
 class RayTracingWorker : public QThread

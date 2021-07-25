@@ -110,14 +110,31 @@ void RayTracing::paint()
     int x, y;
     const double totalLight = calcTotalLight(); // < 1 ms
 
-    const QList<ColorLight> *column;
+    uchar *pixelRef = image(0, 0);
+    const int refToNextLine = 4 * (colors.width() - 1) + 1; // skip alpha and width pixels
+    const int refToNextColumn = image.getDataLength() - 4;  // move height lines above, then to the pixel on the right
 
-    // 10 ms en full screen
+#if PIXSCREEN == 1 && true
+    QList<ColorLight>::const_iterator cl;
+
+    // 8 ms en full screen avec PixScreenQList
     for (x = 0; x < colors.width(); x++) {
-        column = &colors.getColumn(x);
-        for (y = 0; y < colors.height(); y++) {
-            image.setPixel(x, y, column->at(y).getColorReduced(totalLight));
+        cl = colors[x].cbegin();
+#else
+    const ColorLight *cl;
+
+    // 10 ms en full screen avec PixScreenQList
+    // 8 ms en full screen avec PixScreenT
+    for (x = 0; x < colors.width(); x++) {
+        cl = &colors[x][0];
+#endif
+        for (y = 0; y < colors.height(); y++, cl++) {
+            *pixelRef++ = cl->blueReduced(totalLight);
+            *pixelRef++ = cl->greenReduced(totalLight);
+            *pixelRef++ = cl->redReduced(totalLight);
+            pixelRef += refToNextLine; // go to (x,y+1)
         }
+        pixelRef -= refToNextColumn; // go to (x+1,0)
     }
 
     dt.addValue("paint", dt.getCurrent() - start);

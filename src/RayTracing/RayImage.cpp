@@ -1,5 +1,4 @@
 #include "RayImage.h"
-#include <QDebug>
 
 #define charPerPixel 4
 #define ImageFormat QImage::Format_RGB32
@@ -84,6 +83,12 @@ QImage RayImage::toQImage(const QSize &size) const
     return image.scaled(size);
 }
 
+uchar *RayImage::operator()(int x, int y)
+{
+    Q_ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
+    return &d[getDataCnt(x, y)];
+}
+
 void RayImage::setPixel(int x, int y, RGB24 color)
 {
     Q_ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
@@ -93,12 +98,12 @@ void RayImage::setPixel(int x, int y, RGB24 color)
     *p = color.r;
 }
 
+int RayImage::getDataLength() const
+{
+    return m_width * m_height * charPerPixel;
+}
+
 constexpr int RayImage::getDataCnt(int x, int y) const
 {
     return (x + (m_width)*y) * charPerPixel;
-}
-
-constexpr int RayImage::getDataLength() const
-{
-    return m_width * m_height * charPerPixel;
 }

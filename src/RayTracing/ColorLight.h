@@ -45,17 +45,20 @@ class ColorLight
 {
 public:
     constexpr inline ColorLight() : r(0), g(0), b(0), a(0), light(0) {}
-    constexpr inline ColorLight(const uchar &r, const uchar &g, const uchar &b, const uchar &a, const int &light = 0) : r(r), g(g), b(b), a(a > 255 ? 255 : a), light(light) {}
-    inline ColorLight(const QColor &c, const int &light = 0) : r(c.red()), g(c.green()), b(c.blue()), a(maths3D::min(c.alpha(), 255)), light(light) {}
+    constexpr inline ColorLight(const uchar &r, const uchar &g, const uchar &b, const uchar &a, const int &light = 0) : r(r), g(g), b(b), a(a), light(light) {}
+    inline ColorLight(const QColor &c, const int &light = 0) : r(c.red()), g(c.green()), b(c.blue()), a(c.alpha()), light(light) {}
     constexpr inline ColorLight(const ColorLight &c) : r(c.r), g(c.g), b(c.b), a(c.a), light(c.light) {}
+    constexpr inline uchar redReduced(const double &reduce) const { return colorReduced(r, reduce); }
+    constexpr inline uchar greenReduced(const double &reduce) const { return colorReduced(g, reduce); }
+    constexpr inline uchar blueReduced(const double &reduce) const { return colorReduced(b, reduce); }
     constexpr inline RGB24 getColorReduced(const double &reduce) const;
-    constexpr inline uchar red() const { return r; }
-    constexpr inline uchar green() const { return g; }
-    constexpr inline uchar blue() const { return b; }
-    constexpr inline uchar alpha() const { return a; }
-    constexpr inline int getLight() const { return light; }
+    constexpr inline const uchar &red() const { return r; }
+    constexpr inline const uchar &green() const { return g; }
+    constexpr inline const uchar &blue() const { return b; }
+    constexpr inline const uchar &alpha() const { return a; }
+    constexpr inline const int &getLight() const { return light; }
     constexpr inline void operator+=(const ColorLight &c); //couleur après + couleur avant = couleur mixé
-    ColorLight *operator=(const ColorLight &c);
+    constexpr inline ColorLight *operator=(const ColorLight &c);
 
 private:
     //entre 0 et 255
@@ -88,6 +91,16 @@ constexpr inline void ColorLight::operator+=(const ColorLight &c)
 
     a = c.a;
     light += c.light;
+}
+
+constexpr inline ColorLight *ColorLight::operator=(const ColorLight &c)
+{
+    r = c.r;
+    g = c.g;
+    b = c.b;
+    a = c.a;
+    light = c.light;
+    return this;
 }
 
 constexpr inline uchar ColorLight::colorReduced(const uchar &c, const double &reduce) const
