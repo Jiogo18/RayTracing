@@ -43,6 +43,7 @@ Idem, les parenthèses sont importantes (celles à l'intérieur)
 | 23/07/2021 |     125     |   8 ms/frame    |      3.51       |   284 ms/frame   |
 | 24/07/2021 |     120     |   8 ms/frame    |      3.20       |   312 ms/frame   |
 | 25/07/2021 |     126     |   7 ms/frame    |      3.55       |   281 ms/frame   |
+| 25/07/2021 |     128     |   7 ms/frame    |      3.60       |   277 ms/frame   |
 
 # Speed without process
 

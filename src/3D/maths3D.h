@@ -94,6 +94,42 @@ namespace maths3D {
         return x_trigo * (-1 + x2 * (1.0 / 6 - x2 * (1.0 / 120 - x2 * (1.0 / 5040 - x2 * (1.0 / 362880 - x2 * (1.0 / 39916800 - x2 * (1.0 / 6227020800 - x2 * (1.0 / 1307674368000))))))));
 #endif
     }
+    constexpr inline doubli tanTaylor(const radian &x)
+    {
+        const radian x_trigo = mod(x + M_PI, M_2PI) - M_PI; // X sur [-PI;PI[
+        const radian x2 = x_trigo * x_trigo;
+#if trigoTaylorLevel <= 9
+        return x_trigo * (1 + x2 * (1.0 / 3 + x2 * (2.0 / 15 + x2 * (17.0 / 315 + x2 * (62.0 / 2835)))));
+#elif trigoTaylorLevel <= 11
+        return x_trigo * (1 + x2 * (1.0 / 3 + x2 * (2.0 / 15 + x2 * (17.0 / 315 + x2 * (62.0 / 2835 + x2 * (1382.0 / 155925))))));
+#elif trigoTaylorLevel <= 13
+        return x_trigo * (1 + x2 * (1.0 / 3 + x2 * (2.0 / 15 + x2 * (17.0 / 315 + x2 * (62.0 / 2835 + x2 * (1382.0 / 155925 + x2 * (21844.0 / 6081075)))))));
+#else
+        return x_trigo * (1 + x2 * (1.0 / 3 + x2 * (2.0 / 15 + x2 * (17.0 / 315 + x2 * (62.0 / 2835 + x2 * (1382.0 / 155925 + x2 * (21844.0 / 6081075 - x2 * (929569.0 / 638512875))))))));
+#endif
+    }
+    constexpr inline radian atanSimple(const doubli &x)
+    {
+        if (x >= 4) {
+            return M_PI_2 - 1 / x;
+        } else if (x <= -4) {
+            return -M_PI_2 - 1 / x;
+        } else if (x >= 2) {
+            return -0.0326 * x * x + 0.3047 * x + 0.6280;
+        } else if (x <= -2) {
+            return 0.0326 * x * x + 0.3047 * x - 0.6280;
+        } else if (x >= 1) {
+            return -0.1461 * x * x + 0.7600 * x + 0.1715;
+        } else if (x <= -1) {
+            return 0.1461 * x * x + 0.7600 * x - 0.1715;
+        } else if (x > 0) {
+            return -0.2838 * x * x + 1.0692 * x;
+        } else if (x < 0) {
+            return 0.2838 * x * x + 1.0692 * x;
+        } else {
+            return 0;
+        }
+    }
 
 } // namespace maths3D
 

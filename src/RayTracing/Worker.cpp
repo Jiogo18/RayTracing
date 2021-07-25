@@ -43,7 +43,7 @@ void RayTracingWorker::run()
         totalLight[i] = 0;
         //pos en % de pixmap.width/2 * xMax
         doubli xPos = (2.0L * (xScene + i) / sceneSize.width() - 1) * xMax, xzPos = sqrt(xPos * xPos + 1);
-        radian angleH = atan(xPos);
+        radian angleH = atanSimple(xPos);
         //rtRess->dt->addValue("RayTracingWorker::run_init", rtRess->dt->getCurrent() - start);//1ms
 
         start = rtRess->dt->getCurrent();
@@ -53,7 +53,7 @@ void RayTracingWorker::run()
             //start2 = rtRess->dt->getCurrent();
             //pos en % de pixmap.height/2 * yMax
             doubli yPos = (1 - 2.0L * y / sceneSize.height()) * yMax;
-            Ray ray(rtRess->clientPos.getChildRot(angleH, atan(yPos / xzPos)), rtRess);
+            Ray ray(rtRess->clientPos.getChildRot(angleH, atanSimple(yPos / xzPos)), rtRess);
             //rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() - start2);//1080ms
 
 #ifndef DISABLE_RAYPROCESS
