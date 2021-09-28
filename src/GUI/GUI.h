@@ -1,32 +1,27 @@
 #ifndef GUI_H
 #define GUI_H
 
-#include "src/World/map3D.h"
-#include "src/RayTracing/RayTracing.h"
-#include <QWidget>
-#include <QPaintEvent>
-#include <QPainter>
-#include <QTimer>
+#include "../World/map3D.h"
+#include "../RayTracing/RayTracing.h"
 
-class GUI : public QWidget
+class GUI
 {
-    Q_OBJECT
 public:
-    GUI(const map3D *map, QWidget *parent = nullptr);
+    GUI(const map3D *map);
     ~GUI();
 
     void refresh();
     inline bool isPainting() const { return workerThread->isRunning(); }
     void switchFPSCounterVisible();
 
-signals:
+    // signals:
     void workStarted();
     void workFinished();
 
 private:
-    void paintEvent(QPaintEvent *event) override;
+    // void paintEvent(QPaintEvent *event) override;
     void handleWorkerResults();
-    QSize getRayTracingSize() const;
+    // QSize getRayTracingSize() const;
     void onFPSTimeout();
 
     RayTracing *workerThread;
@@ -34,7 +29,7 @@ private:
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
-    QTimer timerFPS;
+    // QTimer timerFPS;
     const RayImage *rayImage;
 };
 

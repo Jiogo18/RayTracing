@@ -2,9 +2,8 @@
 #define RAYIMAGE_H
 
 #include "ColorLight.h"
-#include <QSize>
-#include <QImage>
-#include <QPixmap>
+#include "../Qt_compat/QImage"
+#include "../Qt_compat/QPixmap"
 
 class RayImage
 {

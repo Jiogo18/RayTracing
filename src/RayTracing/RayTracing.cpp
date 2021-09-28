@@ -1,16 +1,15 @@
 #include "RayTracing.h"
 
-RayTracing::RayTracing(const map3D *map) : QThread()
+RayTracing::RayTracing(const map3D *map) : map(map)
 {
-    this->map = map;
     rtRess = new RayTracingRessources(map->getWorld(), map->getClient(), &dt);
 
-    connect(map->getWorld(), &World::changed, this, &RayTracing::onWorldChanged);
+    // connect(map->getWorld(), &World::changed, this, &RayTracing::onWorldChanged);
 
     workerDistributor = new RayTracingDistributor(rtRess);
     RayTracingWorker *rayWorkers = workerDistributor->getWorkers();
     for (int i = 0; i < workerDistributor->nb_workers; i++) {
-        connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
+        // connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
     }
 }
 
@@ -69,7 +68,7 @@ void RayTracing::run()
         // 1920 =>36 colonnes par worker
         // 150 => 10 colonnes par worker
         int columnsPerWorker = 20 * std::sqrt(calcSize.width()) / RAYTRACING::WorkerThread;
-        qDebug() << "ColumnsPerWorker" << columnsPerWorker << calcSize << WorkerThread;
+        std::cout << "ColumnsPerWorker " << columnsPerWorker << " " << calcSize << " " << WorkerThread << std::endl;
 
         for (int i = 0; i < workerDistributor->nb_workers; i++) {
             workerDistributor->getWorkers()[i].setPrimaryWork(calcSize, columnsPerWorker);
@@ -106,7 +105,7 @@ void RayTracing::run()
 
 void RayTracing::paint()
 {
-    qint64 start = dt.getCurrent();
+    int64_t start = dt.getCurrent();
     int x, y;
     const double totalLight = calcTotalLight(); // < 1 ms
 
@@ -138,14 +137,14 @@ void RayTracing::paint()
     }
 
     dt.addValue("paint", dt.getCurrent() - start);
-    emit resultReady();
+    // emit resultReady();
 }
 
 void RayTracing::onAllWorkersFinished()
 {
-    qDebug() << "All ray workers have finished, processFinished :" << processFinished << "/" << processWidth;
+    std::cout << "All ray workers have finished, processFinished : " << processFinished << "/" << processWidth << std::endl;
     workerDistributor->stop();
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);
-    qDebug() << "GUIWorker::run #end" << dt;
+    std::cout << "GUIWorker::run #end " << dt << std::endl;
 }

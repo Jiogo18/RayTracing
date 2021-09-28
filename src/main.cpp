@@ -1,28 +1,34 @@
-#include "src/GUI/fenetre.h"
-#include <QApplication>
 
-class Application : public QApplication
+#include "GUI/fenetre.h"
+
+class Application
 {
 public:
-    Application(int &argc, char **argv) : QApplication(argc, argv)
+    Application(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
     {
         map = new map3D();
-        gui = new fenetre(map);
+        window = new fenetre(hInstance, map);
+        window->show(nShowCmd);
     }
-    ~Application() override
+    ~Application()
     {
-        if (gui != nullptr) delete gui;
+        if (window != nullptr) delete window;
         if (map != nullptr) delete map;
+    }
+    int exec()
+    {
+        return window->exec();
     }
 
 private:
     map3D *map = nullptr;
-    fenetre *gui = nullptr;
+    fenetre *window;
 };
 
-int main(int argc, char *argv[])
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
-    Application app(argc, argv);
-
+    std::cout << "[WinMain] starting..." << std::endl;
+    Application app(hInstance, hPrevInstance, lpCmdLine, nShowCmd);
+    std::cout << "[WinMain] Window created!" << std::endl;
     return app.exec();
 }

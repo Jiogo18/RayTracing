@@ -1,18 +1,16 @@
 #ifndef MAP3D_H
 #define MAP3D_H
 
-#include "src/World/World3D.h"
-#include "src/RayTracing/Transfo.h"
-#include <QGraphicsScene>
-#include <QGraphicsPixmapItem>
-#include <QThread>
-#include <QRegularExpression>
-#include <QFile>
+#include "../World/World3D.h"
+#include "../RayTracing/Transfo.h"
+// #include <QGraphicsScene>
+// #include <QGraphicsPixmapItem>
+#include <thread>
+#include <regex>
+#include "../Qt_compat/QFile.h"
 
-class map3D : public QObject
+class map3D
 {
-    Q_OBJECT
-
 public:
     map3D();
     ~map3D();
@@ -31,9 +29,9 @@ public:
 
     int fillCube(const Point3D &posMin, const Point3D &posMax, SOLID::Material blockMaterial);
 
-    bool load(QString mapFileName);
+    bool load(std::string mapFileName);
 
-signals:
+    // signals:
     void clientChanged(const Entity *client);
 
 private:

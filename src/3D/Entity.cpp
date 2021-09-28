@@ -38,18 +38,23 @@ doubli ENTITY::baseSpeed(ENTITY::Type type, ENTITY::Direction dir)
   EntityAttribute
  *****************************************************************************/
 
-EntityAttribute::EntityAttribute(ENTITY::Type type) { this->type = type; }
-EntityAttribute::EntityAttribute(const EntityAttribute &obj)
+EntityAttribute::EntityAttribute(ENTITY::Type type) : type(type)
 {
-    type = obj.type;
-    speed = obj.speed;
+    speed[ENTITY::Direction::front] = baseSpeed(type, ENTITY::Direction::front);
+    speed[ENTITY::Direction::back] = baseSpeed(type, ENTITY::Direction::back);
+    speed[ENTITY::Direction::left] = baseSpeed(type, ENTITY::Direction::left);
+    speed[ENTITY::Direction::right] = baseSpeed(type, ENTITY::Direction::right);
+    speed[ENTITY::Direction::top] = baseSpeed(type, ENTITY::Direction::top);
+    speed[ENTITY::Direction::bottom] = baseSpeed(type, ENTITY::Direction::bottom);
 }
-doubli EntityAttribute::getSpeed(ENTITY::Direction dir) const
+EntityAttribute::EntityAttribute(const EntityAttribute &obj) : type(obj.type)
 {
-    if (speed.contains(dir))
-        return speed.value(dir);
-    else
-        return baseSpeed(type, dir);
+    speed[ENTITY::Direction::front] = obj.speed[ENTITY::Direction::front];
+    speed[ENTITY::Direction::back] = obj.speed[ENTITY::Direction::back];
+    speed[ENTITY::Direction::left] = obj.speed[ENTITY::Direction::left];
+    speed[ENTITY::Direction::right] = obj.speed[ENTITY::Direction::right];
+    speed[ENTITY::Direction::top] = obj.speed[ENTITY::Direction::top];
+    speed[ENTITY::Direction::bottom] = obj.speed[ENTITY::Direction::bottom];
 }
 
 /*****************************************************************************

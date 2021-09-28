@@ -1,32 +1,30 @@
 #include "Object3D.h"
 
-const QImage *OBJECT3D::getTexture(const QString &file)
+const QImage *OBJECT3D::getTexture(const std::string &file)
 {
-    if (loadedTextures.contains(file)) {
+    if (loadedTextures.count(file)) {
         return &loadedTextures[file];
     }
     QImage img;
 
-    if(file.startsWith("hologramme_")) {
-        QString file_tag = file.mid(11);// après hologramme_
-        bool ok = true;
-        int alpha = file_tag.toInt(&ok);
-        if(!ok) {
-            qDebug() << "Texture invalide" << file << file_tag;
-            qFatal("Texture invalide : ");
+    if (file.find("hologramme_") == 0) {
+        std::string file_tag = file.substr(11); // après hologramme_
+        std::size_t ok;
+        int alpha = std::stoi(file_tag, &ok);
+        if (ok != file_tag.length()) {
+            std::cout << "Texture invalide " << file << " " << file_tag << std::endl;
+            throw "Texture invalide";
         }
         img = QImage(1, 1, QImage::Format_RGBA64);
 
         img.fill(QColor(255 - alpha, 0, alpha, alpha / 10));
 
-    }
-    else if (img.load(":/ressourcepacks/default/textures/" + file + ".png")) {
+    } else if (img.load(":/ressourcepacks/default/textures/" + file + ".png")) {
         if (img.format() != QImage::Format_RGBA64) {
             img = img.convertToFormat(QImage::Format_RGBA64);
         }
-    }
-    else {
-        qWarning() << "[OBJECT3D::getTexture] can't load this texture:" << file;
+    } else {
+        std::cout << "[OBJECT3D::getTexture] can't load this texture: " << file << std::endl;
         /*if(img.load(":/ressourcepacks/default/textures/blocks/block_nul.png"))
             return img;*/
         if (missingTexture.isNull()) {
@@ -38,7 +36,7 @@ const QImage *OBJECT3D::getTexture(const QString &file)
         img = missingTexture; // enregistrer file pour ne pas rappeller plusieurs fois
     }
 
-    loadedTextures.insert(file, img);
+    loadedTextures.insert(std::pair<std::string, QImage>(file, img));
     return &loadedTextures[file];
 }
 

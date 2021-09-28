@@ -6,13 +6,13 @@
 class Ray
 {
 public:
-    constexpr inline Ray(const Pos3D &pos, RayTracingRessources *rtRess);
+    Ray(const Pos3D &pos, RayTracingRessources *rtRess);
     ColorLight getColor(const int &baseLight) const;
     void process();
 
 private:
     Pos3D pos;
-    QList<ColorLight> colors;
+    std::vector<ColorLight> colors;
     const Face *lastFace = nullptr;
     bool lastMoved = false;
     int opacity = 0;
@@ -30,21 +30,5 @@ private:
     SOLID::Material insideMaterial;
     RayTracingRessources *rtRess = nullptr;
 };
-
-constexpr inline Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), distParcouru(0), insideMaterial(rtRess->insideMaterial), rtRess(rtRess)
-{
-    float newSpeed = SOLID::getSpeedOfLight(insideMaterial);
-    //float previousSpeed = 1; // the speed of light in the lens
-    if (newSpeed != 1) {
-        // calcul de la réfraction (le regard est normal au plan)
-        this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed));
-    }
-#ifdef NAN_VERIF
-    if (this->pos.isNan()) {
-        qDebug() << "Ray::Ray pos is nan" << this->pos;
-        exit(-1);
-    }
-#endif // NAN_VERIF
-}
 
 #endif // RAY_H

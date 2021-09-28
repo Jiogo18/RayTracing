@@ -2,15 +2,15 @@
 #define OBJECT3D_H
 
 #include "Geometry3D.h"
-#include "src/RayTracing/ColorLight.h"
-#include <QImage>
-#include <QMap>
+#include "../RayTracing/ColorLight.h"
+#include "../Qt_compat/QImage.h"
+#include <map>
 
 namespace OBJECT3D {
-    static QMap<QString, QImage> loadedTextures;
+    static std::map<std::string, QImage> loadedTextures;
     static QImage missingTexture;
 
-    const QImage *getTexture(const QString &file);
+    const QImage *getTexture(const std::string &file);
 
 } // namespace OBJECT3D
 using namespace OBJECT3D;

@@ -1,7 +1,7 @@
 #ifndef PIXSCREEN_H
 #define PIXSCREEN_H
 
-#include <QSize>
+#include "../Qt_compat/QSize"
 
 template<typename T>
 class PixScreenT
@@ -53,47 +53,47 @@ constexpr inline const T *PixScreenT<T>::getColumn(int x) const
     return screen[x];
 }
 
-template<typename T>
-class PixScreenQList
-{
-public: // il faut au moins un PixScreenQ<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
-    constexpr inline PixScreenQList() : screen(0) {}
-    constexpr inline PixScreenQList(const QSize &size) : screen(size.width()), h(size.height())
-    {
-        for (int i = 0; i < width(); i++)
-            screen[i] = QList<T>(h);
-    }
-    constexpr inline PixScreenQList(const int &width, const int &height) : screen(width), h(height)
-    {
-        for (int i = 0; i < width; i++)
-            screen[i] = QList<T>(h);
-    }
-    constexpr inline PixScreenQList *operator=(const PixScreenQList &ps)
-    {
-        screen = ps.screen;
-        h = ps.h;
-        return this;
-    }
+// template<typename T>
+// class PixScreenQList
+// {
+// public: // il faut au moins un PixScreenQ<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
+//     constexpr inline PixScreenQList() : screen(0) {}
+//     constexpr inline PixScreenQList(const QSize &size) : screen(size.width()), h(size.height())
+//     {
+//         for (int i = 0; i < width(); i++)
+//             screen[i] = QList<T>(h);
+//     }
+//     constexpr inline PixScreenQList(const int &width, const int &height) : screen(width), h(height)
+//     {
+//         for (int i = 0; i < width; i++)
+//             screen[i] = QList<T>(h);
+//     }
+//     constexpr inline PixScreenQList *operator=(const PixScreenQList &ps)
+//     {
+//         screen = ps.screen;
+//         h = ps.h;
+//         return this;
+//     }
 
-    constexpr inline void set(const int &x, const int &y, const T &pos) { screen[x][y] = pos; }
-    constexpr inline const T &at(const int &x, const int &y) const { return screen[x][y]; }
-    T &operator()(const int &x, const int &y) { return screen[x][y]; }
+//     constexpr inline void set(const int &x, const int &y, const T &pos) { screen[x][y] = pos; }
+//     constexpr inline const T &at(const int &x, const int &y) const { return screen[x][y]; }
+//     T &operator()(const int &x, const int &y) { return screen[x][y]; }
 
-    constexpr inline int width() const { return screen.size(); }
-    constexpr inline const int &height() const { return h; }
-    constexpr inline QSize size() const { return QSize(width(), h); }
-    constexpr inline int rowNumber() const { return width() * h; }
+//     constexpr inline int width() const { return screen.size(); }
+//     constexpr inline const int &height() const { return h; }
+//     constexpr inline QSize size() const { return QSize(width(), h); }
+//     constexpr inline int rowNumber() const { return width() * h; }
 
-    constexpr inline QList<T> &operator[](const int &x) { return screen[x]; }
-    constexpr inline const QList<T> &getColumn(int x) const { return screen.at(x); }
-    constexpr inline void setColumn(const int &x, const QList<T> &column) { screen[x] = column; }
+//     constexpr inline QList<T> &operator[](const int &x) { return screen[x]; }
+//     constexpr inline const QList<T> &getColumn(int x) const { return screen.at(x); }
+//     constexpr inline void setColumn(const int &x, const QList<T> &column) { screen[x] = column; }
 
-private:
-    QList<QList<T>> screen;
-    int h;
-};
+// private:
+//     QList<QList<T>> screen;
+//     int h;
+// };
 
-#define PIXSCREEN 1
+#define PIXSCREEN 2
 #if PIXSCREEN == 1
 template<typename T>
 using PixScreen = PixScreenQList<T>;

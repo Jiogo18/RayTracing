@@ -1,12 +1,10 @@
 #include "Worker.h"
 
-RayTracingWorker::RayTracingWorker() : QThread(), workerId(-1), rtRess(nullptr), totalLight(nullptr) {}
+RayTracingWorker::RayTracingWorker() : workerId(-1), rtRess(nullptr), totalLight(nullptr) {}
 
-RayTracingWorker::RayTracingWorker(const int &workerId, RayTracingRessources *rtRess, QObject *parent)
-    : QThread(parent),
-      workerId(workerId),
-      rtRess(rtRess),
-      totalLight(nullptr)
+RayTracingWorker::RayTracingWorker(const int &workerId, RayTracingRessources *rtRess) : workerId(workerId),
+                                                                                        rtRess(rtRess),
+                                                                                        totalLight(nullptr)
 {}
 
 RayTracingWorker::~RayTracingWorker()
@@ -18,7 +16,6 @@ RayTracingWorker *RayTracingWorker::operator=(const RayTracingWorker &worker)
 {
     workerId = worker.workerId;
     rtRess = worker.rtRess;
-    setParent(worker.parent());
     return this;
 }
 
@@ -38,7 +35,7 @@ void RayTracingWorker::run()
 {
     int i;
     for (i = 0; i < getNbColumn(); i++) {
-        qint64 start;
+        int64_t start;
         //start = rtRess->dt->getCurrent();
         totalLight[i] = 0;
         //pos en % de pixmap.width/2 * xMax
@@ -72,7 +69,7 @@ void RayTracingWorker::run()
         rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
     }
 
-    emit resultReady(xScene, i, colors, totalLight);
+    // emit resultReady(xScene, i, colors, totalLight);
 }
 
 RayTracingDistributor::RayTracingDistributor(RayTracingRessources *rtRess)
@@ -80,7 +77,7 @@ RayTracingDistributor::RayTracingDistributor(RayTracingRessources *rtRess)
     workers = new RayTracingWorker[nb_workers];
     for (int i = 0; i < nb_workers; i++) {
         workers[i] = RayTracingWorker(i, rtRess);
-        connect(&workers[i], &QThread::finished, this, &RayTracingDistributor::onRayWorkerFinished);
+        // connect(&workers[i], &QThread::finished, this, &RayTracingDistributor::onRayWorkerFinished);
     }
 }
 
@@ -111,21 +108,21 @@ void RayTracingDistributor::stop()
     processWidth = 0;
     processStarted = 0;
     workersInProcess = false;
-    qDebug() << "RayTracingDistributor stopped after" << DebugTime::getCurrent() - timeStart << "us";
+    std::cout << "RayTracingDistributor stopped after " << DebugTime::getCurrent() - timeStart << " us" << std::endl;
 }
 
 void RayTracingDistributor::onRayWorkerFinished()
 {
-    assignNextRayWork(qobject_cast<RayTracingWorker *>(sender()));
+    // assignNextRayWork(qobject_cast<RayTracingWorker *>(sender()));
 }
 
 void RayTracingDistributor::assignNextRayWork(RayTracingWorker *worker)
 {
     if (worker->isRunning()) {
-        qWarning() << "RayTracingWorker" << worker->getWorkerId() << "is already running";
+        std::cout << "RayTracingWorker " << worker->getWorkerId() << " is already running" << std::endl;
         worker->wait(1);
         if (worker->isRunning()) {
-            qWarning() << "RayTracingWorker" << worker->getWorkerId() << "skipped";
+            std::cout << "RayTracingWorker " << worker->getWorkerId() << " skipped" << std::endl;
             return;
         }
     }

@@ -1,11 +1,27 @@
 #include "Ray.h"
 
+Ray::Ray(const Pos3D &pos, RayTracingRessources *rtRess) : pos(pos), distParcouru(0), insideMaterial(rtRess->insideMaterial), rtRess(rtRess)
+{
+    float newSpeed = SOLID::getSpeedOfLight(insideMaterial);
+    //float previousSpeed = 1; // the speed of light in the lens
+    if (newSpeed != 1) {
+        // calcul de la réfraction (le regard est normal au plan)
+        this->pos.setRot(Transfo3D::refractRot(rtRess->clientPos, pos, newSpeed));
+    }
+#ifdef NAN_VERIF
+    if (this->pos.isNan()) {
+        std::cout << "Ray::Ray pos is nan " << this->pos << std::endl;
+        exit(-1);
+    }
+#endif // NAN_VERIF
+}
+
 ColorLight Ray::getColor(const int &baseLight) const
 {
     ColorLight retour{0, 0, 0, 0, baseLight};
-    if (colors.isEmpty()) return retour;
+    if (colors.empty()) return retour;
     for (int i = colors.size() - 1; i >= 0; i--)
-        retour += colors.at(i);
+        retour += colors[i];
     return retour;
 }
 
@@ -21,9 +37,9 @@ void Ray::process()
         lastMoved = pInter != pos;
         lastFace = face;
 
-        const QPointF pTexture = face->getPlan()->projeteOrtho(pInter) - face->getPointC();
+        const Point2D pTexture = face->getPlan()->projeteOrtho(pInter) - face->getPointC();
         const ColorLight color = face->getColor(pTexture);
-        colors.append(color);
+        colors.push_back(color);
 
         opacity += color.alpha();
         if (opacity >= 255) break; // le rayon est saturé (solide opaque)
@@ -43,7 +59,7 @@ void Ray::process()
 
 #ifdef NAN_VERIF
         if (pos.isNan()) {
-            qDebug() << "Ray::process pos is nan" << pos;
+            std::cout << "Ray::process pos is nan " << pos << std::endl;
             exit(-1);
         }
 #endif // NAN_VERIF
@@ -64,24 +80,26 @@ const Face *Ray::getFirstIntersection(Point3D &pInter) const
 
 #ifdef NAN_VERIF
     if (posNextPoint.isNan()) {
-        qDebug() << "Ray::getFirstIntersection posNextPoint is nan" << posNextPoint;
+        std::cout << "Ray::getFirstIntersection posNextPoint is nan " << posNextPoint << std::endl;
         exit(-1);
     }
 #endif // NAN_VERIF
     Point3D pInterMin;
     doubli distanceInterMin = viewDistance; // seront set car !faceMin.isValid() au début
     doubli distanceSolidMin = viewDistance;
-    for (int iChunk = 0; iChunk < rtRess->world->getChunks().size(); iChunk++) {
-        const Chunk *chunk = rtRess->world->getChunks().at(iChunk);
+    for (std::vector<Chunk *>::const_iterator iChunk = rtRess->world->getChunks().cbegin(); iChunk != rtRess->world->getChunks().cend(); iChunk++) {
+
+        const Chunk *chunk = (*iChunk);
         if (!chunk->getMaxGeometry().containsLine(pos, vecDirNextPoint, distanceInterMin))
             continue;
         //qint64 start1 = rtRess->dt->getCurrent();
-        for (int iBlock = 0; iBlock < chunk->getSolids()->size(); iBlock++) {
-            const Solid *block = chunk->getSolids()->at(iBlock);
+        for (std::vector<Solid *>::const_iterator iBlock = chunk->getSolids()->cbegin(); iBlock != chunk->getSolids()->cend(); iBlock++) {
+
+            const Solid *block = (*iBlock);
             if (!block->getMaxGeometry().containsLine(pos, vecDirNextPoint, distanceInterMin))
                 continue;
-            for (int iFace = 0; iFace < block->getFaces()->size(); iFace++) {
-                const Face *face = &block->getFaces()->at(iFace);
+            for (std::vector<Face>::const_iterator iFace = block->getFaces()->cbegin(); iFace != block->getFaces()->cend(); iFace++) {
+                const Face *face = &(*iFace);
                 if (face == lastFace)
                     continue;
                 const Plan *plan = face->getPlan();

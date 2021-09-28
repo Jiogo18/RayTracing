@@ -2,8 +2,8 @@
 
 Chunk::~Chunk()
 {
-    while (!solids.isEmpty())
-        deleteSolid(solids.first());
+    while (!solids.empty())
+        deleteSolid(solids.front());
 }
 
 bool Chunk::addSolid(Solid *block)
@@ -12,7 +12,7 @@ bool Chunk::addSolid(Solid *block)
     if (haveSolid(block->getPoint())) {
         removeSolid(block->getPoint());
     }
-    solids.append(block);
+    solids.push_back(block);
     calcMinMaxPoint();
     return true;
 }
@@ -37,7 +37,7 @@ bool Chunk::removeSolid(const Point3D &blockPos)
 {
     Solid *block = getSolidAt(blockPos);
     if (!block) return false;
-    solids.removeAll(block);
+    std::remove(solids.begin(), solids.end(), block);
     delete block;
     return true;
 }
@@ -50,7 +50,7 @@ void Chunk::calcMinMaxPoint()
         maxGeometry = HRect3D(getPoint(), getPoint());
         return;
     }
-    maxGeometry = solids.first()->getMaxGeometry();
+    maxGeometry = solids.front()->getMaxGeometry();
     doubli minX = maxGeometry.getPointMin().x();
     doubli minY = maxGeometry.getPointMin().y();
     doubli minZ = maxGeometry.getPointMin().z();
@@ -80,18 +80,19 @@ void Chunk::calcMinMaxPoint()
 
 bool Chunk::deleteSolid(Solid *block)
 {
-    if (!solids.contains(block)) return false;
-    solids.removeAll(block);
+    if (std::find(solids.begin(), solids.end(), block) != solids.end()) return false;
+    std::remove(solids.begin(), solids.end(), block);
+
     if (block != nullptr) delete block;
     return true;
 }
 
 World::~World()
 {
-    while (!chunks.isEmpty())
-        deleteChunk(chunks.first());
-    while (!entities.isEmpty())
-        deleteEntity(entities.first());
+    while (!chunks.empty())
+        deleteChunk(chunks.front());
+    while (!entities.empty())
+        deleteEntity(entities.front());
 }
 
 bool World::addSolid(Solid *block)
@@ -99,7 +100,7 @@ bool World::addSolid(Solid *block)
     ChunkPos posChunk = ChunkPos::fromBlockPos(block->getPoint());
     if (!haveChunk(posChunk))
         if (!createChunk(posChunk)) {
-            qDebug() << "ERROR Chunk::setSolid can't create a chunk";
+            std::cout << "ERROR Chunk::setSolid can't create a chunk" << std::endl;
             return false;
         }
     bool success = getChunk(posChunk)->addSolid(block);
@@ -107,17 +108,17 @@ bool World::addSolid(Solid *block)
         WorldChange change(WorldChange::Type::block, WorldChange::Action::created);
         change.setSolid(block);
         change.setChunk(getChunk(posChunk));
-        emit changed(change);
+        // emit changed(change);
     }
     return success;
 }
 void World::addEntity(Entity *entity)
 {
-    if (entities.contains(entity)) return;
-    entities.append(entity);
+    if (std::find(entities.begin(), entities.end(), entity) != entities.end()) return;
+    entities.push_back(entity);
     WorldChange change(WorldChange::Type::entity, WorldChange::Action::created);
     change.setEntity(entity);
-    emit changed(change);
+    // emit changed(change);
 }
 
 Solid *World::getSolid(const Point3D &point) const
@@ -129,30 +130,30 @@ Solid *World::getSolid(const Point3D &point) const
 bool World::removeSolid(const Point3D &solidPos)
 {
     Chunk *c = getChunk(ChunkPos::fromBlockPos(solidPos));
-    if(!c) return false;
+    if (!c) return false;
     Solid *s = c->getSolid(solidPos);
-    if(!s) return false;
-    if(!c->removeSolid(solidPos)) return false;
+    if (!s) return false;
+    if (!c->removeSolid(solidPos)) return false;
     return true;
 }
 
 bool World::createChunk(const ChunkPos &posChunk)
 {
     if (haveChunk(posChunk)) return false;
-    chunks.append(new Chunk(posChunk));
+    chunks.push_back(new Chunk(posChunk));
     WorldChange change(WorldChange::Type::chunk, WorldChange::Action::created);
     change.setChunk(getChunk(posChunk));
-    emit changed(change);
+    // emit changed(change);
 
     return haveChunk(posChunk);
 }
 void World::deleteChunk(Chunk *chunk)
 {
-    chunks.removeAll(chunk);
+    std::remove(chunks.begin(), chunks.end(), chunk);
     if (chunk != nullptr) delete chunk;
     WorldChange change(WorldChange::Type::chunk, WorldChange::Action::removed);
     change.setChunk(chunk);
-    emit changed(change);
+    // emit changed(change);
 }
 Chunk *World::getChunk(const ChunkPos &posChunk) const
 {
@@ -165,11 +166,11 @@ bool World::haveChunk(const ChunkPos &posChunk) const { return getChunk(posChunk
 
 bool World::deleteEntity(Entity *entity)
 {
-    if (!entities.contains(entity)) return false;
-    entities.removeAll(entity);
+    if (std::find(entities.begin(), entities.end(), entity) != entities.end()) return false;
+    std::remove(entities.begin(), entities.end(), entity);
     if (entity != nullptr) delete entity;
     WorldChange change(WorldChange::Type::entity, WorldChange::Action::removed);
     change.setEntity(entity);
-    emit changed(change);
+    // emit changed(change);
     return true;
 }

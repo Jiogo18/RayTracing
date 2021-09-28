@@ -1,40 +1,42 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <QMap>
-#include <QDebug>
-#include <QDateTime>
+#include <map>
+#include <iostream>
+#include <string>
 
 class DebugTimePart
 {
 public:
     DebugTimePart() {}
-    void addValue(qint64 time);
-    qint64 getMin() const { return min; }
-    qint64 getMax() const { return max; }
-    qint64 getNb() const { return nb; }
-    qint64 getTotal() const { return total; }
-    qint64 getMoyenne() const { return nb == 0 ? 0 : total / nb; }
+    void addValue(int64_t time);
+    int64_t getMin() const { return min; }
+    int64_t getMax() const { return max; }
+    int64_t getNb() const { return nb; }
+    int64_t getTotal() const { return total; }
+    int64_t getMoyenne() const { return nb == 0 ? 0 : total / nb; }
 
 private:
-    qint64 min = 0;
-    qint64 max = 0;
-    qint64 total = 0;
-    qint64 nb = 0;
+    int64_t min = 0;
+    int64_t max = 0;
+    int64_t total = 0;
+    int64_t nb = 0;
 };
 
 class DebugTime
 {
 public:
     DebugTime() {}
-    void addValue(QString name, qint64 time);
-    QMap<QString, DebugTimePart> getValues() const { return values; }
-    static qint64 getCurrent();
+    void addValue(std::string name, int64_t time);
+    std::map<std::string, DebugTimePart> getValues() const { return values; }
+    static int64_t getCurrent();
+    static int64_t getCurrentMSinceEpoch();
     void clear() { values.clear(); }
 
+    friend std::ostream &operator<<(std::ostream &os, const DebugTime &d);
+
 private:
-    QMap<QString, DebugTimePart> values;
+    std::map<std::string, DebugTimePart> values;
 };
-QDebug operator<<(QDebug debug, const DebugTime &d);
 
 #endif // DEBUG_H

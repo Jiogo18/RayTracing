@@ -1,8 +1,8 @@
 #ifndef TRANSFO_H
 #define TRANSFO_H
 
-#include "src/3D/Geometry3D.h"
-#include "src/World/World3D.h"
+#include "../3D/Geometry3D.h"
+#include "../World/World3D.h"
 
 namespace Transfo3D {
     // vérifie l'ordre de grandeur pouvant poser des pbs

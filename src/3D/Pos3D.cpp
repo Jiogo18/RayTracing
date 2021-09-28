@@ -3,12 +3,12 @@
 bool Rot3D::operator==(const Rot3D &rot) const { return rXp == rot.rXp && rZp == rot.rZp; }
 bool Rot3D::operator!=(const Rot3D &rot) const { return rXp != rot.rXp || rZp != rot.rZp; }
 
-bool Rot3D::isNan() const { return qIsNaN(rXp + rZp); }
+bool Rot3D::isNan() const { return isnan(rXp + rZp); }
 
-QDebug operator<<(QDebug debug, const Rot3D &rot)
+std::ostream &operator<<(std::ostream &os, const Rot3D &rot)
 {
-    debug.nospace() << "Rot3D(" << rot.rXp << ", " << rot.rZp << ")";
-    return debug;
+    os << "Rot3D(" << rot.rXp << ", " << rot.rZp << ")";
+    return os;
 }
 
 Pos3D Pos3D::fromDegree(const doubli &x, const doubli &y, const doubli &z, const radian &rX, const radian &rZ)
@@ -100,9 +100,9 @@ Pos3D Pos3D::getRotAsPoint(const Point3D &p)
     return Pos3D{0, 0, 0, rX, rZ};
 }
 
-QDebug operator<<(QDebug debug, const Pos3D &pos)
+std::ostream &operator<<(std::ostream &os, const Pos3D &pos)
 {
-    debug.nospace() << "Pos3D(" << pos.x() << ", " << pos.y() << ", " << pos.z()
-                    << ";" << pos.rX() << ", " << pos.rZ() << ")";
-    return debug;
+    os << "Pos3D(" << pos.x() << ", " << pos.y() << ", " << pos.z()
+       << ";" << pos.rX() << ", " << pos.rZ() << ")";
+    return os;
 }

@@ -1,8 +1,10 @@
 #ifndef WORLD3D_H
 #define WORLD3D_H
 
-#include "src/3D/Solid.h"
-#include "src/3D/Entity.h"
+#include "../3D/Solid.h"
+#include "../3D/Entity.h"
+#include <vector>
+#include <algorithm>
 
 class ChunkPos : public Point3D
 {
@@ -34,11 +36,11 @@ public:
 
     const HRect3D &getMaxGeometry() const { return maxGeometry; }
     const Point3D &getMiddleGeometry() const { return middleMinGeometry; }
-    const QList<Solid *> *getSolids() const { return &solids; }
+    const std::vector<Solid *> *getSolids() const { return &solids; }
     static Size3D getSize() { return Size3D(ChunkPos::chunkSize, ChunkPos::chunkSize, ChunkPos::chunkSize); }
 
 private:
-    QList<Solid *> solids;
+    std::vector<Solid *> solids;
     // indépendants de la taille du chunk (presque) mais dépendant de la taille des blocks :
     HRect3D maxGeometry;
     Point3D middleMinGeometry;
@@ -81,28 +83,27 @@ private:
     Entity *tentity = nullptr;
 };
 
-class World : public QObject
+class World
 {
-    Q_OBJECT
 public:
     World() {}
     ~World();
     bool addSolid(Solid *block);
     void addEntity(Entity *entity);
 
-    const QList<Chunk *> &getChunks() const { return chunks; }
-    const QList<Entity *> &getEntities() const { return entities; }
+    const std::vector<Chunk *> &getChunks() const { return chunks; }
+    const std::vector<Entity *> &getEntities() const { return entities; }
 
     Solid *getSolid(const Point3D &point) const;
 
     bool removeSolid(const Point3D &solidPos);
 
-signals:
+    // signals:
     void changed(const WorldChange &change);
 
 private:
-    QList<Chunk *> chunks;
-    QList<Entity *> entities;
+    std::vector<Chunk *> chunks;
+    std::vector<Entity *> entities;
     bool createChunk(const ChunkPos &posChunk);
     void deleteChunk(Chunk *chunk);
     Chunk *getChunk(const ChunkPos &posChunk) const;

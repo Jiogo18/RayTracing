@@ -1,11 +1,5 @@
 #include "Point3D.h"
 
-QDebug operator<<(QDebug debug, const doubli &d)
-{
-    debug << static_cast<double>(d);
-    return debug;
-}
-
 bool Point3D::operator<(const Point3D &p) const
 {
     // le plus petit = la plus proche
@@ -44,13 +38,13 @@ bool Point3D::operator==(const Point3D &p) const { return (xp == p.xp) && (yp ==
 bool Point3D::operator!=(const Point3D &p) const { return (xp != p.xp) || (yp != p.yp) || (zp != p.zp); }
 
 bool Point3D::isNull() const { return xp == 0 && yp == 0 && zp == 0; }
-bool Point3D::isInf() const { return qIsInf((double)xp) || qIsInf((double)yp) || qIsInf((double)zp); }
-bool Point3D::isNan() const { return qIsNaN((double)(xp + yp + zp)); }
+bool Point3D::isInf() const { return isinf(xp) || isinf(yp) || isinf(zp); }
+bool Point3D::isNan() const { return isnan(xp + yp + zp); }
 
-QDebug operator<<(QDebug debug, const Point3D &p)
+std::ostream &operator<<(std::ostream &os, const Point3D &p)
 {
-    debug.nospace() << "Point3D(" << p.xp << ", " << p.yp << ", " << p.zp << ')';
-    return debug;
+    os << "Point3D(" << p.xp << ", " << p.yp << ", " << p.zp << ')';
+    return os;
 }
 Point3D qFloor(const Point3D &p)
 {

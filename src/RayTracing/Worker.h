@@ -1,17 +1,16 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include <QThread>
+#include <thread>
 #include "Ressources.h"
 #include "PixScreen.h"
 #include "Ray.h"
 
-class RayTracingWorker : public QThread
+class RayTracingWorker
 {
-    Q_OBJECT
 public:
     RayTracingWorker();
-    RayTracingWorker(const int &workerId, RayTracingRessources *rtRess, QObject *parent = nullptr);
+    RayTracingWorker(const int &workerId, RayTracingRessources *rtRess);
     ~RayTracingWorker();
     RayTracingWorker *operator=(const RayTracingWorker &worker);
 
@@ -24,11 +23,21 @@ public:
     constexpr inline const int &getWorkerId() const { return workerId; };
     constexpr inline int getNbColumn() const { return min(nbColumn, sceneSize.width() - xScene); }
 
-signals:
+    // signals:
     void resultReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
 
+    // TODO
+    void start() { running = false; }
+    bool isRunning() const { return running; }
+    void quit() { quit_asked = true; }
+    void wait(int time)
+    {
+        this->thread->join();
+        running = false;
+    }
+
 private:
-    void run() override; // process ONE column at a time (more with nbColumn)
+    void run(); // process ONE column at a time (more with nbColumn)
     int workerId;
     QSize sceneSize;
 
@@ -37,11 +46,14 @@ private:
     RayTracingRessources *rtRess;
     int *totalLight = nullptr;
     PixScreen<ColorLight> colors;
+
+    std::thread *thread = nullptr;
+    bool running = false;
+    bool quit_asked = false;
 };
 
-class RayTracingDistributor : public QThread
+class RayTracingDistributor
 {
-    Q_OBJECT
 public:
     RayTracingDistributor(RayTracingRessources *rtRess);
     ~RayTracingDistributor();
@@ -51,9 +63,9 @@ public:
 
     RayTracingWorker *getWorkers() const { return workers; }
     const int nb_workers = RAYTRACING::WorkerThread;
-    inline bool isRunning() const { return QThread::isRunning() || workersInProcess; }
+    inline bool isRunning() const { return workersInProcess; }
 
-private slots:
+    // private slots:
     void onRayWorkerFinished();
 
 private:
@@ -62,7 +74,9 @@ private:
     int processWidth = 0;
     int processStarted = 0;
     bool workersInProcess = false;
-    qint64 timeStart;
+    int64_t timeStart;
+
+    std::thread *thread;
 };
 
 #endif // WORKER_H

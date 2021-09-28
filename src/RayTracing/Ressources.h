@@ -1,9 +1,8 @@
 #ifndef RESSOURCES_H
 #define RESSOURCES_H
 
-#include <QList>
-#include "src/World/map3D.h"
-#include "src/DebugTime.h"
+#include "../World/map3D.h"
+#include "../DebugTime.h"
 
 //#define REFRESH_COLUMN // TODO: remove it
 //#define DISABLE_RAYPROCESS

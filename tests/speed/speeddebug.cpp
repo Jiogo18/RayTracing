@@ -14,7 +14,7 @@ void debugVerifTime(QString name, qint64 start, qint64 timeMin, qint64 timeMax)
 {
     qint64 time = getTime() - start;
     if (time < timeMin || timeMax < time) {
-        qDebug() << name << "in" << time << "ms (contre" << (timeMin + timeMax) / 2 << "moyen)";
+        std::cout << name << " in " << time << " ms (contre " << (timeMin + timeMax) / 2 << " moyen)" << std::endl;
     }
 }
 

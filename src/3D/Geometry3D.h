@@ -1,7 +1,7 @@
 #ifndef GEOMETRY3D_H
 #define GEOMETRY3D_H
 
-#include <QPointF>
+#include "Point2D.h"
 #include "Pos3D.h"
 
 /*****************************************************************************
@@ -74,7 +74,7 @@ public:
     constexpr inline bool contains(const Point3D &point) const;
     bool containsLine(const Point3D &pA, const Vec3D &vDir, const doubli &dMax) const;
 
-    friend QDebug operator<<(QDebug debug, const HRect3D &rect);
+    friend std::ostream &operator<<(std::ostream &os, const HRect3D &rect);
 
 private:
     Point3D pMin, pMax;
@@ -121,7 +121,7 @@ public:
 
     bool contains(const Point3D &point) const;
 
-    friend QDebug operator<<(QDebug debug, const Rect3D &rect);
+    friend std::ostream &operator<<(std::ostream &os, const Rect3D &rect);
 
 private:
     Point3D pA, pB, pC, pMin, pMax;
@@ -157,7 +157,7 @@ public:
     // mais avec a = 1 ! (colinéaire donc pas besoin de chercher plus...)
     constexpr inline bool paralleleDroite(const Size3D &vect) const;
     Point3DCancelable intersection(const Point3D &pA, const Point3D &pB) const;
-    QPointF projeteOrtho(const Point3D &pA) const;
+    Point2D projeteOrtho(const Point3D &pA) const;
     Point3D projeteOrtho3D(const Point3D &pA) const;
     constexpr inline bool isValid() const { return a != 0.0L || b != 0.0L || c != 0.0L || d != 0.0L; }
     bool containsPoint(const Point3D &point) const;

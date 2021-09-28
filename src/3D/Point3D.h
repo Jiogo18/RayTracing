@@ -2,12 +2,10 @@
 #define POINT3D_H
 
 #include "maths3D.h"
-#include <QDebug>
+#include <iostream>
 
 //#define NAN_VERIF//activer pour le debug des nan
 using namespace maths3D;
-
-QDebug operator<<(QDebug debug, const doubli &d);
 
 /*****************************************************************************
   Point3D
@@ -58,7 +56,7 @@ public:
     static doubli distance(const Point3D &pA, const Point3D &pB);
     static doubli distanceMax(const Point3D &pA, const Point3D &pB);
 
-    friend QDebug operator<<(QDebug debug, const Point3D &p);
+    friend std::ostream &operator<<(std::ostream &os, const Point3D &p);
     friend Point3D qFloor(const Point3D &p);
     friend Point3D qCeil(const Point3D &p);
     friend Point3D qRound(const Point3D &p);

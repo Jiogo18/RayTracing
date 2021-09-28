@@ -4,9 +4,8 @@
 #include "Worker.h"
 #include "RayImage.h"
 
-class RayTracing : public QThread
+class RayTracing
 {
-    Q_OBJECT
 public:
     RayTracing(const map3D *map);
     ~RayTracing();
@@ -17,24 +16,29 @@ public:
         return this;
     }
     const RayImage *getImage() const { return &image; }
-    bool isRunning() { return QThread::isRunning() || workerDistributor->isRunning(); }
+    bool isRunning() { return running || workerDistributor->isRunning(); }
 
-private slots:
-    void onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
-    void onWorldChanged(const WorldChange &change);
+    void start() {}
+    void quit() { quit_asked = true; }
+    void wait(int timeout) { thread.join(); }
 
-signals:
+    // private slots:
+
+    // signals:
     void resultReady();
 
 private:
-    void run() override;
+    void onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
+    void onWorldChanged(const WorldChange &change);
+
+    void run();
     constexpr inline double calcTotalLight() const;
     void paint();
     void onAllWorkersFinished();
 
     RayTracingRessources *rtRess = nullptr;
     DebugTime dt;
-    qint64 startRun;
+    int64_t startRun;
 
     const map3D *map;
     QSize calcSize;
@@ -48,6 +52,10 @@ private:
     int processForUpdate;
 
     RayImage image;
+
+    std::thread thread;
+    bool running = false;
+    bool quit_asked = false;
 };
 
 constexpr inline double RayTracing::calcTotalLight() const

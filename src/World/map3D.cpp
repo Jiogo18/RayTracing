@@ -1,6 +1,6 @@
 #include "map3D.h"
 
-map3D::map3D() : QObject()
+map3D::map3D()
 {
     world = new World();
     client = new Entity(Pos3D::fromDegree(-0.5L, 1.5L, 1.5L, -30, -20), ENTITY::Type::ghost);
@@ -59,89 +59,87 @@ int map3D::fillCube(const Point3D &posMin, const Point3D &posMax, SOLID::Materia
     return blockPlaced;
 }
 
-bool map3D::load(QString mapFileName)
+bool map3D::load(std::string mapFileName)
 {
     // remove everything
-    const QList<Chunk*> chunks = world->getChunks();
-    for(const Chunk *c : chunks) {
-        const QList<Solid*> solids = *c->getSolids();
-        for(const Solid *s : solids) {
+    const std::vector<Chunk *> chunks = world->getChunks();
+    for (const Chunk *c : chunks) {
+        const std::vector<Solid *> solids = *c->getSolids();
+        for (const Solid *s : solids) {
             world->removeSolid(s->getPoint());
         }
     }
 
     // load the file
     QFile mapFile(mapFileName);
-    if(!mapFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "map3D::load can't open" << mapFileName << mapFile.errorString();
+    if (!mapFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        std::cout << "map3D::load can't open \"" << mapFileName << "\" " << mapFile.errorString() << std::endl;
         return false;
     }
 
-
     //QRegularExpression regex("X:(\\d+) Y:(\\d+) Z:(\\d+) Value:(\\d+)");
-    QRegularExpression regex("(\\d+):(\\d+):(\\d+):(\\d+)");
+    const std::regex regex("(\\d+):(\\d+):(\\d+):(\\d+)");
     int blockAdded = 0;
 #if true // chargement avec le fichier
     while (!mapFile.atEnd()) {
         QByteArray line = mapFile.readLine();
 
-        QRegularExpressionMatch matched = regex.match(line);
-        if(!matched.hasMatch()) {
-            qDebug() << "map3D::load line doesn't match at" << mapFile.pos();
+        std::regex_match(line, regex);
+        std::smatch pieces_match;
+
+        if (!std::regex_match(line, pieces_match, regex)) {
+            std::cout << "map3D::load line doesn't match at " << mapFile.pos() << std::endl;
             return false;
         }
 
-        doubli x = matched.captured(1).toDouble();
-        doubli y = matched.captured(2).toDouble();
-        doubli z = matched.captured(3).toDouble();
-        int alpha = matched.captured(4).toInt(); // le min c'est 85
+        doubli x = std::stod(pieces_match[1].str());
+        doubli y = std::stod(pieces_match[2].str());
+        doubli z = std::stod(pieces_match[3].str());
+        int alpha = std::stoi(pieces_match[4].str()); // le min c'est 85
         //if(alpha < 120) continue; // LIMITE
 
-        QList<SOLID::Variation> variations;
-        if(alpha & 1) variations << SOLID::Variation::BIN1;
-        if(alpha & 2) variations << SOLID::Variation::BIN2;
-        if(alpha & 4) variations << SOLID::Variation::BIN3;
-        if(alpha & 8) variations << SOLID::Variation::BIN4;
-        if(alpha & 16) variations << SOLID::Variation::BIN5;
-        if(alpha & 32) variations << SOLID::Variation::BIN6;
-        if(alpha & 64) variations << SOLID::Variation::BIN7;
-        if(alpha & 128) variations << SOLID::Variation::BIN8;
+        std::vector<SOLID::Variation> variations;
+        if (alpha & 1) variations.push_back(SOLID::Variation::BIN1);
+        if (alpha & 2) variations.push_back(SOLID::Variation::BIN2);
+        if (alpha & 4) variations.push_back(SOLID::Variation::BIN3);
+        if (alpha & 8) variations.push_back(SOLID::Variation::BIN4);
+        if (alpha & 16) variations.push_back(SOLID::Variation::BIN5);
+        if (alpha & 32) variations.push_back(SOLID::Variation::BIN6);
+        if (alpha & 64) variations.push_back(SOLID::Variation::BIN7);
+        if (alpha & 128) variations.push_back(SOLID::Variation::BIN8);
 
-        if(world->addSolid(new Block(Pos3D(x, y, z, 0, 0), Size3D(1, 1, 1), SOLID::Material::hologramme, variations))) {
+        if (world->addSolid(new Block(Pos3D(x, y, z, 0, 0), Size3D(1, 1, 1), SOLID::Material::hologramme, variations))) {
             blockAdded++;
         }
     }
 #else // chargement avec un cube de 256*256*256
-    for(int x = 0; x < 256; x++) {
-        for(int y = 0; y < 256; y++) {
-            for(int z = 0; z < 256; z++) {
+    for (int x = 0; x < 256; x++) {
+        for (int y = 0; y < 256; y++) {
+            for (int z = 0; z < 256; z++) {
 
                 int alpha = (x + y + z) / 3;
 
-                QList<SOLID::Variation> variations;
-                if(alpha & 1) variations << SOLID::Variation::BIN1;
-                if(alpha & 2) variations << SOLID::Variation::BIN2;
-                if(alpha & 4) variations << SOLID::Variation::BIN3;
-                if(alpha & 8) variations << SOLID::Variation::BIN4;
-                if(alpha & 16) variations << SOLID::Variation::BIN5;
-                if(alpha & 32) variations << SOLID::Variation::BIN6;
-                if(alpha & 64) variations << SOLID::Variation::BIN7;
-                if(alpha & 128) variations << SOLID::Variation::BIN8;
+                std::vector<SOLID::Variation> variations;
+                if (alpha & 1) variations.push_back(SOLID::Variation::BIN1);
+                if (alpha & 2) variations.push_back(SOLID::Variation::BIN2);
+                if (alpha & 4) variations.push_back(SOLID::Variation::BIN3);
+                if (alpha & 8) variations.push_back(SOLID::Variation::BIN4);
+                if (alpha & 16) variations.push_back(SOLID::Variation::BIN5);
+                if (alpha & 32) variations.push_back(SOLID::Variation::BIN6);
+                if (alpha & 64) variations.push_back(SOLID::Variation::BIN7);
+                if (alpha & 128) variations.push_back(SOLID::Variation::BIN8);
 
-                if(world->addSolid(new Block(Pos3D(x, y, z, 0, 0), Size3D(1, 1, 1), SOLID::Material::hologramme, variations))) {
+                if (world->addSolid(new Block(Pos3D(x, y, z, 0, 0), Size3D(1, 1, 1), SOLID::Material::hologramme, variations))) {
                     blockAdded++;
                 }
             }
         }
-        qDebug() << "Blocs placés :" << blockAdded << "/ 16777216";
+        std::cout << "Blocs placés : " << blockAdded << " / 16777216" << std::endl;
     }
 #endif
 
-
-    qDebug() << "map3D::load Le monde contient" << blockAdded << "blocs";
+    std::cout << "map3D::load Le monde contient " << blockAdded << " blocs" << std::endl;
 
     mapFile.close();
     return true;
 }
-
-

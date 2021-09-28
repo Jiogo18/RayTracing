@@ -1,10 +1,17 @@
 #ifndef MATHS3D_H
 #define MATHS3D_H
 
-#include <QtMath>
+#include <math.h>
+#include <iostream>
 
-#define M_2PI 2 * M_PI // 6.28318530717958647692
-#define M_1_2PI 1 / (2 * M_PI)
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif // M_PI
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923
+#endif // M_PI_2
+#define M_2PI 6.28318530717958647692
+#define M_1_2PI 0.15915494309189533576901767873386
 #define DOUBLI_MIN 1e-10
 
 namespace maths3D {

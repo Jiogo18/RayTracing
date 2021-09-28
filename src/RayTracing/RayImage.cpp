@@ -65,9 +65,9 @@ RayImage RayImage::scaled(const QSize &size) const
     int realY;
     int realCnt;
     for (scaledX = 0; scaledX < image.m_width; scaledX++) {
-        realX = qFloor(scaledX / scale_x);
+        realX = std::floor(scaledX / scale_x);
         for (scaledY = 0; scaledY < image.m_height; scaledY++) {
-            realY = qFloor(scaledY / scale_y);
+            realY = std::floor(scaledY / scale_y);
             scaledCnt = getDataCnt(scaledX, scaledY);
             realCnt = getDataCnt(realX, realY);
             image.d[scaledCnt] = d[realCnt];
@@ -85,13 +85,13 @@ QImage RayImage::toQImage(const QSize &size) const
 
 uchar *RayImage::operator()(int x, int y)
 {
-    Q_ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
+    __glibcxx_assert(0 <= x && x < m_width && 0 <= y && y < m_height);
     return &d[getDataCnt(x, y)];
 }
 
 void RayImage::setPixel(int x, int y, RGB24 color)
 {
-    Q_ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
+    __glibcxx_assert(0 <= x && x < m_width && 0 <= y && y < m_height);
     uchar *p = &d[getDataCnt(x, y)];
     *p++ = color.b;
     *p++ = color.g;

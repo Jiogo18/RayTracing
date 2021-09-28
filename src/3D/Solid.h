@@ -2,6 +2,7 @@
 #define SOLID_H
 
 #include "Object3D.h"
+#include <vector>
 
 namespace SOLID {
     enum Material {
@@ -34,8 +35,8 @@ namespace SOLID {
         BIN8
     };
 
-    QString getFileTexture(SOLID::Material material, QList<SOLID::Variation> variations);
-    int getLight(SOLID::Material material, QList<SOLID::Variation> variations);
+    std::string getFileTexture(SOLID::Material material, SOLID::Variation variations);
+    int getLight(SOLID::Material material, SOLID::Variation variations);
     constexpr inline float getSpeedOfLight(SOLID::Material material)
     {
         switch (material) {
@@ -82,25 +83,25 @@ class Face : public SolidBase
 {
 public:
     Face(const Point3D &point, const HRect3D &solidGeometry, bool orientation,
-         const SOLID::Material &material, QList<SOLID::Variation> variations);
+         const SOLID::Material &material, SOLID::Variation variations);
     Face(const Face &face);
 
     constexpr inline const Plan *getPlan() const { return &plan; }
-    constexpr inline const QPointF &getPointC() const { return pC; }
+    constexpr inline const Point2D &getPointC() const { return pC; }
     constexpr inline bool getOrientation() const { return orientation; }
-    ColorLight getColor(const QPointF &point) const;
-    constexpr inline const QString &getTexture() const { return texture; }
+    ColorLight getColor(const Point2D &point) const;
+    constexpr inline const std::string &getTexture() const { return texture; }
     constexpr inline const QImage *getTextureImg() const { return textureImg; }
     Rot3D boundRot(const Rot3D &rot) const;
     Rot3D refractRot(const Rot3D &pos, float indiceRefrac) const;
     bool containsPoint(const Point3D &point) const override;
 
 private:
-    QList<SOLID::Variation> variations;
-    QString texture;
+    SOLID::Variation variations;
+    std::string texture;
     const QImage *textureImg = nullptr; // TODO : object Texture avec les ColorLight direct dedans
     Plan plan;
-    QPointF pC;
+    Point2D pC;
     bool orientation; // true dans le sens positif du plan
 };
 
@@ -111,15 +112,15 @@ private:
 class Solid : public SolidBase
 {
 public:
-    Solid(const Pos3D &pos, const HRect3D &maxGeometry, const SOLID::Material &material, const QList<Face> &faces)
+    Solid(const Pos3D &pos, const HRect3D &maxGeometry, const SOLID::Material &material, const std::vector<Face> &faces)
         : SolidBase(pos, maxGeometry, material), faces(faces) {}
     ~Solid() {}
 
     Point3D getMiddleGeometry() const { return maxGeometry.getMiddle(); }
-    const QList<Face> *getFaces() const { return &faces; }
+    const std::vector<Face> *getFaces() const { return &faces; }
 
 protected:
-    QList<Face> faces;
+    std::vector<Face> faces;
 };
 
 /*****************************************************************************
@@ -129,11 +130,11 @@ protected:
 class Block : public Solid
 {
 public:
-    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, const QList<SOLID::Variation> &globalVariations = {});
+    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations = {});
 
 private:
     Size3D size;
-    static QList<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, const QList<SOLID::Variation> &globalVariations);
+    static std::vector<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations);
 };
 
 /*****************************************************************************

@@ -1,8 +1,8 @@
 #ifndef COLORLIGHT_H
 #define COLORLIGHT_H
 
-#include <QColor>
-#include "src/3D/maths3D.h"
+#include "../3D/maths3D.h"
+#include "../Qt_compat/QColor.h"
 
 /*****************************************************************************
   ColorLight : la lumière à un certain point de l'espace
@@ -33,6 +33,8 @@
     faire un tableau par récurrence dans la classe ColorLight pour opti (plutot que le ColorLight)
 
  *****************************************************************************/
+
+typedef unsigned char uchar;
 
 struct RGB24
 {

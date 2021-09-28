@@ -1,10 +1,6 @@
 #ifndef TIMESTAMP_H
 #define TIMESTAMP_H
 
-#include <QtGlobal>
-#include <QDebug>
-#include <QDateTime>
-
 /*class Timestamp {
 public:
     Timestamp();

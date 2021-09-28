@@ -43,10 +43,10 @@ bool HRect3D::containsLine(const Point3D &pA, const Vec3D &vDir, const doubli &d
     // t \in [tMin;tMax] => avec un peu de chance (ça dépend de la forme) le tMin est celui d'une face
 }
 
-QDebug operator<<(QDebug debug, const HRect3D &rect)
+std::ostream &operator<<(std::ostream &os, const HRect3D &rect)
 {
-    debug.nospace() << "HRect3D(" << rect.pMin << "->" << rect.pMax << ")";
-    return debug;
+    os << "HRect3D(" << rect.pMin << "->" << rect.pMax << ")";
+    return os;
 }
 
 void Rect3D::scale(const doubli &scale)
@@ -78,10 +78,10 @@ bool Rect3D::contains(const Point3D &point) const
            && pMin.z() <= point.z() && point.z() <= pMax.z();
 }
 
-QDebug operator<<(QDebug debug, const Rect3D &rect)
+std::ostream &operator<<(std::ostream &os, const Rect3D &rect)
 {
-    debug.nospace() << "Rect3D(" << rect.getPointMin() << "->" << rect.getPointMax() << ")";
-    return debug;
+    os << "Rect3D(" << rect.getPointMin() << "->" << rect.getPointMax() << ")";
+    return os;
 }
 
 Plan::Plan(const HRect3D &r) : pA(r.getPointMin())
@@ -115,7 +115,7 @@ Point3DCancelable Plan::intersection(const Point3D &pA, const Point3D &pB) const
     return Point3DCancelable(pA + ABs * t);
 }
 
-QPointF Plan::projeteOrtho(const Point3D &pA) const
+Point2D Plan::projeteOrtho(const Point3D &pA) const
 {
     // donne un point de position relative au plan (à la texture...)
     // un vecteur normal: m(a, b, c) donne la direction du vecteur MM'
@@ -126,7 +126,7 @@ QPointF Plan::projeteOrtho(const Point3D &pA) const
     // on prend direct pA car si c'est pas un point du plan alors pR est son projeté dans l'autreref
     //(si x != 0 alors pA n'est pas sur le plan)
 
-    return QPointF(pR.y(), pR.z());
+    return Point2D(pR.y(), pR.z());
     // ne prend pas en compte la rotation... ! (relative au point A)
 }
 
@@ -153,7 +153,7 @@ void Plan::calcEquation(const Point3D &pB, const Point3D &pC)
     c = 0;
     d = 0;
     if ((xAB == 0 && yAB == 0 && zAB == 0) || (xAC == 0 && yAC == 0 && zAC == 0)) {
-        //qDebug() << "ERROR Plan vecteur nul";
+        //std::cout << "ERROR Plan vecteur nul" << std::endl;
         return;
     }
     doubli nOfb = yAB / yAC, nOfc = zAB / zAC;

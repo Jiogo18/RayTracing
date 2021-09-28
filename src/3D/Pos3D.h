@@ -30,7 +30,7 @@ public:
     bool operator!=(const Rot3D &rot) const;
     bool isNan() const;
 
-    friend QDebug operator<<(QDebug debug, const Rot3D &point);
+    friend std::ostream &operator<<(std::ostream &os, const Rot3D &point);
 
 private:
     radian rXp, rZp;
@@ -47,7 +47,7 @@ inline Rot3D Rot3D::fromVector(const Point3D &v)
 #ifdef NAN_VERIF
     const radian rX = 2 * atan(y / (x + sqrt(x * x + y * y))), rZ = asin(z / vect.distanceOrigine());
     if (isnanf(rX) || isnanf(rZ)) {
-        qDebug() << "Rot3D::fromVector is nan:" << rX << rZ << vect;
+        std::cout << "Rot3D::fromVector is nan: " << rX << " " << rZ << " " << vect << std::endl;
         exit(-1);
     }
 #else
@@ -98,7 +98,7 @@ public:
     bool operator!=(const Pos3D &pos) const;
     bool isNan() const;
 
-    friend QDebug operator<<(QDebug debug, const Pos3D &pos);
+    friend std::ostream &operator<<(std::ostream &os, const Pos3D &pos);
 
 private:
     static Pos3D getRotAsVect(const Point3D &p1, const Point3D &p2);

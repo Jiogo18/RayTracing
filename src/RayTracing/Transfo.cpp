@@ -42,7 +42,7 @@ Rot3D Transfo3D::refractRot(const Rot3D &posOrigin, const Rot3D &pos, float indi
 
 #ifdef NAN_VERIF
     if (Mid.isInf() || Mid.isNan()) {
-        qDebug() << "Transfo::refractRot Mid is nan or inf:" << Mid << indiceRefrac;
+        std::cout << "Transfo::refractRot Mid is nan or inf: " << Mid << " " << indiceRefrac << std::endl;
     }
 #endif // NAN_VERIF
 

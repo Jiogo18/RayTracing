@@ -30,12 +30,9 @@ public:
     EntityAttribute(const EntityAttribute &attribute);
     void setType(ENTITY::Type type) { this->type = type; }
     ENTITY::Type getType() const { return type; }
-    doubli getSpeed(ENTITY::Direction dir) const;
-    void setSpeed(ENTITY::Direction dir, doubli speed)
-    {
-        this->speed.remove(dir);
-        this->speed.insert(dir, speed);
-    }
+    doubli getSpeed(ENTITY::Direction dir) const { return speed[dir]; }
+    void setSpeed(ENTITY::Direction dir, doubli speed) { this->speed[dir] = speed; }
+    void resetSpeed(ENTITY::Direction dir) { this->speed[dir] = baseSpeed(type, dir); }
     doubli getSpeedF() const { return getSpeed(ENTITY::Direction::front); }
     doubli getSpeedB() const { return getSpeed(ENTITY::Direction::back); }
     doubli getSpeedL() const { return getSpeed(ENTITY::Direction::left); }
@@ -44,7 +41,7 @@ public:
     doubli getSpeedD() const { return getSpeed(ENTITY::Direction::bottom); }
 
 private:
-    QMap<int, doubli> speed;
+    doubli speed[6];
     ENTITY::Type type;
 };
 
