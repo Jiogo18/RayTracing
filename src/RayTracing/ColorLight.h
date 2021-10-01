@@ -84,9 +84,9 @@ constexpr inline void ColorLight::operator+=(const ColorLight &c)
     // r = r * poidsSuivant + c.r * poidsActuel;
     // g = g * poidsSuivant + c.g * poidsActuel;
     // b = b * poidsSuivant + c.b * poidsActuel;
-    r += (-r + c.r) * c.a / 255.0;
-    g += (-g + c.g) * c.a / 255.0;
-    b += (-b + c.b) * c.a / 255.0;
+    r += (-r + c.r) * c.a / 255;
+    g += (-g + c.g) * c.a / 255;
+    b += (-b + c.b) * c.a / 255;
     // ne prend pas en comtpe la différence de light
     // et peut être buggé sur plusieurs objets transparents à la suite
     // mais tant pis pour le moment

@@ -14,6 +14,12 @@
 #define M_1_2PI 0.15915494309189533576901767873386
 #define DOUBLI_MIN 1e-10
 
+#ifdef _ASSERT
+#define ASSERT _ASSERT
+#else
+#define ASSERT __glibcxx_assert
+#endif
+
 namespace maths3D {
     typedef long double doubli; // un nombre pour gérer 6 décimales max (arrondit)
     const float signPlus = 1;

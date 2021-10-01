@@ -85,13 +85,13 @@ QImage RayImage::toQImage(const QSize &size) const
 
 uchar *RayImage::operator()(int x, int y)
 {
-    __glibcxx_assert(0 <= x && x < m_width && 0 <= y && y < m_height);
+    ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
     return &d[getDataCnt(x, y)];
 }
 
 void RayImage::setPixel(int x, int y, RGB24 color)
 {
-    __glibcxx_assert(0 <= x && x < m_width && 0 <= y && y < m_height);
+    ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
     uchar *p = &d[getDataCnt(x, y)];
     *p++ = color.b;
     *p++ = color.g;

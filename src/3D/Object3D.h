@@ -5,6 +5,7 @@
 #include "../RayTracing/ColorLight.h"
 #include "../Qt_compat/QImage.h"
 #include <map>
+#include <string>
 
 namespace OBJECT3D {
     static std::map<std::string, QImage> loadedTextures;

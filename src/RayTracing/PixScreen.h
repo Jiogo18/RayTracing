@@ -1,7 +1,7 @@
 #ifndef PIXSCREEN_H
 #define PIXSCREEN_H
 
-#include "../Qt_compat/QSize"
+#include "../Qt_compat/QSize.h"
 
 template<typename T>
 class PixScreenT
