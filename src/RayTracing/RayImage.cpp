@@ -1,7 +1,7 @@
 #include "RayImage.h"
 
 #define charPerPixel 4
-#define ImageFormat QImage::Format_RGB32
+#define ImageFormat Image::Format_RGB32
 
 RayImage::RayImage() : RayImage(1, 1) {}
 
@@ -45,7 +45,7 @@ RayImage &RayImage::operator=(const RayImage &that)
 
         delete[] d;
         d = new uchar[that.getDataLength()];
-        image = QImage(d, m_width, m_height, ImageFormat);
+        image = Image(d, m_width, m_height, ImageFormat);
     }
 
     memcpy(d, that.d, that.getDataLength() * sizeof(uchar));
@@ -78,7 +78,11 @@ RayImage RayImage::scaled(const QSize &size) const
     return image;
 }
 
-QImage RayImage::toQImage(const QSize &size) const
+Image RayImage::toImage() const
+{
+    return image;
+}
+Image RayImage::toImage(const QSize &size) const
 {
     return image.scaled(size);
 }

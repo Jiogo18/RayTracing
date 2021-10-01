@@ -59,7 +59,7 @@ void Thread::startInternalProcess()
     run();
 
     running = false;
-    callbackFunction();
+    if (callbackFunction) callbackFunction();
 }
 
 void Thread::wait(int time)

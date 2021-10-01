@@ -3,7 +3,6 @@
 GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayImage(workerThread->getImage())
 {
 
-    // TODO
     workerThread->connectResultReady([this]() { this->handleWorkerResults(); });
     previousFPS = 0;
     frameCounter = 0;
@@ -25,7 +24,7 @@ void GUI::refresh()
 
     workStartedCallback();
 
-    // workerThread->setSize(getRayTracingSize())->start();
+    workerThread->setSize(getRayTracingSize())->start();
 }
 
 void GUI::switchFPSCounterVisible()
@@ -48,18 +47,30 @@ void GUI::connectOnWorkFinished(std::function<void()> callback)
 }
 
 // garder l'image d'origine mais changer la taille de l'image à l'écran
-// void GUI::paintEvent(QPaintEvent *event)
-// {
-//     // see 2D Painting Example (with OpenGL)
-//     QPainter painter(this);
-//     painter.setRenderHint(QPainter::Antialiasing);
-//     painter.drawImage(0, 0, rayImage->toQImage(size()));
-//     if (showFPSCounter) {
-//         painter.setPen(Qt::white);
-//         painter.drawText(0, 10, QString::number(previousFPS));
-//     }
-//     painter.end();
-// }
+void GUI::paintEvent(HWND hWnd)
+{
+    PAINTSTRUCT ps;
+    HDC hdc = BeginPaint(hWnd, &ps);
+
+    // see 2D Painting Example (with OpenGL)
+    int width = ps.rcPaint.right - ps.rcPaint.left;
+    int height = ps.rcPaint.bottom - ps.rcPaint.top;
+    Image image = rayImage->toImage();
+    for (int y = ps.rcPaint.top; y < ps.rcPaint.bottom; y++) {
+        for (int x = ps.rcPaint.left; x < ps.rcPaint.right; x++) {
+            SetPixel(hdc, x, y, image.pixelRGB(x, y));
+        }
+    }
+    if (showFPSCounter) {
+        // painter.setPen(Qt::white);
+        std::string textFPS = std::to_string(previousFPS);
+        LPCSTR textFPS2 = textFPS.c_str();
+        RECT textFPSRect = {0, 10, 50, 30};
+        DrawText(hdc, (LPCTSTR)textFPS2, textFPS.length(), &textFPSRect, DT_LEFT);
+    }
+
+    EndPaint(hWnd, &ps);
+}
 
 // toute l'image a été actualisée (par le GUIWorker)
 void GUI::handleWorkerResults()
@@ -70,11 +81,6 @@ void GUI::handleWorkerResults()
         workFinishedCallback();
     }
 }
-
-// QSize GUI::getRayTracingSize() const
-// {
-//     return QSize(width() * RAYTRACING::pppH, height() * RAYTRACING::pppV);
-// }
 
 void GUI::onFPSTimeout()
 {

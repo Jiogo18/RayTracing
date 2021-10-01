@@ -36,12 +36,12 @@ std::ostream &operator<<(std::ostream &os, const DebugTime &d)
 {
     os << "DebugTime {";
     for (std::map<std::string, DebugTimePart>::const_iterator i = d.values.cbegin(); i != d.values.cend(); i++) {
-        os << "\n    " << (*i).first << std::endl
-           << "(*" << (*i).second.getNb() << +")" << std::endl
-           << "total:" << (*i).second.getTotal() << std::endl
-           << "moyenne:" << (*i).second.getMoyenne() << std::endl
-           << "min:" << (*i).second.getMin() << std::endl
-           << "max:" << (*i).second.getMax() << std::endl;
+        os << "\n    " << (*i).first
+           << " (*" << (*i).second.getNb() << +")"
+           << " total:" << (*i).second.getTotal()
+           << " moyenne:" << (*i).second.getMoyenne()
+           << " min:" << (*i).second.getMin()
+           << " max:" << (*i).second.getMax();
     }
 
     if (!d.getValues().empty()) {

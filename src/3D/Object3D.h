@@ -3,15 +3,15 @@
 
 #include "Geometry3D.h"
 #include "../RayTracing/ColorLight.h"
-#include "../Qt_compat/QImage.h"
+#include "../Qt_compat/Image.h"
 #include <map>
 #include <string>
 
 namespace OBJECT3D {
-    static std::map<std::string, QImage> loadedTextures;
-    static QImage missingTexture;
+    static std::map<std::string, Image> loadedTextures;
+    static Image missingTexture;
 
-    const QImage *getTexture(const std::string &file);
+    const Image *getTexture(const std::string &file);
 
 } // namespace OBJECT3D
 using namespace OBJECT3D;

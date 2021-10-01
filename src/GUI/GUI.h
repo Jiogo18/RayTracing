@@ -4,6 +4,8 @@
 #include "../World/map3D.h"
 #include "../RayTracing/RayTracing.h"
 #include "../Qt_compat/Timer.h"
+#include <windows.h>
+#include <wingdi.h>
 
 class GUI
 {
@@ -18,10 +20,11 @@ public:
     void connectOnWorkStarted(std::function<void()> callback);
     void connectOnWorkFinished(std::function<void()> callback);
 
+    void paintEvent(HWND hWnd);
+
 private:
-    // void paintEvent(QPaintEvent *event) override;
     void handleWorkerResults();
-    // QSize getRayTracingSize() const;
+    virtual QSize getRayTracingSize() const = 0;
     void onFPSTimeout();
 
     RayTracing *workerThread;

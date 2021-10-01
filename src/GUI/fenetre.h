@@ -47,8 +47,8 @@ public:
     fenetre(HINSTANCE hInstance, map3D *map);
     ~fenetre();
 
-    // void keyPressEvent(QKeyEvent *event) override;
-    // void keyReleaseEvent(QKeyEvent *event) override;
+    void keyPressEvent(int key, int status);
+    void keyReleaseEvent(int key, int status);
     //void mouseMoveEvent(QMouseEvent *event) override;
     //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
     //QPoint MidWindow();
@@ -60,9 +60,10 @@ public:
     void show(int nShowCmd);
 
 private:
-    static void PaintWindow(HDC hdc, RECT rcPaint);
     HWND hWnd;
-    friend LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    QSize getRayTracingSize() const;
+    static fenetre *getFenetreFromHWND(HWND hWnd);
 
     void onWorkStarted();
     void onWorkFinished();

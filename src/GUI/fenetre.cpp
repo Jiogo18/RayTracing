@@ -3,34 +3,39 @@
 #define PIXELS_WIDTH 150
 #define PIXELS_HEIGHT 100
 
-LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+#ifndef GWL_USERDATA
+#define GWL_USERDATA -21
+#endif // GWL_USERDATA
+
+LRESULT CALLBACK fenetre::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) {
     case WM_DESTROY:
         PostQuitMessage(0);
+        exit(0);
         return 0;
 
     case WM_PAINT: {
-        PAINTSTRUCT ps;
-        // if (!*is_updated) {
-        // std::cout << "[WindowProc/WM_PAINT] HWND: " << hWnd << " " << wParam << " " << lParam << std::endl;
-        HDC hdc = BeginPaint(hWnd, &ps);
-
-        // std::cout << "[WindowProc/WM_PAINT] "
-        // 		  << "{" << ps.rcPaint.left << "=>" << ps.rcPaint.right
-        // 		  << ", " << ps.rcPaint.top << "=>" << ps.rcPaint.bottom << "}" << std::endl;
-        // PaintWindow(hdc, ps.rcPaint);
-        EndPaint(hWnd, &ps);
-        // *is_updated = true;
-        // }
-
+        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
+        pThis->paintEvent(hWnd);
         return 0;
+    }
+    case WM_KEYDOWN: {
+        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
+        pThis->keyPressEvent(wParam, lParam);
+        break;
+    }
+    case WM_KEYUP: {
+        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
+        pThis->keyReleaseEvent(wParam, lParam);
+        break;
     }
     default:
         // Process other messages.
         // std::cout << "[WindowProc/" << uMsg << "] " << wParam << " " << lParam << std::endl;
-        return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        break;
     }
+    return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
@@ -65,6 +70,8 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
         throw "Failed to create WingdiWindow";
     }
 
+    SetWindowLongPtr(hWnd, GWL_USERDATA, reinterpret_cast<LONG_PTR>(this));
+
     // std::cout << "[WinMain] PaintWindow Timer #" << SetTimer(hWnd, 0, 50, (TIMERPROC)TimerProc) << " created! (20 FPS)" << std::endl;
 
     connectOnWorkStarted([this]() { this->onWorkStarted(); });
@@ -91,42 +98,44 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
 
 fenetre::~fenetre() {}
 
-// void fenetre::keyPressEvent(QKeyEvent *event)
-// {
-//     if (event->isAutoRepeat()) return;
-//     if (KEY::keyConfig.contains(event->key())) {
-//         keysPressed |= (1 << KEY::keyConfig.value(event->key())); // add the key
-//         if (keysPressed && !timerKeyPress.isActive()) {
-//             timerKeyPress.start();
-//         }
-//     } else {
-//         switch (event->key()) {
-//         case Qt::Key_F5:
-//             refresh();
-//             break;
-//         case Qt::Key_F6:
-//             switchFPSCounterVisible();
-//             break;
-//         case Qt::Key_F7:
-//             speedTest();
-//             break;
-//         case Qt::Key_F8:
-//             loadMapFile();
-//             break;
-//         }
-//     }
-// }
+void fenetre::keyPressEvent(int key, int status)
+{
+    if (status == 1077870593) return; // auto repeat == 403F0001 (KLF_RESET?)
+    std::cout << "keyPressEvent: " << key << " " << status << std::endl;
+    // if (KEY::keyConfig.contains(key)) {
+    //     keysPressed |= (1 << KEY::keyConfig.value(key)); // add the key
+    //     if (keysPressed && !timerKeyPress.isActive()) {
+    //         timerKeyPress.start();
+    //     }
+    // } else {
+    switch (key) {
+    case VK_F5:
+        refresh();
+        break;
+    case VK_F6:
+        switchFPSCounterVisible();
+        break;
+    case VK_F7:
+        speedTest();
+        break;
+    case VK_F8:
+        loadMapFile();
+        break;
+    }
+    // }
+}
 
-// void fenetre::keyReleaseEvent(QKeyEvent *event)
-// {
-//     if (event->isAutoRepeat()) return;
-//     if (KEY::keyConfig.contains(event->key())) {
-//         keysPressed ^= (1 << KEY::keyConfig.value(event->key())); // remove the key
-//         if (!keysPressed && timerKeyPress.isActive()) {
-//             timerKeyPress.stop();
-//         }
-//     }
-// }
+void fenetre::keyReleaseEvent(int key, int status)
+{
+    if (status == 1077870593) return; // auto repeat
+    std::cout << "keyReleaseEvent: " << key << " " << status << std::endl;
+    // if (KEY::keyConfig.contains(key)) {
+    //     keysPressed ^= (1 << KEY::keyConfig.value(key)); // remove the key
+    //     if (!keysPressed && timerKeyPress.isActive()) {
+    //         timerKeyPress.stop();
+    //     }
+    // }
+}
 
 void fenetre::speedTest()
 {
@@ -175,6 +184,18 @@ void fenetre::show(int nShowCmd)
 
 //QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
 //void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
+
+QSize fenetre::getRayTracingSize() const
+{
+    RECT rect;
+    GetWindowRect(hWnd, &rect);
+    return QSize(rect.right - rect.left - 16, rect.bottom - rect.top - 38);
+}
+
+fenetre *fenetre::getFenetreFromHWND(HWND hWnd)
+{
+    return reinterpret_cast<fenetre *>(GetWindowLongPtr(hWnd, GWL_USERDATA));
+}
 
 void fenetre::onWorkStarted()
 {

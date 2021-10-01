@@ -2,7 +2,7 @@
 
 Point2D Point2D::operator-(const Point2D &p) const
 {
-    return Point2D(xp + p.xp, yp - p.yp);
+    return Point2D(xp - p.xp, yp - p.yp);
 }
 
 std::ostream &operator<<(std::ostream &os, const Point2D &p)

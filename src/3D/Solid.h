@@ -91,7 +91,7 @@ public:
     constexpr inline bool getOrientation() const { return orientation; }
     ColorLight getColor(const Point2D &point) const;
     constexpr inline const std::string &getTexture() const { return texture; }
-    constexpr inline const QImage *getTextureImg() const { return textureImg; }
+    constexpr inline const Image *getTextureImg() const { return textureImg; }
     Rot3D boundRot(const Rot3D &rot) const;
     Rot3D refractRot(const Rot3D &pos, float indiceRefrac) const;
     bool containsPoint(const Point3D &point) const override;
@@ -99,7 +99,7 @@ public:
 private:
     SOLID::Variation variations;
     std::string texture;
-    const QImage *textureImg = nullptr; // TODO : object Texture avec les ColorLight direct dedans
+    const Image *textureImg = nullptr; // TODO : object Texture avec les ColorLight direct dedans
     Plan plan;
     Point2D pC;
     bool orientation; // true dans le sens positif du plan
