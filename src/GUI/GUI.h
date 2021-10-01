@@ -3,6 +3,7 @@
 
 #include "../World/map3D.h"
 #include "../RayTracing/RayTracing.h"
+#include "../Qt_compat/Timer.h"
 
 class GUI
 {
@@ -14,9 +15,8 @@ public:
     inline bool isPainting() const { return workerThread->isRunning(); }
     void switchFPSCounterVisible();
 
-    // signals:
-    void workStarted();
-    void workFinished();
+    void connectOnWorkStarted(std::function<void()> callback);
+    void connectOnWorkFinished(std::function<void()> callback);
 
 private:
     // void paintEvent(QPaintEvent *event) override;
@@ -29,8 +29,11 @@ private:
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
-    // QTimer timerFPS;
+    Timer timerFPS;
     const RayImage *rayImage;
+
+    std::function<void()> workStartedCallback;
+    std::function<void()> workFinishedCallback;
 };
 
 #endif // GUI_H

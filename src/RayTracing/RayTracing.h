@@ -4,7 +4,7 @@
 #include "Worker.h"
 #include "RayImage.h"
 
-class RayTracing
+class RayTracing : public Thread
 {
 public:
     RayTracing(const map3D *map);
@@ -16,16 +16,10 @@ public:
         return this;
     }
     const RayImage *getImage() const { return &image; }
-    bool isRunning() { return running || workerDistributor->isRunning(); }
-
-    void start() {}
-    void quit() { quit_asked = true; }
-    void wait(int timeout) { thread.join(); }
-
+    bool isRunning() { return Thread::isRunning() || workerDistributor->isRunning(); }
     // private slots:
 
-    // signals:
-    void resultReady();
+    void connectResultReady(std::function<void()> callback);
 
 private:
     void onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
@@ -53,9 +47,7 @@ private:
 
     RayImage image;
 
-    std::thread thread;
-    bool running = false;
-    bool quit_asked = false;
+    std::function<void()> resultReadyCallback;
 };
 
 constexpr inline double RayTracing::calcTotalLight() const

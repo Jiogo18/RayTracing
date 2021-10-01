@@ -1,8 +1,9 @@
 #include "Worker.h"
 
-RayTracingWorker::RayTracingWorker() : workerId(-1), rtRess(nullptr), totalLight(nullptr) {}
+RayTracingWorker::RayTracingWorker() : Thread(), workerId(-1), rtRess(nullptr), totalLight(nullptr) {}
 
-RayTracingWorker::RayTracingWorker(const int &workerId, RayTracingRessources *rtRess) : workerId(workerId),
+RayTracingWorker::RayTracingWorker(const int &workerId, RayTracingRessources *rtRess) : Thread(),
+                                                                                        workerId(workerId),
                                                                                         rtRess(rtRess),
                                                                                         totalLight(nullptr)
 {}
@@ -29,6 +30,11 @@ RayTracingWorker *RayTracingWorker::setPrimaryWork(const QSize &sceneSize, const
         totalLight = new int[nbColumn];
     }
     return this;
+}
+
+void RayTracingWorker::connectResultReady(std::function<void(int, int, const PixScreen<ColorLight> &, const int *)> callback)
+{
+    resultReadyCallback = callback;
 }
 
 void RayTracingWorker::run()
@@ -69,7 +75,7 @@ void RayTracingWorker::run()
         rtRess->dt->addValue("RayTracingWorker::run_colors", rtRess->dt->getCurrent() - start);
     }
 
-    // emit resultReady(xScene, i, colors, totalLight);
+    resultReadyCallback(xScene, i, colors, totalLight);
 }
 
 RayTracingDistributor::RayTracingDistributor(RayTracingRessources *rtRess)
@@ -77,7 +83,7 @@ RayTracingDistributor::RayTracingDistributor(RayTracingRessources *rtRess)
     workers = new RayTracingWorker[nb_workers];
     for (int i = 0; i < nb_workers; i++) {
         workers[i] = RayTracingWorker(i, rtRess);
-        // connect(&workers[i], &QThread::finished, this, &RayTracingDistributor::onRayWorkerFinished);
+        workers[i].connectOnFinished([this]() { onRayWorkerFinished(); });
     }
 }
 

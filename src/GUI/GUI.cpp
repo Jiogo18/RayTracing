@@ -4,11 +4,11 @@ GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayIma
 {
 
     // TODO
-    // connect(workerThread, &RayTracing::resultReady, this, &GUI::handleWorkerResults);
+    workerThread->connectResultReady([this]() { this->handleWorkerResults(); });
     previousFPS = 0;
     frameCounter = 0;
-    // timerFPS.setInterval(1000);
-    // connect(&timerFPS, &QTimer::timeout, this, &GUI::onFPSTimeout);
+    timerFPS.setInterval(1000);
+    timerFPS.connectOnTimeout([this]() { this->onFPSTimeout(); });
 }
 
 GUI::~GUI()
@@ -23,7 +23,7 @@ void GUI::refresh()
 {
     if (isPainting()) return;
 
-    // emit workStarted();
+    workStartedCallback();
 
     // workerThread->setSize(getRayTracingSize())->start();
 }
@@ -32,10 +32,19 @@ void GUI::switchFPSCounterVisible()
 {
     showFPSCounter = !showFPSCounter;
     if (showFPSCounter) {
-        // timerFPS.start();
+        timerFPS.start();
     } else {
-        // timerFPS.stop();
+        timerFPS.stop();
     }
+}
+
+void GUI::connectOnWorkStarted(std::function<void()> callback)
+{
+    workStartedCallback = callback;
+}
+void GUI::connectOnWorkFinished(std::function<void()> callback)
+{
+    workFinishedCallback = callback;
 }
 
 // garder l'image d'origine mais changer la taille de l'image à l'écran
@@ -58,7 +67,7 @@ void GUI::handleWorkerResults()
     frameCounter++;
     // repaint();
     if (!isPainting()) {
-        // emit workFinished();
+        workFinishedCallback();
     }
 }
 

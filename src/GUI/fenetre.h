@@ -69,7 +69,7 @@ private:
     void onSpeedTestFinished();
 
     void updatePressPosition();
-    // QTimer timerRefresh;
+    Timer timerRefresh;
     int64_t lastRefreshTime;
     int64_t lastRefreshDuration;
     map3D *map = nullptr;

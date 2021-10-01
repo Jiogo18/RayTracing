@@ -1,6 +1,6 @@
 #include "RayTracing.h"
 
-RayTracing::RayTracing(const map3D *map) : map(map)
+RayTracing::RayTracing(const map3D *map) : Thread(), map(map)
 {
     rtRess = new RayTracingRessources(map->getWorld(), map->getClient(), &dt);
 
@@ -9,7 +9,7 @@ RayTracing::RayTracing(const map3D *map) : map(map)
     workerDistributor = new RayTracingDistributor(rtRess);
     RayTracingWorker *rayWorkers = workerDistributor->getWorkers();
     for (int i = 0; i < workerDistributor->nb_workers; i++) {
-        // connect(&rayWorkers[i], &RayTracingWorker::resultReady, this, &RayTracing::onRayWorkerReady);
+        rayWorkers[i].connectResultReady([this](int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight) { this->onRayWorkerReady(x, nbColumns, c, totalLight); });
     }
 }
 
@@ -18,6 +18,11 @@ RayTracing::~RayTracing()
     delete workerDistributor;
     delete rtRess;
     if (lightPerColumn != nullptr) delete[] lightPerColumn;
+}
+
+void RayTracing::connectResultReady(std::function<void()> callback)
+{
+    resultReadyCallback = callback;
 }
 
 void RayTracing::onRayWorkerReady(const int &x, const int &nbColumns, const PixScreen<ColorLight> &c, const int *totalLight)
@@ -137,7 +142,7 @@ void RayTracing::paint()
     }
 
     dt.addValue("paint", dt.getCurrent() - start);
-    // emit resultReady();
+    resultReadyCallback();
 }
 
 void RayTracing::onAllWorkersFinished()

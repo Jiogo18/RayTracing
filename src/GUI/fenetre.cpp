@@ -67,8 +67,8 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
 
     // std::cout << "[WinMain] PaintWindow Timer #" << SetTimer(hWnd, 0, 50, (TIMERPROC)TimerProc) << " created! (20 FPS)" << std::endl;
 
-    // connect(this, &GUI::workStarted, this, &fenetre::onWorkStarted);
-    // connect(this, &GUI::workFinished, this, &fenetre::onWorkFinished);
+    connectOnWorkStarted([this]() { this->onWorkStarted(); });
+    connectOnWorkFinished([this]() { this->onWorkFinished(); });
     //setCursor(Qt::BlankCursor);
 
     // show();
@@ -81,8 +81,8 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
     lastRefreshTime = 0;
     refresh();
 
-    // timerRefresh.setSingleShot(true);
-    // QObject::connect(&timerRefresh, &QTimer::timeout, this, &GUI::refresh);
+    timerRefresh.setSingleShot(true);
+    timerRefresh.connectOnFinished([this]() { this->refresh(); });
 
     // timerKeyPress.setInterval(40); // 25 FPS max (vitesse de déplacement & de rafraichissement auto)
     // QObject::connect(&timerKeyPress, &QTimer::timeout, this, &fenetre::updatePressPosition);
@@ -219,7 +219,7 @@ void fenetre::updatePressPosition()
     //std::cout << "pos client " << map->getClient()->getPos() << std::endl;
     if (isPainting()) {
         // actu à la fin du repaint en cours
-        // timerRefresh.start(lastRefreshDuration);
+        timerRefresh.start(lastRefreshDuration);
     } else {
         refresh();
     }

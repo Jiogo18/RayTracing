@@ -1,12 +1,12 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include <thread>
+#include "../Qt_compat/Thread.h"
 #include "Ressources.h"
 #include "PixScreen.h"
 #include "Ray.h"
 
-class RayTracingWorker
+class RayTracingWorker : public Thread
 {
 public:
     RayTracingWorker();
@@ -23,18 +23,7 @@ public:
     constexpr inline const int &getWorkerId() const { return workerId; };
     constexpr inline int getNbColumn() const { return min(nbColumn, sceneSize.width() - xScene); }
 
-    // signals:
-    void resultReady(int x, int nbColumns, const PixScreen<ColorLight> &c, const int *totalLight);
-
-    // TODO
-    void start() { running = false; }
-    bool isRunning() const { return running; }
-    void quit() { quit_asked = true; }
-    void wait(int time)
-    {
-        this->thread->join();
-        running = false;
-    }
+    void connectResultReady(std::function<void(int, int, const PixScreen<ColorLight> &, const int *)> callback);
 
 private:
     void run(); // process ONE column at a time (more with nbColumn)
@@ -47,9 +36,7 @@ private:
     int *totalLight = nullptr;
     PixScreen<ColorLight> colors;
 
-    std::thread *thread = nullptr;
-    bool running = false;
-    bool quit_asked = false;
+    std::function<void(int, int, const PixScreen<ColorLight> &, const int *)> resultReadyCallback; // x, nbColumns, c, tootalLight
 };
 
 class RayTracingDistributor
