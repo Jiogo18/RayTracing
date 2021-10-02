@@ -2,6 +2,7 @@
 
 Image::Image() : widthp(0), heightp(0)
 {
+    ASSERT(widthp >= 0 && heightp >= 0);
     int pixels = getPixels();
     red = new uchar[pixels];
     green = new uchar[pixels];
@@ -10,6 +11,7 @@ Image::Image() : widthp(0), heightp(0)
 
 Image::Image(int width, int height, Image::Format format) : widthp(width), heightp(height)
 {
+    ASSERT(widthp >= 0 && heightp >= 0);
     int pixels = getPixels();
     red = new uchar[pixels];
     green = new uchar[pixels];
@@ -18,6 +20,7 @@ Image::Image(int width, int height, Image::Format format) : widthp(width), heigh
 
 Image::Image(const QSize &size) : widthp(size.width()), heightp(size.height())
 {
+    ASSERT(widthp >= 0 && heightp >= 0);
     int pixels = getPixels();
     red = new uchar[pixels];
     green = new uchar[pixels];
@@ -26,6 +29,7 @@ Image::Image(const QSize &size) : widthp(size.width()), heightp(size.height())
 
 Image::Image(const uchar *data, int width, int height, Image::Format format) : widthp(width), heightp(height)
 {
+    ASSERT(widthp >= 0 && heightp >= 0);
     int pixels = getPixels();
     red = new uchar[pixels];
     green = new uchar[pixels];
@@ -34,6 +38,7 @@ Image::Image(const uchar *data, int width, int height, Image::Format format) : w
 
 Image::Image(const Image &image) : widthp(image.widthp), heightp(image.heightp)
 {
+    ASSERT(widthp >= 0 && heightp >= 0);
     int pixels = getPixels();
     red = new uchar[pixels];
     green = new uchar[pixels];

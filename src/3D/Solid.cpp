@@ -112,8 +112,8 @@ ColorLight Face::getColor(const Point2D &point) const
     if (textureImg != nullptr) {
         if (0 <= point.x() && point.x() <= 1 && 0 <= point.y() && point.y() <= 1) {
             // switch selon les positions ? => via fichier + peut etre
-            return ColorLight{textureImg->pixelColor(maths3D::min(point.x() * textureImg->width(), textureImg->width() - 1),
-                                                     maths3D::min(point.y() * textureImg->height(), textureImg->height() - 1)),
+            return ColorLight{textureImg->pixelColor(min(point.x() * textureImg->width(), textureImg->width() - 1),
+                                                     min(point.y() * textureImg->height(), textureImg->height() - 1)),
                               SOLID::getLight(getMaterial(), variations)};
         } else {
             std::cout << "Face::getColor point pas dans le cadre: " << point << std::endl;

@@ -38,6 +38,7 @@
 
 # Visual Studio
 /Debug
+/x64
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user

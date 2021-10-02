@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include "../3D/maths3D.h"
 
 class QSize
 {
