@@ -30,9 +30,9 @@ public:
     EntityAttribute(const EntityAttribute &attribute);
     void setType(ENTITY::Type type) { this->type = type; }
     ENTITY::Type getType() const { return type; }
-    doubli getSpeed(ENTITY::Direction dir) const { return speed[dir]; }
+    doubli getSpeed(ENTITY::Direction dir) const { return isnan(speed[dir]) ? ENTITY::baseSpeed(type, dir) : speed[dir]; }
     void setSpeed(ENTITY::Direction dir, doubli speed) { this->speed[dir] = speed; }
-    void resetSpeed(ENTITY::Direction dir) { this->speed[dir] = baseSpeed(type, dir); }
+    void resetSpeed(ENTITY::Direction dir) { this->speed[dir] = NAN; }
     doubli getSpeedF() const { return getSpeed(ENTITY::Direction::front); }
     doubli getSpeedB() const { return getSpeed(ENTITY::Direction::back); }
     doubli getSpeedL() const { return getSpeed(ENTITY::Direction::left); }
