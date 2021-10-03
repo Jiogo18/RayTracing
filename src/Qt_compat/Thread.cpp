@@ -65,7 +65,8 @@ void Thread::startInternalProcess()
 void Thread::wait(int time)
 {
     int timeout = getCurrentMsSinceLocal() + time;
+    int sleep_time = time > 10 ? 10 : time;
     while (isRunning() && getCurrentMsSinceLocal() < timeout) {
-        sleepMs(10);
+        sleepMs(sleep_time);
     }
 }
