@@ -2,6 +2,6 @@
 
 std::ostream &operator<<(std::ostream &os, const QSize &size)
 {
-    os << "QSize(" << size.widthp << "," << size.heightp << ")" << std::endl;
+    os << "QSize(" << size.widthp << "," << size.heightp << ")";
     return os;
 }
