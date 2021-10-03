@@ -4,8 +4,7 @@
 #include "../World/map3D.h"
 #include "../RayTracing/RayTracing.h"
 #include "../Qt_compat/Timer.h"
-#include <windows.h>
-#include <wingdi.h>
+#include "winapi.h"
 
 class GUI
 {
@@ -16,6 +15,7 @@ public:
     void refresh();
     inline bool isPainting() const { return workerThread->isRunning(); }
     void switchFPSCounterVisible();
+    void updateFPSCounter();
 
     void connectOnWorkStarted(std::function<void()> callback);
     void connectOnWorkFinished(std::function<void()> callback);
@@ -24,16 +24,19 @@ public:
 
 private:
     void handleWorkerResults();
-    virtual QSize getRayTracingSize() const = 0;
-    void onFPSTimeout();
+    virtual QSize getWindowSize() const = 0;
+    QSize getRayTracingSize() const;
 
     RayTracing *workerThread;
     const map3D *map;
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
-    Timer timerFPS;
     const RayImage *rayImage;
+
+    HBITMAP hBitmap = NULL;
+    BYTE *hBmpPixels = nullptr;
+    BITMAPINFO MyBMInfo = {0};
 
     std::function<void()> workStartedCallback;
     std::function<void()> workFinishedCallback;

@@ -2,16 +2,17 @@
 
 GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayImage(workerThread->getImage())
 {
-
     workerThread->connectResultReady([this]() { this->handleWorkerResults(); });
     previousFPS = 0;
     frameCounter = 0;
-    timerFPS.setInterval(1000);
-    timerFPS.connectOnTimeout([this]() { this->onFPSTimeout(); });
 }
 
 GUI::~GUI()
 {
+    delete[] hBmpPixels;
+    hBmpPixels = nullptr;
+    DeleteObject(hBitmap);
+
     workerThread->quit();
     workerThread->wait(5000);
     delete workerThread;
@@ -30,11 +31,12 @@ void GUI::refresh()
 void GUI::switchFPSCounterVisible()
 {
     showFPSCounter = !showFPSCounter;
-    if (showFPSCounter) {
-        timerFPS.start();
-    } else {
-        timerFPS.stop();
-    }
+}
+
+void GUI::updateFPSCounter()
+{
+    previousFPS = frameCounter;
+    frameCounter = 0;
 }
 
 void GUI::connectOnWorkStarted(std::function<void()> callback)
@@ -52,24 +54,58 @@ void GUI::paintEvent(HWND hWnd)
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hWnd, &ps);
 
-    // see 2D Painting Example (with OpenGL)
-    int width = ps.rcPaint.right - ps.rcPaint.left;
-    int height = ps.rcPaint.bottom - ps.rcPaint.top;
-    Image image = rayImage->toImage();
-    for (int y = ps.rcPaint.top; y < ps.rcPaint.bottom; y++) {
-        for (int x = ps.rcPaint.left; x < ps.rcPaint.right; x++) {
-            SetPixel(hdc, x, y, image.pixelRGB(x, y));
-        }
+    QSize size = getWindowSize();
+    if (size.width() != MyBMInfo.bmiHeader.biWidth || size.height() != MyBMInfo.bmiHeader.biHeight) {
+        DeleteObject(hBitmap);
+        hBitmap = NULL;
+        delete[] hBmpPixels;
+        hBmpPixels = nullptr;
     }
+    if (!hBmpPixels) {
+        hBitmap = CreateCompatibleBitmap(hdc, size.width(), size.height());
+
+        // get the bitmap header
+        MyBMInfo.bmiHeader.biSize = sizeof(MyBMInfo.bmiHeader); // LPBITMAPINFO lpbmi
+        GetDIBits(hdc, hBitmap, 0, 0, NULL, &MyBMInfo, DIB_RGB_COLORS);
+
+        // create the bitmap buffer
+        hBmpPixels = new BYTE[MyBMInfo.bmiHeader.biSizeImage];
+        // Better do this here - the original bitmap might have BI_BITFILEDS, which makes it
+        // necessary to read the color table - you might not want this.
+        MyBMInfo.bmiHeader.biCompression = BI_RGB;
+
+        // get the actual bitmap buffer
+        GetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
+    }
+
+    Image image = rayImage->toImage();
+    image.fillBitmapPixels(hBmpPixels, MyBMInfo.bmiHeader.biSizeImage);
+    SetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
+
+    HBRUSH brush = CreatePatternBrush(hBitmap);
+    FillRect(hdc, &ps.rcPaint, brush);
+    DeleteObject(brush);
+
     if (showFPSCounter) {
-        // painter.setPen(Qt::white);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        SetBkMode(hdc, TRANSPARENT);
+        SetBkColor(hdc, 0);
         std::string textFPS = std::to_string(previousFPS);
-        LPCSTR textFPS2 = textFPS.c_str();
-        RECT textFPSRect = {0, 10, 50, 30};
-        DrawText(hdc, (LPCTSTR)textFPS2, textFPS.length(), &textFPSRect, DT_LEFT);
+        RECT textFPSRect = {0, 0, 30, 20};
+
+        const TCHAR *pstring = nullptr;
+#ifdef UNICODE
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring wstr = converter.from_bytes(textFPS);
+        pstring = wstr.data();
+#else
+        pstring = textFPS.data();
+#endif
+        DrawText(hdc, pstring, textFPS.length(), &textFPSRect, DT_LEFT);
     }
 
     EndPaint(hWnd, &ps);
+    ReleaseDC(hWnd, hdc);
 }
 
 // toute l'image a été actualisée (par le GUIWorker)
@@ -82,8 +118,7 @@ void GUI::handleWorkerResults()
     }
 }
 
-void GUI::onFPSTimeout()
+QSize GUI::getRayTracingSize() const
 {
-    previousFPS = frameCounter;
-    frameCounter = 0;
+    return getWindowSize();
 }

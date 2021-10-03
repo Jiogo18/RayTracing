@@ -34,6 +34,7 @@ public:
 
     QColor pixelColor(int x, int y) const;
     COLORREF pixelRGB(int x, int y) const;
+    void fillBitmapPixels(BYTE *bytes, int size) const;
 
     void fill(QColor color);
     void setPixelColor(int x, int y, QColor color);

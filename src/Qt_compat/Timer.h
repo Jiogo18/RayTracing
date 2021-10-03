@@ -36,6 +36,44 @@ protected:
 
 private:
     bool single_shot = false;
-    int interval;
+    int interval = 0;
     std::function<void()> timeoutFunction;
+};
+
+class SingleShotTimer : public Thread
+{
+public:
+    SingleShotTimer() {}
+
+    void start()
+    {
+        end_time = getCurrentMsSinceLocal() + interval;
+        if (!isRunning())
+            Thread::start();
+    }
+    void start(int interval)
+    {
+        this->interval = interval;
+        end_time = getCurrentMsSinceLocal() + interval;
+        if (!isRunning())
+            Thread::start();
+    }
+    void setInterval(int interval) { this->interval = interval; }
+    void stop()
+    {
+        Thread::stop();
+    }
+
+protected:
+    void run()
+    {
+        int remaning;
+        while ((remaning = end_time - getCurrentMsSinceLocal()) > 0) {
+            sleepMs(remaning); // Sleep until you reach 'end_time'
+        }
+    }
+
+private:
+    int interval = 0;
+    int end_time;
 };

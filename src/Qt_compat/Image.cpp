@@ -82,7 +82,18 @@ QColor Image::pixelColor(int x, int y) const
 
 COLORREF Image::pixelRGB(int x, int y) const
 {
-    return RGB(red[x], green[x], blue[x]);
+    int pixel = x + y * widthp;
+    return RGB(red[pixel], green[pixel], blue[pixel]);
+}
+
+void Image::fillBitmapPixels(BYTE *bytes, int size) const
+{
+    int pixels = MIN(size / 4, getPixels());
+    for (int i = 0; i < pixels; i++) {
+        bytes[4 * i + 0] = red[i];
+        bytes[4 * i + 1] = green[i];
+        bytes[4 * i + 2] = blue[i];
+    }
 }
 
 void Image::fill(QColor color)

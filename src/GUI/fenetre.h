@@ -14,31 +14,24 @@
 // si un jour on veut retirer le contrôle sur le GUI (quand rafraichir, keyPress...)
 // on aura juste à modifier cette classe
 
+#define TIMER_POSITION 0
+#define TIMER_FPS 1
+
 namespace KEY {
     enum keyAction {
-        forward,
-        back,
-        left,
-        right,
-        up,
-        down,
-        up_rot,
-        down_rot,
-        left_rot,
-        right_rot
+        none = 0,
+        forward = (1 << 0),
+        back = (1 << 1),
+        left = (1 << 2),
+        right = (1 << 3),
+        up = (1 << 4),
+        down = (1 << 5),
+        up_rot = (1 << 6),
+        down_rot = (1 << 7),
+        left_rot = (1 << 8),
+        right_rot = (1 << 9)
     };
-    // const std::vector<std::pair<int, keyAction>> keyConfig = {
-    //     std::pair<int, keyAction>(Qt::Key_Z, forward),
-    //     {Qt::Key_S, back},
-    //     {Qt::Key_Q, left},
-    //     {Qt::Key_D, right},
-    //     {Qt::Key_Space, up},
-    //     {Qt::Key_Shift, down},
-    //     {Qt::Key_Up, up_rot},
-    //     {Qt::Key_Down, down_rot},
-    //     {Qt::Key_Left, left_rot},
-    //     {Qt::Key_Right, right_rot},
-    // };
+    int getKeyAction(int key);
 } // namespace KEY
 
 class fenetre : public GUI
@@ -61,16 +54,18 @@ public:
 
 private:
     HWND hWnd;
-    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    QSize getRayTracingSize() const;
+    QSize getWindowSize() const;
     static fenetre *getFenetreFromHWND(HWND hWnd);
+    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    static void TimerPositionProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp);
+    static void TimerFPSProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp);
 
     void onWorkStarted();
     void onWorkFinished();
     void onSpeedTestFinished();
 
     void updatePressPosition();
-    Timer timerRefresh;
+    SingleShotTimer timerRefresh;
     int64_t lastRefreshTime;
     int64_t lastRefreshDuration;
     map3D *map = nullptr;
