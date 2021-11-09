@@ -42,3 +42,7 @@
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+# CMake
+CMakeCache.txt
+CMakeFiles
