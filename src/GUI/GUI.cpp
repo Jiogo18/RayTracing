@@ -78,8 +78,7 @@ void GUI::paintEvent(HWND hWnd)
         GetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
     }
 
-    Image image = rayImage->toImage();
-    image.fillBitmapPixels(hBmpPixels, MyBMInfo.bmiHeader.biSizeImage);
+    rayImage->fillBitmapPixels(hBmpPixels, MyBMInfo.bmiHeader.biSizeImage);
     SetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
 
     HBRUSH brush = CreatePatternBrush(hBitmap);

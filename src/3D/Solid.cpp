@@ -107,7 +107,7 @@ Face::Face(const Face &face) : SolidBase(face),
 
 ColorLight Face::getColor(const Point2D &point) const
 {
-#define FacegetColor 1
+#define FacegetColor 2
 #if FacegetColor == 1 // image
     if (textureImg != nullptr) {
         if (0 <= point.x() && point.x() <= 1 && 0 <= point.y() && point.y() <= 1) {
@@ -121,34 +121,32 @@ ColorLight Face::getColor(const Point2D &point) const
         }
     }
 #elif FacegetColor == 2 // colored
-    //int casesDone = 0;
-    for (int i = 0; i < variations.size(); i++) {
-        switch (variations.at(i)) {
-        case SOLID::Variation::top:
-            //if(casesDone & 1) continue;
-            //casesDone = casesDone | 1;
-            return ColorLight{100, 100, 200, 250, 1};
-        case SOLID::Variation::bottom:
-            //if(casesDone & 2) continue;
-            //casesDone = casesDone | 2;
-            return ColorLight{200, 200, 100, 250, 1};
-        case SOLID::Variation::front:
-            //if(casesDone & 4) continue;
-            //casesDone = casesDone | 4;
-            return ColorLight{200, 100, 100, 250, 1};
-        case SOLID::Variation::back:
-            //if(casesDone & 8) continue;
-            //casesDone = casesDone | 8;
-            return ColorLight{100, 200, 200, 250, 1};
-        case SOLID::Variation::left:
-            //if(casesDone & 16) continue;
-            //casesDone = casesDone | 16;
-            return ColorLight{100, 200, 100, 250, 1};
-        case SOLID::Variation::right:
-            //if(casesDone & 32) continue;
-            //casesDone = casesDone | 32;
-            return ColorLight{200, 100, 200, 250, 1};
-        }
+    // int casesDone = 0;
+    switch (variations) {
+    case SOLID::Variation::top:
+        // if(casesDone & 1) continue;
+        // casesDone = casesDone | 1;
+        return ColorLight{100, 100, 200, 250, 1};
+    case SOLID::Variation::bottom:
+        // if(casesDone & 2) continue;
+        // casesDone = casesDone | 2;
+        return ColorLight{200, 200, 100, 250, 1};
+    case SOLID::Variation::front:
+        // if(casesDone & 4) continue;
+        // casesDone = casesDone | 4;
+        return ColorLight{200, 100, 100, 250, 1};
+    case SOLID::Variation::back:
+        // if(casesDone & 8) continue;
+        // casesDone = casesDone | 8;
+        return ColorLight{100, 200, 200, 250, 1};
+    case SOLID::Variation::left:
+        // if(casesDone & 16) continue;
+        // casesDone = casesDone | 16;
+        return ColorLight{100, 200, 100, 250, 1};
+    case SOLID::Variation::right:
+        // if(casesDone & 32) continue;
+        // casesDone = casesDone | 32;
+        return ColorLight{200, 100, 200, 250, 1};
     }
 #endif                  // FacegetColor
     return ColorLight{0, 0, 0, 255, 0};

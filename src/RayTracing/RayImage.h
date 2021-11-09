@@ -18,9 +18,11 @@ public:
     RayImage scaled(const QSize &size) const;
     Image toImage() const;
     Image toImage(const QSize &size) const;
+    void fillBitmapPixels(BYTE *bytes, int size) const;
 
     uchar *operator()(int x, int y);
     void setPixel(int x, int y, RGB24 color);
+    RGB24 getPixel(int x, int y) const;
     int getDataLength() const;
 
     int width() const { return m_width; }

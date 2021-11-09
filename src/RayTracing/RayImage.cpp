@@ -87,6 +87,12 @@ Image RayImage::toImage(const QSize &size) const
     return image.scaled(size);
 }
 
+void RayImage::fillBitmapPixels(BYTE *bytes, int size) const
+{
+    int s = MIN(size, 4 * m_width * m_height);
+    memcpy(bytes, d, sizeof(BYTE) * s);
+}
+
 uchar *RayImage::operator()(int x, int y)
 {
     ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
@@ -100,6 +106,16 @@ void RayImage::setPixel(int x, int y, RGB24 color)
     *p++ = color.b;
     *p++ = color.g;
     *p = color.r;
+}
+
+RGB24 RayImage::getPixel(int x, int y) const
+{
+    ASSERT(0 <= x && x < m_width && 0 <= y && y < m_height);
+    uchar *p = &d[getDataCnt(x, y)];
+    uchar b = *p++;
+    uchar g = *p++;
+    uchar r = *p;
+    return RGB24{r, g, b};
 }
 
 int RayImage::getDataLength() const

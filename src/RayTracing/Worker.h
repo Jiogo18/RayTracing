@@ -52,10 +52,8 @@ public:
     const int nb_workers = RAYTRACING::WorkerThread;
     inline bool isRunning() const { return workersInProcess; }
 
-    // private slots:
-    void onRayWorkerFinished();
-
 private:
+    void onRayWorkerFinished(int workerId);
     void assignNextRayWork(RayTracingWorker *worker);
     RayTracingWorker *workers = nullptr;
     int processWidth = 0;

@@ -83,7 +83,7 @@ RayTracingDistributor::RayTracingDistributor(RayTracingRessources *rtRess)
     workers = new RayTracingWorker[nb_workers];
     for (int i = 0; i < nb_workers; i++) {
         workers[i] = RayTracingWorker(i, rtRess);
-        workers[i].connectOnFinished([this]() { onRayWorkerFinished(); });
+        workers[i].connectOnFinished([this, i]() { onRayWorkerFinished(i); });
     }
 }
 
@@ -117,9 +117,9 @@ void RayTracingDistributor::stop()
     std::cout << "RayTracingDistributor stopped after " << DebugTime::getCurrent() - timeStart << " us" << std::endl;
 }
 
-void RayTracingDistributor::onRayWorkerFinished()
+void RayTracingDistributor::onRayWorkerFinished(int workerId)
 {
-    // assignNextRayWork(qobject_cast<RayTracingWorker *>(sender()));
+    assignNextRayWork(&workers[workerId]);
 }
 
 void RayTracingDistributor::assignNextRayWork(RayTracingWorker *worker)
