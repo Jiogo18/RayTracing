@@ -33,7 +33,7 @@ void RayTracing::onRayWorkerReady(const int &x, const int &nbColumns, const PixS
         colors.setColumn(x + i, c.getColumn(i));
     }
 
-    if (processFinished >= processWidth) {
+    if (processFinished == processWidth) {
         onAllWorkersFinished();
     }
 #ifdef REFRESH_COLUMN

@@ -60,6 +60,7 @@ private:
     int processStarted = 0;
     bool workersInProcess = false;
     int64_t timeStart;
+    bool startingDistribution = true;
 
     std::thread *thread;
 };

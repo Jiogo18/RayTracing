@@ -55,7 +55,7 @@ void RayTracingWorker::run()
 
             //start2 = rtRess->dt->getCurrent();
             //pos en % de pixmap.height/2 * yMax
-            doubli yPos = (1 - 2.0L * y / sceneSize.height()) * yMax;
+            doubli yPos = (-1 + 2.0L * y / sceneSize.height()) * yMax;
             Ray ray(rtRess->clientPos.getChildRot(angleH, atanSimple(yPos / xzPos)), rtRess);
             //rtRess->dt->addValue("RayTracingWorker::run_1_Ray::Ray", rtRess->dt->getCurrent() - start2);//1080ms
 
@@ -103,9 +103,18 @@ void RayTracingDistributor::start(const int &processWidth)
     this->processWidth = processWidth;
     processStarted = 0;
     workersInProcess = true;
+    startingDistribution = true;
     for (int i = 0; i < nb_workers && i < processWidth; i++) {
         assignNextRayWork(&workers[i]);
     }
+    if (processStarted < processWidth) {
+        for (int i = 0; i < nb_workers && i < processWidth; i++) {
+            if (!workers[i].isRunning())
+                assignNextRayWork(&workers[i]);
+        }
+    }
+
+    startingDistribution = false;
     // then wait for the last onRayWorkerReady
 }
 
@@ -119,6 +128,8 @@ void RayTracingDistributor::stop()
 
 void RayTracingDistributor::onRayWorkerFinished(int workerId)
 {
+    if (startingDistribution)
+        return;
     assignNextRayWork(&workers[workerId]);
 }
 
