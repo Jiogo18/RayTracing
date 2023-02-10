@@ -7,7 +7,7 @@ namespace ENTITY {
     enum Type {
         none,
         player,
-        ghost //spectator
+        ghost // spectator
     };
     enum Direction { front,
                      back,
@@ -41,7 +41,7 @@ public:
     doubli getSpeedD() const { return getSpeed(ENTITY::Direction::bottom); }
 
 private:
-    doubli speed[6];
+    doubli speed[6] = {NAN, NAN, NAN, NAN, NAN, NAN};
     ENTITY::Type type;
 };
 
