@@ -15,7 +15,7 @@ public:
         if (!isRunning()) calcSize = size;
         return this;
     }
-    const RayImage *getImage() const { return &image; }
+    RayImage *getImage() { return &image; }
     bool isRunning() { return Thread::isRunning() || workerDistributor->isRunning(); }
     // private slots:
 

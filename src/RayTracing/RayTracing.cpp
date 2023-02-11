@@ -139,7 +139,11 @@ void RayTracing::paint()
             pixelRef += refToNextLine; // go to (x,y+1)
         }
         pixelRef -= refToNextColumn; // go to (x+1,0)
+#if PIXSCREEN == 1 && true
     }
+#else
+    }
+#endif
 
     dt.addValue("paint", dt.getCurrent() - start);
     resultReadyCallback();

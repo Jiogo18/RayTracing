@@ -78,6 +78,7 @@ void GUI::paintEvent(HWND hWnd)
         GetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
     }
 
+    // 32 bits per pixel
     rayImage->fillBitmapPixels(hBmpPixels, MyBMInfo.bmiHeader.biSizeImage);
     SetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
 

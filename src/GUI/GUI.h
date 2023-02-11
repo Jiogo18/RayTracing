@@ -32,7 +32,7 @@ private:
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
-    const RayImage *rayImage;
+    RayImage *rayImage;
 
     HBITMAP hBitmap = NULL;
     BYTE *hBmpPixels = nullptr;
