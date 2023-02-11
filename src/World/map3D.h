@@ -7,7 +7,7 @@
 // #include <QGraphicsPixmapItem>
 #include <thread>
 #include <regex>
-#include "../Qt_compat/QFile.h"
+#include "../utils/QFile.h"
 
 class map3D
 {

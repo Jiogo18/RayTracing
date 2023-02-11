@@ -1,7 +1,7 @@
 #ifndef PIXSCREEN_H
 #define PIXSCREEN_H
 
-#include "../global.h"
+#include "../utils/global.h"
 
 template<typename T>
 class PixScreenT

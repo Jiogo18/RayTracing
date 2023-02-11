@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../global.h"
+#include "global.h"
 #include <windows.h>
 #include <wingdi.h>
 #include <opencv2/core/mat.hpp>

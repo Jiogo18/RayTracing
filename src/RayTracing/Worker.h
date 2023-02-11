@@ -1,7 +1,7 @@
 #ifndef WORKER_H
 #define WORKER_H
 
-#include "../Qt_compat/Thread.h"
+#include "../utils/Thread.h"
 #include "Ressources.h"
 #include "PixScreen.h"
 #include "Ray.h"

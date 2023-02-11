@@ -3,7 +3,7 @@
 
 #include "Geometry3D.h"
 #include "../RayTracing/ColorLight.h"
-#include "../Qt_compat/Image.h"
+#include "../utils/Image.h"
 #include <map>
 #include <string>
 

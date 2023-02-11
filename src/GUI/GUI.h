@@ -3,7 +3,7 @@
 
 #include "../World/map3D.h"
 #include "../RayTracing/RayTracing.h"
-#include "../Qt_compat/Timer.h"
+#include "../utils/Timer.h"
 #include "winapi.h"
 
 class GUI
