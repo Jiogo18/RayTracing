@@ -1,6 +1,6 @@
 #pragma once
 
-#include "QSize.h"
+#include "../global.h"
 #include <windows.h>
 #include <wingdi.h>
 #include <opencv2/core/mat.hpp>
@@ -18,7 +18,7 @@ public:
     };
     Image();
     Image(unsigned int width, unsigned int height, Image::Format format = Format::Format_RGB32);
-    Image(const QSize &size);
+    Image(const SIZE &size, Image::Format format = Format::Format_RGB32);
     Image(const uchar *data, int width, int height, Image::Format format);
     Image(const Image &image);
 
@@ -26,7 +26,7 @@ public:
     constexpr int height() const { return rows; }
 
     bool isNull() const { return empty(); }
-    Image scaled(const QSize &size) const;
+    Image scaled(const SIZE &size) const;
     Image::Format format() const { return (Image::Format)type(); }
     bool load(std::string filename);
 

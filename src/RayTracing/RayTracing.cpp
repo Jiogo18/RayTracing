@@ -64,16 +64,16 @@ void RayTracing::run()
     dt.clear();
     startRun = dt.getCurrent();
 
-    processWidth = calcSize.width();
+    processWidth = calcSize.cx;
     processFinished = 0;
     processForUpdate = RAYTRACING::RefreshColumn;
 
-    if (calcSize != colors.size()) {
+    if (calcSize.cx != colors.width() || calcSize.cy != colors.height()) {
         // il ne faut pas en attribuer trop sinon trop de colonnes pour un thread
         // 1920 =>36 colonnes par worker
         // 150 => 10 colonnes par worker
-        int columnsPerWorker = 20 * std::sqrt(calcSize.width()) / RAYTRACING::WorkerThread;
-        std::cout << "ColumnsPerWorker " << columnsPerWorker << " " << calcSize << " " << WorkerThread << std::endl;
+        int columnsPerWorker = 20 * std::sqrt(calcSize.cx) / RAYTRACING::WorkerThread;
+        std::cout << "ColumnsPerWorker " << columnsPerWorker << " Size(" << calcSize.cx << ", " << calcSize.cy << ") " << WorkerThread << std::endl;
 
         for (int i = 0; i < workerDistributor->nb_workers; i++) {
             workerDistributor->getWorkers()[i].setPrimaryWork(calcSize, columnsPerWorker);
@@ -86,7 +86,7 @@ void RayTracing::run()
 #ifdef REFRESH_COLUMN
         image = image.scaled(calcSize);
 #else
-        image = RayImage(calcSize);
+        image = Image(calcSize, Image::Format_RGBA32);
 #endif // REFRESH_COLUMN
     }
 

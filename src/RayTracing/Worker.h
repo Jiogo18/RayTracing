@@ -14,21 +14,21 @@ public:
     ~RayTracingWorker();
     RayTracingWorker *operator=(const RayTracingWorker &worker);
 
-    RayTracingWorker *setPrimaryWork(const QSize &sceneSize, const int &nbColumn);
+    RayTracingWorker *setPrimaryWork(const SIZE &sceneSize, const int &nbColumn);
     inline RayTracingWorker *setWork(int xScene)
     {
         this->xScene = xScene;
         return this;
     }
     constexpr inline const int &getWorkerId() const { return workerId; };
-    constexpr inline int getNbColumn() const { return min(nbColumn, sceneSize.width() - xScene); }
+    constexpr inline int getNbColumn() const { return min(nbColumn, sceneSize.cx - xScene); }
 
     void connectResultReady(std::function<void(int, int, const PixScreen<ColorLight> &, const int *)> callback);
 
 private:
     void run(); // process ONE column at a time (more with nbColumn)
     int workerId;
-    QSize sceneSize;
+    SIZE sceneSize;
 
     int xScene; // just ONE column, more columns with nbColumn
     int nbColumn;

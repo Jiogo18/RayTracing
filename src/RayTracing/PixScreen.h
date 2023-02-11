@@ -1,14 +1,14 @@
 #ifndef PIXSCREEN_H
 #define PIXSCREEN_H
 
-#include "../Qt_compat/QSize.h"
+#include "../global.h"
 
 template<typename T>
 class PixScreenT
 {
 public: // il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
     PixScreenT();
-    PixScreenT(const QSize &size);
+    PixScreenT(const SIZE &size);
     PixScreenT(const int &width, const int &height);
     PixScreenT(const PixScreenT<T> &that);
     ~PixScreenT();
@@ -20,7 +20,7 @@ public: // il faut au moins un PixScreen<T> dans ce fichier pour en avoir avec l
 
     constexpr inline const int &width() const { return w; }
     constexpr inline const int &height() const { return h; }
-    constexpr inline QSize size() const { return QSize{w, w}; }
+    constexpr inline const SIZE size() const { return {w, h}; }
     constexpr inline int rowNumber() const { return w * h; }
 
     constexpr inline T *operator[](int x);
@@ -58,7 +58,7 @@ constexpr inline const T *PixScreenT<T>::getColumn(int x) const
 // {
 // public: // il faut au moins un PixScreenQ<T> dans ce fichier pour en avoir avec le même type dans d'autres fichiers
 //     constexpr inline PixScreenQList() : screen(0) {}
-//     constexpr inline PixScreenQList(const QSize &size) : screen(size.width()), h(size.height())
+//     constexpr inline PixScreenQList(const SIZE &size) : screen(size.cx), h(size.cy)
 //     {
 //         for (int i = 0; i < width(); i++)
 //             screen[i] = QList<T>(h);
@@ -81,7 +81,7 @@ constexpr inline const T *PixScreenT<T>::getColumn(int x) const
 
 //     constexpr inline int width() const { return screen.size(); }
 //     constexpr inline const int &height() const { return h; }
-//     constexpr inline QSize size() const { return QSize(width(), h); }
+//     constexpr inline SIZE size() const { return {width(), h}; }
 //     constexpr inline int rowNumber() const { return width() * h; }
 
 //     constexpr inline QList<T> &operator[](const int &x) { return screen[x]; }

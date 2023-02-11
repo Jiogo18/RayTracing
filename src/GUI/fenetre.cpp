@@ -69,14 +69,10 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
 
     connectOnWorkStarted([this]() { this->onWorkStarted(); });
     connectOnWorkFinished([this]() { this->onWorkFinished(); });
-    //setCursor(Qt::BlankCursor);
+    // setCursor(Qt::BlankCursor);
 
-    // show();
-    // setMinimumSize(50, 50);
-    // setGeometry(QRect(geometry().topLeft(), QSize(150, 100)));
-
-    //moveMouseMidWindow();
-    //posMouse = QPoint(0, 0);
+    // moveMouseMidWindow();
+    // posMouse = QPoint(0, 0);
 
     lastRefreshTime = 0;
     refresh();
@@ -170,22 +166,22 @@ void fenetre::show(int nShowCmd)
     ShowWindow(hWnd, nShowCmd);
 }
 
-//void fenetre::mouseMoveEvent(QMouseEvent *event)
+// void fenetre::mouseMoveEvent(QMouseEvent *event)
 //{
-//    Q_UNUSED(event)
-//    //map->getClient()->moveRX((MidWindow().x() - event->x())/MouseSensibility);
-//    //map->getClient()->moveRY((MidWindow().y() - event->y())/MouseSensibility);
-//    //moveMouseMidWindow();
-//}
+//     Q_UNUSED(event)
+//     //map->getClient()->moveRX((MidWindow().x() - event->x())/MouseSensibility);
+//     //map->getClient()->moveRY((MidWindow().y() - event->y())/MouseSensibility);
+//     //moveMouseMidWindow();
+// }
 
-//QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
-//void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
+// QPoint fenetre::MidWindow() { return QPoint(width()/2, height()/2); }
+// void fenetre::moveMouseMidWindow() { QCursor::setPos(MidWindow() + QWidget::pos()); }
 
-QSize fenetre::getWindowSize() const
+SIZE fenetre::getWindowSize() const
 {
     RECT rect;
     GetWindowRect(hWnd, &rect);
-    return QSize(rect.right - rect.left - 15, rect.bottom - rect.top - 38);
+    return {rect.right - rect.left - 15, rect.bottom - rect.top - 38};
 }
 
 fenetre *fenetre::getFenetreFromHWND(HWND hWnd)
@@ -279,7 +275,7 @@ void fenetre::updatePressPosition()
     if (keysPressed & KEY::keyAction::left_rot) map->moveRX(-MouseSensibility / 30);
     if (keysPressed & KEY::keyAction::right_rot) map->moveRX(MouseSensibility / 30);
 
-    //std::cout << "pos client " << map->getClient()->getPos() << std::endl;
+    // std::cout << "pos client " << map->getClient()->getPos() << std::endl;
     if (isPainting()) {
         // actu à la fin du repaint en cours
         timerRefresh.start(lastRefreshDuration);

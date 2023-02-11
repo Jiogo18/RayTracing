@@ -2,7 +2,6 @@
 #define RAYTRACING_H
 
 #include "Worker.h"
-#include "RayImage.h"
 
 class RayTracing : public Thread
 {
@@ -10,12 +9,12 @@ public:
     RayTracing(const map3D *map);
     ~RayTracing();
 
-    RayTracing *setSize(const QSize &size)
+    RayTracing *setSize(SIZE size)
     {
         if (!isRunning()) calcSize = size;
         return this;
     }
-    RayImage *getImage() { return &image; }
+    const Image *getImage() const { return &image; }
     bool isRunning() { return Thread::isRunning() || workerDistributor->isRunning(); }
     // private slots:
 
@@ -35,7 +34,7 @@ private:
     int64_t startRun;
 
     const map3D *map;
-    QSize calcSize;
+    SIZE calcSize;
 
     PixScreen<ColorLight> colors;
     int *lightPerColumn = nullptr; // calculs des light de chaque colonne (en fonction de x)
@@ -45,7 +44,7 @@ private:
     int processFinished = 0;
     int processForUpdate;
 
-    RayImage image;
+    Image image;
 
     std::function<void()> resultReadyCallback;
 };

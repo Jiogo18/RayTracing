@@ -7,7 +7,7 @@ Image::Image() : cv::Mat(0, 0, Image::Format_RGB32)
 Image::Image(unsigned int width, unsigned int height, Image::Format format) : cv::Mat(height, width, format)
 {}
 
-Image::Image(const QSize &size) : cv::Mat(size.height(), size.width(), Image::Format_RGB32)
+Image::Image(const SIZE &size, Image::Format format) : cv::Mat(size.cx, size.cy, format)
 {}
 
 Image::Image(const uchar *data, int width, int height, Image::Format format) : cv::Mat(height, width, format)
@@ -18,10 +18,10 @@ Image::Image(const uchar *data, int width, int height, Image::Format format) : c
 Image::Image(const Image &image) : cv::Mat(image)
 {}
 
-Image Image::scaled(const QSize &size) const
+Image Image::scaled(const SIZE &size) const
 {
-    Image image(size.width(), size.height(), format());
-    cv::resize(*this, image, cv::Size(size.width(), size.height()));
+    Image image(size.cx, size.cy, format());
+    cv::resize(*this, image, cv::Size(size.cx, size.cy));
     return image;
 }
 

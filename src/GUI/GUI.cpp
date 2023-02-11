@@ -54,15 +54,15 @@ void GUI::paintEvent(HWND hWnd)
     PAINTSTRUCT ps;
     HDC hdc = BeginPaint(hWnd, &ps);
 
-    QSize size = getWindowSize();
-    if (size.width() != MyBMInfo.bmiHeader.biWidth || size.height() != MyBMInfo.bmiHeader.biHeight) {
+    SIZE size = getWindowSize();
+    if (size.cx != MyBMInfo.bmiHeader.biWidth || size.cy != MyBMInfo.bmiHeader.biHeight) {
         DeleteObject(hBitmap);
         hBitmap = NULL;
         delete[] hBmpPixels;
         hBmpPixels = nullptr;
     }
     if (!hBmpPixels) {
-        hBitmap = CreateCompatibleBitmap(hdc, size.width(), size.height());
+        hBitmap = CreateCompatibleBitmap(hdc, size.cx, size.cy);
 
         // get the bitmap header
         MyBMInfo.bmiHeader.biSize = sizeof(MyBMInfo.bmiHeader); // LPBITMAPINFO lpbmi
@@ -118,7 +118,7 @@ void GUI::handleWorkerResults()
     }
 }
 
-QSize GUI::getRayTracingSize() const
+SIZE GUI::getRayTracingSize() const
 {
     return getWindowSize();
 }

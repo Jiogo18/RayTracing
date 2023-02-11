@@ -24,15 +24,15 @@ public:
 
 private:
     void handleWorkerResults();
-    virtual QSize getWindowSize() const = 0;
-    QSize getRayTracingSize() const;
+    virtual SIZE getWindowSize() const = 0;
+    SIZE getRayTracingSize() const;
 
     RayTracing *workerThread;
     const map3D *map;
     bool showFPSCounter = false;
     int previousFPS;
     int frameCounter;
-    RayImage *rayImage;
+    const Image *rayImage;
 
     HBITMAP hBitmap = NULL;
     BYTE *hBmpPixels = nullptr;

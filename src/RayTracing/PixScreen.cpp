@@ -7,7 +7,7 @@ template<typename T>
 PixScreenT<T>::PixScreenT() : PixScreenT(0, 0)
 {}
 template<typename T>
-PixScreenT<T>::PixScreenT(const QSize &size) : w(size.width()), h(size.height()), screen(new T *[w])
+PixScreenT<T>::PixScreenT(const SIZE &size) : w(size.cx), h(size.cy), screen(new T *[w])
 {
     int x = 0;
     for (x = 0; x < w; x++) {

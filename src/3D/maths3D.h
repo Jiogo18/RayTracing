@@ -3,6 +3,7 @@
 
 #include <math.h>
 #include <iostream>
+#include "../global.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -13,12 +14,6 @@
 #define M_2PI 6.28318530717958647692
 #define M_1_2PI 0.15915494309189533576901767873386
 #define DOUBLI_MIN 1e-10
-
-#ifdef _ASSERT
-#define ASSERT _ASSERT
-#else
-#define ASSERT __glibcxx_assert
-#endif
 
 namespace maths3D {
     typedef long double doubli; // un nombre pour gérer 6 décimales max (arrondit)
@@ -89,7 +84,7 @@ namespace maths3D {
         return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800)))));
 #elif trigoTaylorLevel <= 12
         return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800 - x2 * (1.0 / 479001600))))));
-#else //if trigoTaylorLevel <= 14
+#else // if trigoTaylorLevel <= 14
         return -1 + x2 * (1.0 / 2 - x2 * (1.0 / 24 - x2 * (1.0 / 720 - x2 * (1.0 / 40320 - x2 * (1.0 / 3628800 - x2 * (1.0 / 479001600 - x2 * (1.0 / 87178291200)))))));
 #endif
     }

@@ -42,10 +42,10 @@ public:
 
     void keyPressEvent(int key, int status);
     void keyReleaseEvent(int key, int status);
-    //void mouseMoveEvent(QMouseEvent *event) override;
-    //void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
-    //QPoint MidWindow();
-    //void moveMouseMidWindow();
+    // void mouseMoveEvent(QMouseEvent *event) override;
+    // void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
+    // QPoint MidWindow();
+    // void moveMouseMidWindow();
     void speedTest();
     void loadMapFile();
 
@@ -54,7 +54,7 @@ public:
 
 private:
     HWND hWnd;
-    QSize getWindowSize() const;
+    SIZE getWindowSize() const;
     static fenetre *getFenetreFromHWND(HWND hWnd);
     static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static void TimerPositionProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp);
@@ -70,7 +70,7 @@ private:
     int64_t lastRefreshDuration;
     map3D *map = nullptr;
 
-    //QPoint posMouse;
+    // QPoint posMouse;
     doubli MouseSensibility = 2;
 
     // QTimer timerKeyPress;
