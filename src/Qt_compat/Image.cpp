@@ -1,113 +1,58 @@
 #include "Image.h"
+#include <opencv2/opencv.hpp>
 
-Image::Image() : widthp(0), heightp(0)
+Image::Image() : cv::Mat(0, 0, Image::Format_RGB32)
+{}
+
+Image::Image(unsigned int width, unsigned int height, Image::Format format) : cv::Mat(height, width, format)
+{}
+
+Image::Image(const QSize &size) : cv::Mat(size.height(), size.width(), Image::Format_RGB32)
+{}
+
+Image::Image(const uchar *data, int width, int height, Image::Format format) : cv::Mat(height, width, format)
 {
-    ASSERT(widthp >= 0 && heightp >= 0);
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
+    memcpy(cv::Mat::data, data, width * height * 3);
 }
 
-Image::Image(int width, int height, Image::Format format) : widthp(width), heightp(height)
-{
-    ASSERT(widthp >= 0 && heightp >= 0);
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
-}
-
-Image::Image(const QSize &size) : widthp(size.width()), heightp(size.height())
-{
-    ASSERT(widthp >= 0 && heightp >= 0);
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
-}
-
-Image::Image(const uchar *data, int width, int height, Image::Format format) : widthp(width), heightp(height)
-{
-    ASSERT(widthp >= 0 && heightp >= 0);
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
-}
-
-Image::Image(const Image &image) : widthp(image.widthp), heightp(image.heightp)
-{
-    ASSERT(widthp >= 0 && heightp >= 0);
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
-    memcpy(&red[0], &image.red[0], pixels * sizeof(uchar));
-    memcpy(&green[0], &image.green[0], pixels * sizeof(uchar));
-    memcpy(&blue[0], &image.blue[0], pixels * sizeof(uchar));
-}
-
-Image::~Image()
-{
-    if (red) delete[] red;
-    if (green) delete[] green;
-    if (blue) delete[] blue;
-}
-
-Image &Image::operator=(const Image &image)
-{
-    widthp = image.widthp;
-    heightp = image.heightp;
-    int pixels = getPixels();
-    red = new uchar[pixels];
-    green = new uchar[pixels];
-    blue = new uchar[pixels];
-    memcpy(&red[0], &image.red[0], pixels * sizeof(uchar));
-    memcpy(&green[0], &image.green[0], pixels * sizeof(uchar));
-    memcpy(&blue[0], &image.blue[0], pixels * sizeof(uchar));
-    return *this;
-}
+Image::Image(const Image &image) : cv::Mat(image)
+{}
 
 Image Image::scaled(const QSize &size) const
 {
-    return Image(size);
+    Image image(size.width(), size.height(), format());
+    cv::resize(*this, image, cv::Size(size.width(), size.height()));
+    return image;
 }
 
-QColor Image::pixelColor(int x, int y) const
+bool Image::load(std::string filename)
 {
-    int pixel = x + y * widthp;
-    return QColor(red[pixel], green[pixel], blue[pixel]);
+    cv::Mat::operator=(cv::imread(filename, cv::IMREAD_UNCHANGED));
+    if (empty()) {
+        return false;
+    }
+    if (channels() == 4) {
+        cv::cvtColor(*this, *this, cv::COLOR_BGRA2RGBA);
+    } else {
+        cv::cvtColor(*this, *this, cv::COLOR_BGR2RGB);
+    }
+    return true;
 }
 
-COLORREF Image::pixelRGB(int x, int y) const
+const cv::Vec4b &Image::pixelColor(int x, int y) const
 {
-    int pixel = x + y * widthp;
-    return RGB(red[pixel], green[pixel], blue[pixel]);
+    return at<cv::Vec4b>(y, x);
 }
 
-void Image::fillBitmapPixels(BYTE *bytes, int size) const
+void Image::fill(cv::Vec4b color)
 {
-    int pixels = MIN(size / 4, getPixels());
+    int pixels = getPixels();
     for (int i = 0; i < pixels; i++) {
-        bytes[4 * i + 0] = red[i];
-        bytes[4 * i + 1] = green[i];
-        bytes[4 * i + 2] = blue[i];
+        at<cv::Vec4b>(i) = color;
     }
 }
 
-void Image::fill(QColor color)
+void Image::setPixelColor(int x, int y, cv::Vec4b color)
 {
-    int pixels = getPixels();
-    std::fill(&red[0], &red[pixels], color.red());
-    std::fill(&green[0], &green[pixels], color.green());
-    std::fill(&blue[0], &blue[pixels], color.blue());
-}
-
-void Image::setPixelColor(int x, int y, QColor color)
-{
-    int pixel = x + y * widthp;
-    red[pixel] = color.red();
-    green[pixel] = color.green();
-    blue[pixel] = color.blue();
+    at<cv::Vec4b>(y, x) = color;
 }

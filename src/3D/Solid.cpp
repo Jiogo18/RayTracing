@@ -56,9 +56,9 @@ std::string SOLID::getFileTexture(SOLID::Material material, SOLID::Variation var
         if (variations == SOLID::Variation::BIN7) alpha += 64;
         if (variations == SOLID::Variation::BIN8) alpha += 128;
         texture += std::to_string(alpha);
-        //if(alpha > 140) return getFileTexture(stone, {});
-        //else if(alpha > 130) return getFileTexture(green_glass, {});
-        //else if(alpha > 180) return getFileTexture(glass, {});
+        // if(alpha > 140) return getFileTexture(stone, {});
+        // else if(alpha > 130) return getFileTexture(green_glass, {});
+        // else if(alpha > 180) return getFileTexture(glass, {});
         break;
     }
     default:
@@ -107,7 +107,7 @@ Face::Face(const Face &face) : SolidBase(face),
 
 ColorLight Face::getColor(const Point2D &point) const
 {
-#define FacegetColor 2
+#define FacegetColor 1
 #if FacegetColor == 1 // image
     if (textureImg != nullptr) {
         if (0 <= point.x() && point.x() <= 1 && 0 <= point.y() && point.y() <= 1) {

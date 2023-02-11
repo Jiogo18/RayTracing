@@ -12,8 +12,15 @@ file(GLOB_RECURSE SOURCES src/**.cpp)
 file(GLOB_RECURSE HEADERS src/**.h)
 file(GLOB_RECURSE RESOURCES src/RayTracing.rc)
 
+# OpenCV
+find_package(OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 # Executable
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${RESOURCES})
 
 # C++ 20
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+
+# Linking
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})

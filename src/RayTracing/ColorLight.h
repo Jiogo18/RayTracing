@@ -2,7 +2,7 @@
 #define COLORLIGHT_H
 
 #include "../3D/maths3D.h"
-#include "../Qt_compat/QColor.h"
+#include "opencv2/core.hpp"
 
 /*****************************************************************************
   ColorLight : la lumière à un certain point de l'espace
@@ -48,7 +48,7 @@ class ColorLight
 public:
     constexpr inline ColorLight() : r(0), g(0), b(0), a(0), light(0) {}
     constexpr inline ColorLight(const uchar &r, const uchar &g, const uchar &b, const uchar &a, const int &light = 0) : r(r), g(g), b(b), a(a), light(light) {}
-    inline ColorLight(const QColor &c, const int &light = 0) : r(c.red()), g(c.green()), b(c.blue()), a(c.alpha()), light(light) {}
+    inline ColorLight(const cv::Vec4b &c, const int &light = 0) : r(c[0]), g(c[1]), b(c[2]), a(c[3]), light(light) {}
     constexpr inline ColorLight(const ColorLight &c) : r(c.r), g(c.g), b(c.b), a(c.a), light(c.light) {}
     constexpr inline uchar redReduced(const double &reduce) const { return colorReduced(r, reduce); }
     constexpr inline uchar greenReduced(const double &reduce) const { return colorReduced(g, reduce); }
@@ -59,13 +59,13 @@ public:
     constexpr inline const uchar &blue() const { return b; }
     constexpr inline const uchar &alpha() const { return a; }
     constexpr inline const int &getLight() const { return light; }
-    constexpr inline void operator+=(const ColorLight &c); //couleur après + couleur avant = couleur mixé
+    constexpr inline void operator+=(const ColorLight &c); // couleur après + couleur avant = couleur mixé
     constexpr inline ColorLight *operator=(const ColorLight &c);
 
 private:
-    //entre 0 et 255
+    // entre 0 et 255
     uchar r, g, b, a;
-    int light; //entre 0 et infini (0 par défaut et valeur >0 si on arrive à une source de lumière)
+    int light; // entre 0 et infini (0 par défaut et valeur >0 si on arrive à une source de lumière)
     constexpr inline uchar colorReduced(const uchar &c, const double &reduce) const;
 };
 

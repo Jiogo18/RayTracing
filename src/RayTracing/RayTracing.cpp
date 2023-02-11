@@ -92,8 +92,8 @@ void RayTracing::run()
 
 #ifdef REFRESH_COLUMN
     for (int x = 0; x < image.width(); x++) {
-        image.setPixelColor(x, 0, Qt::white);
-        image.setPixelColor(x, 1, Qt::white);
+        image.setPixel(x, 0, {255, 255, 255});
+        image.setPixel(x, 1, {255, 255, 255});
     }
 #endif // REFRESH_COLUMN
 
@@ -151,5 +151,5 @@ void RayTracing::onAllWorkersFinished()
     workerDistributor->stop();
     paint();
     dt.addValue("run", dt.getCurrent() - startRun);
-    std::cout << "GUIWorker::run #end " << dt << std::endl;
+    // std::cout << "GUIWorker::run #end " << dt << std::endl;
 }
