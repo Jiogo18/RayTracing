@@ -3,11 +3,8 @@
 
 #include "../World/World3D.h"
 #include "../RayTracing/Transfo.h"
-// #include <QGraphicsScene>
-// #include <QGraphicsPixmapItem>
 #include <thread>
 #include <regex>
-#include "../utils/QFile.h"
 
 class map3D
 {

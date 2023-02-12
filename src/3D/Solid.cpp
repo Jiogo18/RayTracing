@@ -1,6 +1,6 @@
 #include "Solid.h"
 
-std::string SOLID::getFileTexture(SOLID::Material material, SOLID::Variation variations)
+std::string SOLID::getFileTexture(SOLID::Material material, int variations)
 {
     std::string texture = "";
     switch (material) {
@@ -41,20 +41,19 @@ std::string SOLID::getFileTexture(SOLID::Material material, SOLID::Variation var
     switch (material) {
     case SOLID::Material::oak_log:
     case SOLID::Material::birch_log:
-        if (variations == SOLID::Variation::top
-            || variations == SOLID::Variation::bottom)
+        if (variations & SOLID::Variation::top || variations & SOLID::Variation::bottom)
             texture += "_top";
         break;
     case SOLID::Material::hologramme: {
         int alpha = 0;
-        if (variations == SOLID::Variation::BIN1) alpha += 1;
-        if (variations == SOLID::Variation::BIN2) alpha += 2;
-        if (variations == SOLID::Variation::BIN3) alpha += 4;
-        if (variations == SOLID::Variation::BIN4) alpha += 8;
-        if (variations == SOLID::Variation::BIN5) alpha += 16;
-        if (variations == SOLID::Variation::BIN6) alpha += 32;
-        if (variations == SOLID::Variation::BIN7) alpha += 64;
-        if (variations == SOLID::Variation::BIN8) alpha += 128;
+        if (variations & SOLID::Variation::BIN1) alpha += 1;
+        if (variations & SOLID::Variation::BIN2) alpha += 2;
+        if (variations & SOLID::Variation::BIN3) alpha += 4;
+        if (variations & SOLID::Variation::BIN4) alpha += 8;
+        if (variations & SOLID::Variation::BIN5) alpha += 16;
+        if (variations & SOLID::Variation::BIN6) alpha += 32;
+        if (variations & SOLID::Variation::BIN7) alpha += 64;
+        if (variations & SOLID::Variation::BIN8) alpha += 128;
         texture += std::to_string(alpha);
         // if(alpha > 140) return getFileTexture(stone, {});
         // else if(alpha > 130) return getFileTexture(green_glass, {});
@@ -68,7 +67,7 @@ std::string SOLID::getFileTexture(SOLID::Material material, SOLID::Variation var
     return texture;
 }
 
-int SOLID::getLight(SOLID::Material material, SOLID::Variation variations)
+int SOLID::getLight(SOLID::Material material, int variations)
 {
     switch (material) {
     case SOLID::glowstone:
@@ -85,8 +84,8 @@ int SOLID::getLight(SOLID::Material material, SOLID::Variation variations)
 Face::Face(const Point3D &point,
            const HRect3D &solidGeometry, bool orientation,
            const SOLID::Material &material,
-           SOLID::Variation variations) : SolidBase(Pos3D(point, 0, 0), HRect3D(solidGeometry + point), material),
-                                          variations(variations), orientation(orientation)
+           int variations) : SolidBase(Pos3D(point, 0, 0), HRect3D(solidGeometry + point), material),
+                             variations(variations), orientation(orientation)
 {
     texture = SOLID::getFileTexture(material, variations);
     textureImg = OBJECT3D::getTexture(texture);
@@ -199,7 +198,7 @@ bool Face::containsPoint(const Point3D &point) const
   Block
  *****************************************************************************/
 
-Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations)
+Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, int globalVariations)
     : Solid(pos,
             HRect3D{pos, size},
             material,
@@ -207,15 +206,15 @@ Block::Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, con
       size(size)
 {}
 
-std::vector<Face> Block::createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations)
+std::vector<Face> Block::createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, int globalVariations)
 {
     return {
-        Face(posSolid, HRect3D(Point3D(0, 0, -size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 0, material, SOLID::Variation::bottom), // BOTTOM
-        Face(posSolid, HRect3D(Point3D(0, 0, +size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 1, material, SOLID::Variation::top),    // TOP
-        Face(posSolid, HRect3D(Point3D(+size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 1, material, SOLID::Variation::front),  // NORTH
-        Face(posSolid, HRect3D(Point3D(-size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 0, material, SOLID::Variation::back),   // SOUTH
-        Face(posSolid, HRect3D(Point3D(0, -size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 0, material, SOLID::Variation::right),  // EAST
-        Face(posSolid, HRect3D(Point3D(0, +size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 1, material, SOLID::Variation::left)    // WEST*/
+        Face(posSolid, HRect3D(Point3D(0, 0, -size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 0, material, globalVariations | SOLID::Variation::bottom), // BOTTOM
+        Face(posSolid, HRect3D(Point3D(0, 0, +size.dZ() / 2), Size3D(size.dX(), size.dY(), 0)), 1, material, globalVariations | SOLID::Variation::top),    // TOP
+        Face(posSolid, HRect3D(Point3D(+size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 1, material, globalVariations | SOLID::Variation::front),  // NORTH
+        Face(posSolid, HRect3D(Point3D(-size.dX() / 2, 0, 0), Size3D(0, size.dY(), size.dZ())), 0, material, globalVariations | SOLID::Variation::back),   // SOUTH
+        Face(posSolid, HRect3D(Point3D(0, -size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 0, material, globalVariations | SOLID::Variation::right),  // EAST
+        Face(posSolid, HRect3D(Point3D(0, +size.dY() / 2, 0), Size3D(size.dX(), 0, size.dZ())), 1, material, globalVariations | SOLID::Variation::left)    // WEST*/
     };
 }
 

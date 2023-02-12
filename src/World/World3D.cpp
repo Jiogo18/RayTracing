@@ -38,6 +38,7 @@ bool Chunk::removeSolid(const Point3D &blockPos)
     Solid *block = getSolidAt(blockPos);
     if (!block) return false;
     std::remove(solids.begin(), solids.end(), block);
+    solids.pop_back();
     delete block;
     return true;
 }
@@ -74,7 +75,7 @@ void Chunk::calcMinMaxPoint()
             maxZ = currentMaxGeometry.getPointMax().z();
     }
     maxGeometry = HRect3D(Point3D(minX, minY, minZ), Point3D(maxX, maxY, maxZ));
-    //middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);
+    // middleMinGeometry = Point3D((minX+maxX)/2, (minY+maxY)/2, minZ);
     middleMinGeometry = maxGeometry.getMiddle();
 }
 
@@ -82,6 +83,7 @@ bool Chunk::deleteSolid(Solid *block)
 {
     if (std::find(solids.begin(), solids.end(), block) != solids.end()) return false;
     std::remove(solids.begin(), solids.end(), block);
+    solids.pop_back();
 
     if (block != nullptr) delete block;
     return true;
@@ -150,6 +152,7 @@ bool World::createChunk(const ChunkPos &posChunk)
 void World::deleteChunk(Chunk *chunk)
 {
     std::remove(chunks.begin(), chunks.end(), chunk);
+    chunks.pop_back();
     if (chunk != nullptr) delete chunk;
     WorldChange change(WorldChange::Type::chunk, WorldChange::Action::removed);
     change.setChunk(chunk);
@@ -168,6 +171,7 @@ bool World::deleteEntity(Entity *entity)
 {
     if (std::find(entities.begin(), entities.end(), entity) != entities.end()) return false;
     std::remove(entities.begin(), entities.end(), entity);
+    entities.pop_back();
     if (entity != nullptr) delete entity;
     WorldChange change(WorldChange::Type::entity, WorldChange::Action::removed);
     change.setEntity(entity);

@@ -19,24 +19,24 @@ namespace SOLID {
         hologramme,
     };
     enum Variation {
-        front,
-        back,
-        left,
-        right,
-        top,
-        bottom,
-        BIN1,
-        BIN2,
-        BIN3,
-        BIN4,
-        BIN5,
-        BIN6,
-        BIN7,
-        BIN8
+        front = 1,
+        back = 2,
+        left = 3,
+        right = 4,
+        top = 5,
+        bottom = 6,
+        BIN1 = 0x8,
+        BIN2 = 0x10,
+        BIN3 = 0x20,
+        BIN4 = 0x40,
+        BIN5 = 0x80,
+        BIN6 = 0x100,
+        BIN7 = 0x200,
+        BIN8 = 0x400,
     };
 
-    std::string getFileTexture(SOLID::Material material, SOLID::Variation variations);
-    int getLight(SOLID::Material material, SOLID::Variation variations);
+    std::string getFileTexture(SOLID::Material material, int variations);
+    int getLight(SOLID::Material material, int variations);
     constexpr inline float getSpeedOfLight(SOLID::Material material)
     {
         switch (material) {
@@ -83,7 +83,7 @@ class Face : public SolidBase
 {
 public:
     Face(const Point3D &point, const HRect3D &solidGeometry, bool orientation,
-         const SOLID::Material &material, SOLID::Variation variations);
+         const SOLID::Material &material, int variations);
     Face(const Face &face);
 
     constexpr inline const Plan *getPlan() const { return &plan; }
@@ -97,7 +97,7 @@ public:
     bool containsPoint(const Point3D &point) const override;
 
 private:
-    SOLID::Variation variations;
+    int variations;
     std::string texture;
     const Image *textureImg = nullptr; // TODO : object Texture avec les ColorLight direct dedans
     Plan plan;
@@ -130,11 +130,11 @@ protected:
 class Block : public Solid
 {
 public:
-    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations = {});
+    Block(const Pos3D &pos, const Size3D &size, SOLID::Material material, int globalVariations = 0);
 
 private:
     Size3D size;
-    static std::vector<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, const std::vector<SOLID::Variation> &globalVariations);
+    static std::vector<Face> createDefaultFaces(const Point3D &posSolid, const Size3D &size, SOLID::Material material, int globalVariations);
 };
 
 /*****************************************************************************

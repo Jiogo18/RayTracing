@@ -141,7 +141,9 @@ void fenetre::speedTest()
 
 void fenetre::loadMapFile()
 {
-    std::string mapName = "Perlin3D_32_2.txt";
+    std::string mapName = "./build/maps/Perlin3D_32_2.txt";
+    // std::string mapName = "./build/maps/Perlin3D_8.txt";
+    // std::string mapName = "./build/maps/JL.txt";
     if (map->load(mapName)) {
         std::cout << "successfully reloaded !" << std::endl;
     } else {
