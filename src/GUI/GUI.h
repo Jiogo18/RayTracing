@@ -37,10 +37,6 @@ private:
     int frameCounterBegin;
     const Image *rayImage;
 
-    HBITMAP hBitmap = NULL;
-    BYTE *hBmpPixels = nullptr;
-    BITMAPINFO MyBMInfo = {0};
-
     std::function<void()> workStartedCallback;
     std::function<void()> workFinishedCallback;
 };

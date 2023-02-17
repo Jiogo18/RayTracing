@@ -39,8 +39,8 @@ void RayTracing::onRayWorkerReady(const int &x, const int &nbColumns, const PixS
 #ifdef REFRESH_COLUMN
     else {
         if (processForUpdate <= processFinished) {
-            paint();
             processForUpdate = processFinished + RAYTRACING::RefreshColumn;
+            paint();
         }
     }
 #endif // REFRESH_COLUMN

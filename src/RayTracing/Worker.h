@@ -5,6 +5,7 @@
 #include "Ressources.h"
 #include "PixScreen.h"
 #include "Ray.h"
+#include <mutex>
 
 class RayTracingWorker : public Thread
 {
@@ -60,9 +61,9 @@ private:
     int processStarted = 0;
     bool workersInProcess = false;
     int64_t timeStart;
-    bool startingDistribution = true;
 
     std::thread *thread;
+    std::mutex mutexWorkFinished;
 };
 
 #endif // WORKER_H

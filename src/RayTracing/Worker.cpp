@@ -103,7 +103,7 @@ void RayTracingDistributor::start(const int &processWidth)
     this->processWidth = processWidth;
     processStarted = 0;
     workersInProcess = true;
-    startingDistribution = true;
+    mutexWorkFinished.lock();
     for (int i = 0; i < nb_workers && i < processWidth; i++) {
         assignNextRayWork(&workers[i]);
     }
@@ -114,7 +114,7 @@ void RayTracingDistributor::start(const int &processWidth)
         }
     }
 
-    startingDistribution = false;
+    mutexWorkFinished.unlock();
     // then wait for the last onRayWorkerReady
 }
 
@@ -128,9 +128,9 @@ void RayTracingDistributor::stop()
 
 void RayTracingDistributor::onRayWorkerFinished(int workerId)
 {
-    if (startingDistribution)
-        return;
+    mutexWorkFinished.lock();
     assignNextRayWork(&workers[workerId]);
+    mutexWorkFinished.unlock();
 }
 
 void RayTracingDistributor::assignNextRayWork(RayTracingWorker *worker)

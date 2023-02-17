@@ -10,10 +10,6 @@ GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayIma
 
 GUI::~GUI()
 {
-    delete[] hBmpPixels;
-    hBmpPixels = nullptr;
-    DeleteObject(hBitmap);
-
     workerThread->quit();
     workerThread->wait(5000);
     delete workerThread;
@@ -81,9 +77,9 @@ void GUI::handleWorkerResults()
 {
     frameCounter++;
     // repaint();
-    if (!isPainting()) {
-        workFinishedCallback();
-    }
+    // if (!isPainting()) {
+    workFinishedCallback();
+    // }
 }
 
 SIZE GUI::getRayTracingSize() const
