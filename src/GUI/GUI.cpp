@@ -5,6 +5,7 @@ GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayIma
     workerThread->connectResultReady([this]() { this->handleWorkerResults(); });
     previousFPS = 0;
     frameCounter = 0;
+    frameCounterBegin = Timer::getCurrentMsSinceLocal();
 }
 
 GUI::~GUI()
@@ -35,8 +36,15 @@ void GUI::switchFPSCounterVisible()
 
 void GUI::updateFPSCounter()
 {
-    previousFPS = frameCounter;
+    int now = Timer::getCurrentMsSinceLocal();
+    if (frameCounter != 0)
+        previousFPS = roundf(frameCounter * 1000.0f / (now - frameCounterBegin) * 10) * 0.1f;
+    else
+        previousFPS = 0;
+    previousFPSString = std::to_string(previousFPS);
+    previousFPSString = previousFPSString.substr(0, previousFPSString.find('.') + 2);
     frameCounter = 0;
+    frameCounterBegin = now;
 }
 
 void GUI::connectOnWorkStarted(std::function<void()> callback)
@@ -49,63 +57,24 @@ void GUI::connectOnWorkFinished(std::function<void()> callback)
 }
 
 // garder l'image d'origine mais changer la taille de l'image à l'écran
-void GUI::paintEvent(HWND hWnd)
+void GUI::paintEvent()
 {
-    PAINTSTRUCT ps;
-    HDC hdc = BeginPaint(hWnd, &ps);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    SIZE size = getWindowSize();
-    if (size.cx != MyBMInfo.bmiHeader.biWidth || size.cy != MyBMInfo.bmiHeader.biHeight) {
-        DeleteObject(hBitmap);
-        hBitmap = NULL;
-        delete[] hBmpPixels;
-        hBmpPixels = nullptr;
-    }
-    if (!hBmpPixels) {
-        hBitmap = CreateCompatibleBitmap(hdc, size.cx, size.cy);
-
-        // get the bitmap header
-        MyBMInfo.bmiHeader.biSize = sizeof(MyBMInfo.bmiHeader); // LPBITMAPINFO lpbmi
-        GetDIBits(hdc, hBitmap, 0, 0, NULL, &MyBMInfo, DIB_RGB_COLORS);
-
-        // create the bitmap buffer
-        hBmpPixels = new BYTE[MyBMInfo.bmiHeader.biSizeImage];
-        // Better do this here - the original bitmap might have BI_BITFILEDS, which makes it
-        // necessary to read the color table - you might not want this.
-        MyBMInfo.bmiHeader.biCompression = BI_RGB;
-
-        // get the actual bitmap buffer
-        GetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
-    }
-
-    // 32 bits per pixel
-    rayImage->fillBitmapPixels(hBmpPixels, MyBMInfo.bmiHeader.biSizeImage);
-    SetDIBits(hdc, hBitmap, 0, MyBMInfo.bmiHeader.biHeight, hBmpPixels, &MyBMInfo, DIB_RGB_COLORS);
-
-    HBRUSH brush = CreatePatternBrush(hBitmap);
-    FillRect(hdc, &ps.rcPaint, brush);
-    DeleteObject(brush);
+    glRasterPos2i(0, 0);
+    glDrawPixels(rayImage->height(), rayImage->width(), GL_RGBA, GL_UNSIGNED_BYTE, rayImage->data);
 
     if (showFPSCounter) {
-        SetTextColor(hdc, RGB(255, 255, 255));
-        SetBkMode(hdc, TRANSPARENT);
-        SetBkColor(hdc, 0);
-        std::string textFPS = std::to_string(previousFPS);
-        RECT textFPSRect = {0, 0, 30, 20};
-
-        const TCHAR *pstring = nullptr;
-#ifdef UNICODE
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        std::wstring wstr = converter.from_bytes(textFPS);
-        pstring = wstr.data();
-#else
-        pstring = textFPS.data();
-#endif
-        DrawText(hdc, pstring, textFPS.length(), &textFPSRect, DT_LEFT);
+        // Draw the FPS at the top left
+        glColor3f(1, 1, 1);
+        glRasterPos2f(4, 4);
+        for (char c : previousFPSString) {
+            glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, c);
+        }
+        std::cout << previousFPSString << std::endl;
     }
 
-    EndPaint(hWnd, &ps);
-    ReleaseDC(hWnd, hdc);
+    glFlush();
 }
 
 // toute l'image a été actualisée (par le GUIWorker)

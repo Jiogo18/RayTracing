@@ -133,9 +133,9 @@ void RayTracing::paint()
         cl = &colors[x][0];
 #endif
         for (y = 0; y < colors.height(); y++, cl++) {
-            *pixelRef++ = cl->blueReduced(totalLight);
-            *pixelRef++ = cl->greenReduced(totalLight);
             *pixelRef++ = cl->redReduced(totalLight);
+            *pixelRef++ = cl->greenReduced(totalLight);
+            *pixelRef++ = cl->blueReduced(totalLight);
             pixelRef += refToNextLine; // go to (x,y+1)
         }
         pixelRef -= refToNextColumn; // go to (x+1,0)

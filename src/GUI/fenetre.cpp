@@ -2,6 +2,13 @@
 
 #define PIXELS_WIDTH 150
 #define PIXELS_HEIGHT 100
+#define WINDOW_WIDTH (PIXELS_WIDTH + 15)
+#define WINDOW_HEIGHT (PIXELS_HEIGHT + 38)
+
+// 25 FPS max (vitesse de déplacement & de rafraichissement auto)
+#define POSITION_REFRESH_TIME 40
+
+fenetre *instance = nullptr;
 
 int KEY::getKeyAction(int key)
 {
@@ -31,39 +38,22 @@ int KEY::getKeyAction(int key)
     }
 }
 
-fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
+fenetre::fenetre(map3D *map) : GUI(map), map(map)
 {
-    // Register the window class.
-    const wchar_t CLASS_NAME[] = L"Sample Window Class";
-    WNDCLASS wc = {};
-    wc.lpfnWndProc = WindowProc;
-    wc.hInstance = hInstance;
-    wc.lpszClassName = CLASS_NAME;
-    RegisterClass(&wc);
+    instance = this;
+    glutInitDisplayMode(GLUT_RGB);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    window = glutCreateWindow("RayTracing");
 
-    // Create the window.
-    hWnd = CreateWindowEx(
-        0,                   // Optional window styles.
-        CLASS_NAME,          // Window class
-        L"RayTracing",       // Window text
-        WS_OVERLAPPEDWINDOW, // Window style
+    glClearColor(0, 0, 0, 0);
+    gluOrtho2D(0, PIXELS_WIDTH, 0, PIXELS_HEIGHT); // On garde ces coordonnées
 
-        // Position
-        CW_USEDEFAULT, CW_USEDEFAULT,
-        // Size
-        PIXELS_WIDTH + 15, PIXELS_HEIGHT + 38,
-
-        NULL,      // Parent window
-        NULL,      // Menu
-        hInstance, // Instance handle
-        NULL       // Additional application data
-    );
-
-    if (hWnd == NULL) {
-        throw "Failed to create WingdiWindow";
-    }
-
-    SetWindowLongPtr(hWnd, GWL_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    glutDisplayFunc([]() { instance->paintEvent(); }); // Callback de la fenêtre
+    glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
+    glutKeyboardFunc([](unsigned char key, int x, int y) { instance->keyPressEvent(key, 0); }); // Callback du clavier
+    glutKeyboardUpFunc([](unsigned char key, int x, int y) { instance->keyReleaseEvent(key, 0); });
+    glutSpecialFunc([](int key, int x, int y) { instance->keyPressEvent(key, 1); }); // Callback du clavier
+    glutSpecialUpFunc([](int key, int x, int y) { instance->keyReleaseEvent(key, 1); });
 
     // std::cout << "[WinMain] PaintWindow Timer #" << SetTimer(hWnd, 0, 50, (TIMERPROC)TimerProc) << " created! (20 FPS)" << std::endl;
 
@@ -77,54 +67,89 @@ fenetre::fenetre(HINSTANCE hInstance, map3D *map) : GUI(map), map(map)
     lastRefreshTime = 0;
     refresh();
 
+    glutTimerFunc(1000, timerFPSCallback, 0);
+    glutTimerFunc(POSITION_REFRESH_TIME, timerPositionCallback, 0);
     timerRefresh.connectOnFinished([this]() { this->refresh(); });
-
-#ifdef UOI_TIMERPROC_EXCEPTION_SUPPRESSION
-    BOOL bFalse = false;
-    SetUserObjectInformation(GetCurrentProcess(), UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bFalse, sizeof(bool));
-#endif
-    SetTimer(hWnd, TIMER_POSITION, 40, (TIMERPROC)TimerPositionProc); // 25 FPS max (vitesse de déplacement & de rafraichissement auto)
-    SetTimer(hWnd, TIMER_FPS, 1000, (TIMERPROC)TimerFPSProc);
 }
 
-fenetre::~fenetre() {}
+fenetre::~fenetre()
+{
+    instance = nullptr;
+}
 
 void fenetre::keyPressEvent(int key, int status)
 {
-    if (status & 0x4000000) return; // auto repeat
-    switch (key) {
-    case VK_F5:
-        refresh();
-        break;
-    case VK_F6:
-        switchFPSCounterVisible();
-        break;
-    case VK_F7:
-        speedTest();
-        break;
-    case VK_F8:
-        loadMapFile();
-        break;
-    case 'Z':
-    case 'Q':
-    case 'S':
-    case 'D':
-    case VK_SPACE:
-    case VK_SHIFT:
-    case VK_UP:
-    case VK_LEFT:
-    case VK_DOWN:
-    case VK_RIGHT:
-        keysPressed |= KEY::getKeyAction(key);
-        break;
+    if (status == 0) {
+        key = toupper(key);
+        switch (key) {
+        case 'Z':
+        case 'Q':
+        case 'S':
+        case 'D':
+        case VK_SPACE:
+            keysPressed |= KEY::getKeyAction(key);
+            break;
+        }
+    } else {
+        switch (key) {
+        case GLUT_KEY_UP:
+            keysPressed |= KEY::getKeyAction(VK_UP);
+            break;
+        case GLUT_KEY_LEFT:
+            keysPressed |= KEY::getKeyAction(VK_LEFT);
+            break;
+        case GLUT_KEY_DOWN:
+            keysPressed |= KEY::getKeyAction(VK_DOWN);
+            break;
+        case GLUT_KEY_RIGHT:
+            keysPressed |= KEY::getKeyAction(VK_RIGHT);
+            break;
+        case 0x70: // Left Shift
+            keysPressed |= KEY::getKeyAction(VK_SHIFT);
+            break;
+        case GLUT_KEY_F5:
+            refresh();
+            break;
+        case GLUT_KEY_F6:
+            switchFPSCounterVisible();
+            break;
+        case GLUT_KEY_F7:
+            speedTest();
+            break;
+        case GLUT_KEY_F8:
+            loadMapFile();
+            break;
+        }
     }
 }
 
 void fenetre::keyReleaseEvent(int key, int status)
 {
-    if (status == 0x4000000) return; // auto repeat
+    int kA;
+    if (status == 0) {
+        kA = KEY::getKeyAction(toupper(key));
+    } else {
+        switch (key) {
+        case GLUT_KEY_UP:
+            kA = KEY::getKeyAction(VK_UP);
+            break;
+        case GLUT_KEY_LEFT:
+            kA = KEY::getKeyAction(VK_LEFT);
+            break;
+        case GLUT_KEY_DOWN:
+            kA = KEY::getKeyAction(VK_DOWN);
+            break;
+        case GLUT_KEY_RIGHT:
+            kA = KEY::getKeyAction(VK_RIGHT);
+            break;
+        case 0x70: // Left Shift
+            kA = KEY::getKeyAction(VK_SHIFT);
+            break;
+        default:
+            return;
+        }
+    }
 
-    int kA = KEY::getKeyAction(key);
     if (keysPressed & kA)
         keysPressed ^= kA; // remove the key
 }
@@ -152,20 +177,11 @@ void fenetre::loadMapFile()
     refresh();
 }
 
-WPARAM fenetre::exec()
+int fenetre::exec()
 {
-    // Run the message loop.
-    MSG msg = {};
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-    }
-    return msg.wParam;
-}
-
-void fenetre::show(int nShowCmd)
-{
-    ShowWindow(hWnd, nShowCmd);
+    // Main loop
+    glutMainLoop();
+    return 0;
 }
 
 // void fenetre::mouseMoveEvent(QMouseEvent *event)
@@ -181,57 +197,7 @@ void fenetre::show(int nShowCmd)
 
 SIZE fenetre::getWindowSize() const
 {
-    RECT rect;
-    GetWindowRect(hWnd, &rect);
-    return {rect.right - rect.left - 15, rect.bottom - rect.top - 38};
-}
-
-fenetre *fenetre::getFenetreFromHWND(HWND hWnd)
-{
-    return reinterpret_cast<fenetre *>(GetWindowLongPtr(hWnd, GWL_USERDATA));
-}
-
-LRESULT CALLBACK fenetre::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch (uMsg) {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        exit(0);
-        return 0;
-
-    case WM_PAINT: {
-        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
-        pThis->paintEvent(hWnd);
-        return 0;
-    }
-    case WM_KEYDOWN: {
-        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
-        pThis->keyPressEvent(wParam, lParam);
-        break;
-    }
-    case WM_KEYUP: {
-        fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
-        pThis->keyReleaseEvent(wParam, lParam);
-        break;
-    }
-    default:
-        // Process other messages.
-        // std::cout << "[WindowProc/" << uMsg << "] " << wParam << " " << lParam << std::endl;
-        break;
-    }
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
-void fenetre::TimerPositionProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp)
-{
-    fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
-    pThis->updatePressPosition();
-}
-
-void fenetre::TimerFPSProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp)
-{
-    fenetre *pThis = fenetre::getFenetreFromHWND(hWnd);
-    pThis->updateFPSCounter();
+    return {glutGet(GLUT_WINDOW_WIDTH), glutGet(GLUT_WINDOW_HEIGHT)};
 }
 
 void fenetre::onWorkStarted()
@@ -242,8 +208,9 @@ void fenetre::onWorkStarted()
 void fenetre::onWorkFinished()
 {
     // setCursor(Qt::ArrowCursor);
-    RECT rcPaint{0, 0, PIXELS_WIDTH, PIXELS_HEIGHT};
-    InvalidateRect(hWnd, &rcPaint, false);
+
+    glutPostRedisplay(); // call paintEvent
+
     lastRefreshDuration = DebugTime::getCurrent() - lastRefreshTime;
     if (testSpeedActivated) onSpeedTestFinished();
 }
@@ -284,4 +251,16 @@ void fenetre::updatePressPosition()
     } else {
         refresh();
     }
+}
+
+void timerFPSCallback(int value)
+{
+    instance->updateFPSCounter();
+    glutTimerFunc(1000, timerFPSCallback, 0);
+}
+
+void timerPositionCallback(int value)
+{
+    instance->updatePressPosition();
+    glutTimerFunc(POSITION_REFRESH_TIME, timerPositionCallback, 0);
 }

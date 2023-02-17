@@ -6,8 +6,6 @@
 #endif // UNICODE
 
 #include "GUI.h"
-#include <windows.h>
-#include <wingdi.h>
 #include "../3D/Point2D.h"
 
 // classe pour controller le GUI
@@ -37,11 +35,12 @@ namespace KEY {
 class fenetre : public GUI
 {
 public:
-    fenetre(HINSTANCE hInstance, map3D *map);
+    fenetre(map3D *map);
     ~fenetre();
 
     void keyPressEvent(int key, int status);
     void keyReleaseEvent(int key, int status);
+    void updatePressPosition();
     // void mouseMoveEvent(QMouseEvent *event) override;
     // void showEvent(QShowEvent *event) override { Q_UNUSED(event) button->setWindow(this->windowHandle()); }
     // QPoint MidWindow();
@@ -49,22 +48,16 @@ public:
     void speedTest();
     void loadMapFile();
 
-    WPARAM exec();
-    void show(int nShowCmd);
+    int exec();
 
 private:
-    HWND hWnd;
+    int window; // Identificateur de fenêtre
     SIZE getWindowSize() const;
-    static fenetre *getFenetreFromHWND(HWND hWnd);
-    static LRESULT CALLBACK WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    static void TimerPositionProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp);
-    static void TimerFPSProc(HWND hWnd, INT unnamedParam2, UINT_PTR unnamedParam3, DWORD localTimestamp);
 
     void onWorkStarted();
     void onWorkFinished();
     void onSpeedTestFinished();
 
-    void updatePressPosition();
     SingleShotTimer timerRefresh;
     int64_t lastRefreshTime;
     int64_t lastRefreshDuration;
@@ -80,5 +73,8 @@ private:
     int testSpeedCounter;
     int64_t testSpeedTime;
 };
+
+void timerFPSCallback(int value);
+void timerPositionCallback(int value);
 
 #endif // FENETRE_H

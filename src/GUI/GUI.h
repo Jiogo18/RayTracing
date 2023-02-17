@@ -4,7 +4,8 @@
 #include "../World/map3D.h"
 #include "../RayTracing/RayTracing.h"
 #include "../utils/Timer.h"
-#include "winapi.h"
+#include <GL/glut.h>
+#include <opencv2\highgui\highgui.hpp>
 
 class GUI
 {
@@ -20,7 +21,7 @@ public:
     void connectOnWorkStarted(std::function<void()> callback);
     void connectOnWorkFinished(std::function<void()> callback);
 
-    void paintEvent(HWND hWnd);
+    void paintEvent();
 
 private:
     void handleWorkerResults();
@@ -30,8 +31,10 @@ private:
     RayTracing *workerThread;
     const map3D *map;
     bool showFPSCounter = false;
-    int previousFPS;
+    float previousFPS;
+    std::string previousFPSString;
     int frameCounter;
+    int frameCounterBegin;
     const Image *rayImage;
 
     HBITMAP hBitmap = NULL;
