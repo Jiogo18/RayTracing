@@ -107,13 +107,6 @@ void RayTracingDistributor::start(const int &processWidth)
     for (int i = 0; i < nb_workers && i < processWidth; i++) {
         assignNextRayWork(&workers[i]);
     }
-    if (processStarted < processWidth) {
-        for (int i = 0; i < nb_workers && i < processWidth; i++) {
-            if (!workers[i].isRunning())
-                assignNextRayWork(&workers[i]);
-        }
-    }
-
     mutexWorkFinished.unlock();
     // then wait for the last onRayWorkerReady
 }

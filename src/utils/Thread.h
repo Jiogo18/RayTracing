@@ -4,6 +4,8 @@
 #include <thread>
 #include <chrono>
 #include <time.h>
+#include <mutex>
+#include <condition_variable>
 
 class Thread
 {
@@ -16,12 +18,11 @@ public:
     static int getCurrentMsSinceLocal();
 
     void connectOnFinished(std::function<void()> callback);
-    bool isRunning() const { return running && thread != nullptr; }
+    bool isRunning() const { return running; }
 
     void start();
-    void join();
-    void stop() { stop_asked = true; }
-    void quit() { stop_asked = true; }
+    void stop();
+    void quit();
     void terminate();
     void wait(int time);
 
@@ -33,6 +34,11 @@ private:
     std::thread *thread = nullptr;
     bool running = false;
     std::function<void()> callbackFunction;
+
+    bool stopAtNextFinish = false;
+    std::mutex mutexPause;
+    std::condition_variable condPause;
+    std::unique_lock<std::mutex> lockPause;
 
     void startInternalProcess();
 };

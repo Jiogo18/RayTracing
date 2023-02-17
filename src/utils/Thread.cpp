@@ -2,6 +2,7 @@
 
 Thread::Thread()
 {
+    lockPause = std::unique_lock<std::mutex>(mutexPause);
 }
 
 Thread::~Thread()
@@ -32,15 +33,28 @@ void Thread::connectOnFinished(std::function<void()> callback)
 void Thread::start()
 {
     stop_asked = false;
-    if (thread != nullptr && running)
-        delete thread;
-    running = true;
-    thread = new std::thread([this]() { this->startInternalProcess(); });
+    stopAtNextFinish = false;
+    if (thread != nullptr) {
+        if (running) {
+            throw std::runtime_error("Thread already running");
+        }
+        condPause.notify_one(); // notify to continue
+    } else {
+        running = true;
+        thread = new std::thread([this]() { this->startInternalProcess(); });
+    }
 }
 
-void Thread::join()
+void Thread::stop()
 {
-    if (thread) thread->join();
+    stop_asked = true;
+    condPause.notify_one(); // notify to continue
+}
+
+void Thread::quit()
+{
+    stop_asked = true;
+    condPause.notify_one(); // notify to continue
 }
 
 void Thread::terminate()
@@ -53,13 +67,20 @@ void Thread::terminate()
 
 void Thread::startInternalProcess()
 {
-    running = true;
-    stop_asked = false;
+    do {
+        running = true;
+        stop_asked = false;
+        stopAtNextFinish = false;
 
-    run();
+        run();
 
-    running = false;
-    if (callbackFunction) callbackFunction();
+        running = false;
+        if (callbackFunction) callbackFunction();
+
+        if (!stop_asked && !stopAtNextFinish) {
+            condPause.wait(lockPause); // wait for a signal to continue
+        }
+    } while (!stop_asked && !stopAtNextFinish);
 }
 
 void Thread::wait(int time)
