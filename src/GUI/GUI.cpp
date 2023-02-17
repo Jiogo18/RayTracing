@@ -1,6 +1,6 @@
 #include "GUI.h"
 
-GUI::GUI(const map3D *map) : workerThread(new RayTracing(map)), map(map), rayImage(workerThread->getImage())
+GUI::GUI(const map3D *map) : workerThread(new RayTracingCPU(map)), map(map), rayImage(workerThread->getImage())
 {
     workerThread->connectResultReady([this]() { this->handleWorkerResults(); });
     previousFPS = 0;

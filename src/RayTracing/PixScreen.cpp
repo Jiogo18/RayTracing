@@ -64,7 +64,7 @@ PixScreenT<T> &PixScreenT<T>::operator=(const PixScreenT<T> &ps)
         h = ps.h;
         for (x = 0; x < w; x++) {
             delete[] screen[x];
-            screen[x] = new T[w];
+            screen[x] = new T[h];
             memcpy(screen[x], ps.screen[x], h * sizeof(T));
         }
     } else {
