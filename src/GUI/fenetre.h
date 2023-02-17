@@ -12,9 +12,6 @@
 // si un jour on veut retirer le contrôle sur le GUI (quand rafraichir, keyPress...)
 // on aura juste à modifier cette classe
 
-#define TIMER_POSITION 0
-#define TIMER_FPS 1
-
 namespace KEY {
     enum keyAction {
         none = 0,
@@ -66,7 +63,6 @@ private:
     // QPoint posMouse;
     doubli MouseSensibility = 2;
 
-    // QTimer timerKeyPress;
     int keysPressed = 0; // combinaison de keyAction
 
     bool testSpeedActivated = false;

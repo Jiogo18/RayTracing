@@ -5,7 +5,9 @@ template class PixScreenT<ColorLight>; // Explicit instantiation of ColorLight
 
 template<typename T>
 PixScreenT<T>::PixScreenT() : PixScreenT(0, 0)
-{}
+{
+    screen = nullptr;
+}
 template<typename T>
 PixScreenT<T>::PixScreenT(const SIZE &size) : w(size.cx), h(size.cy), screen(new T *[w])
 {

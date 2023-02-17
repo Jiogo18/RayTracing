@@ -16,10 +16,12 @@ void DebugTimePart::addValue(int64_t time)
 
 void DebugTime::addValue(std::string name, int64_t time)
 {
+    mutex.lock();
     if (values.find(name) != values.end()) {
         values.insert(std::pair<std::string, DebugTimePart>(name, DebugTimePart()));
     }
     values[name].addValue(time);
+    mutex.unlock();
 }
 
 int64_t DebugTime::getCurrent()

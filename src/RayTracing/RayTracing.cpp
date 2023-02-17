@@ -83,17 +83,13 @@ void RayTracing::run()
         lightPerColumn = new int[processWidth];
         for (int i = 0; i < processWidth; i++)
             lightPerColumn[i] = 0;
-#ifdef REFRESH_COLUMN
-        image = image.scaled(calcSize);
-#else
         image = Image(calcSize, Image::Format_RGBA32);
-#endif // REFRESH_COLUMN
     }
 
 #ifdef REFRESH_COLUMN
     for (int x = 0; x < image.width(); x++) {
-        image.setPixel(x, 0, {255, 255, 255});
-        image.setPixel(x, 1, {255, 255, 255});
+        image.setPixelColor(x, 0, {255, 255, 255, 0});
+        image.setPixelColor(x, 1, {255, 255, 255, 0});
     }
 #endif // REFRESH_COLUMN
 

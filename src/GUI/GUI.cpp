@@ -71,7 +71,6 @@ void GUI::paintEvent()
         for (char c : previousFPSString) {
             glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, c);
         }
-        std::cout << previousFPSString << std::endl;
     }
 
     glFlush();

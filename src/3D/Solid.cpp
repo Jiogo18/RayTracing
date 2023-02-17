@@ -41,7 +41,7 @@ std::string SOLID::getFileTexture(SOLID::Material material, int variations)
     switch (material) {
     case SOLID::Material::oak_log:
     case SOLID::Material::birch_log:
-        if (variations & SOLID::Variation::top || variations & SOLID::Variation::bottom)
+        if ((variations & 0x7) == SOLID::Variation::top || (variations & 0x7) == SOLID::Variation::bottom)
             texture += "_top";
         break;
     case SOLID::Material::hologramme: {

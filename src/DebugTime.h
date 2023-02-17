@@ -4,11 +4,13 @@
 #include <map>
 #include <iostream>
 #include <string>
+#include <mutex>
 
 class DebugTimePart
 {
 public:
-    DebugTimePart() {}
+    DebugTimePart()
+    {}
     void addValue(int64_t time);
     int64_t getMin() const { return min; }
     int64_t getMax() const { return max; }
@@ -37,6 +39,7 @@ public:
 
 private:
     std::map<std::string, DebugTimePart> values;
+    std::mutex mutex;
 };
 
 #endif // DEBUG_H
