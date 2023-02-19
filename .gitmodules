@@ -1,3 +1,6 @@
 [submodule "libraries/freeglut"]
 	path = libraries/freeglut
 	url = https://github.com/FreeGLUTProject/freeglut
+[submodule "libraries/OpenCL-SDK"]
+	path = libraries/OpenCL-SDK
+	url = https://github.com/KhronosGroup/OpenCL-SDK

@@ -37,13 +37,48 @@ Le projet est terminé, je souhaite continuer pour optimiser encore.
 
 ## Comment l'obtenir ?
 
-Via le code source :
+Outils nécessaires :
 
-- Télécharger le code source
-- Télécharger [Qt](https://www.qt.io/download) avec la version 6.0
-  - Sélectionner le composant MinGW (recommandé : version 8.1 ou supérieur)
-- Ouvrir le projet
-- Compiler le projet, le programme devrait être lancé
+- [Git](https://git-scm.com/downloads)
+- [CMake](https://cmake.org/download/)
+- L'utilisation de MinGW est recommandée (via Qt par exemple)
+
+
+Télécharger le projet et les librairies externes :
+```bash
+git clone https://github.com/Jiogo18/RayTracing
+git submodule update --init --recursive
+```
+
+Compiler les librairies externes :
+```bash
+# freeglut.lib et freeglut.dll :
+cd libaries/freeglut
+mkdir build
+cd build
+"*" > .gitignore # Ignorer le dossier build
+cmake -G "MinGW Makefiles" ..
+cmake --build .
+
+# OpenCL.lib et OpenCL.dll
+cd ../../OpenCL-SDK
+mkdir build
+cd build
+"*" > .gitignore # Ignorer le dossier build
+cmake ..
+cmake --build . --config Release
+cp 
+# opengl32.lib et glu32.lib : Windows Kits / Windows 10 SDK
+```
+
+
+Compiler le projet :
+```bash
+mkdir build
+cd build
+cmake -G "MinGW Makefiles" ..
+```
+
 
 ---
 
