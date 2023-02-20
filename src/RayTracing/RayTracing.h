@@ -2,6 +2,7 @@
 #define RAYTRACING_H
 
 #include "Worker.h"
+#include "../utils/Timer.h"
 
 class RayTracing : public Thread
 {
@@ -53,8 +54,6 @@ public:
     RayTracingCPU(const map3D *map);
     ~RayTracingCPU();
 
-    bool isRunning() { return Thread::isRunning() || workerDistributor->isRunning(); }
-
 protected:
     void onSizeChanged() override;
     void startGeneration() override;
@@ -71,6 +70,21 @@ private:
     int processWidth = 0;
     int processFinished = 0;
     int processForUpdate;
+};
+
+class RayTracingGPU : public RayTracing
+{
+public:
+    RayTracingGPU(const map3D *map);
+    ~RayTracingGPU();
+
+protected:
+    void onSizeChanged() override;
+    void startGeneration() override;
+    constexpr double calcTotalLight() const override;
+
+private:
+    Timer timerFinished;
 };
 
 #endif // RAYTRACING_H

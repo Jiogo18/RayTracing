@@ -2,8 +2,6 @@
 
 #define PIXELS_WIDTH 150
 #define PIXELS_HEIGHT 100
-#define WINDOW_WIDTH (PIXELS_WIDTH + 15)
-#define WINDOW_HEIGHT (PIXELS_HEIGHT + 38)
 
 // 25 FPS max (vitesse de déplacement & de rafraichissement auto)
 #define POSITION_REFRESH_TIME 40
@@ -42,7 +40,7 @@ fenetre::fenetre(map3D *map) : GUI(map), map(map)
 {
     instance = this;
     glutInitDisplayMode(GLUT_RGB);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitWindowSize(PIXELS_WIDTH, PIXELS_HEIGHT);
     window = glutCreateWindow("RayTracing");
 
     glClearColor(0, 0, 0, 0);

@@ -1,4 +1,5 @@
 #include "RayTracing.h"
+#include "GPUCalls.h"
 
 RayTracing::RayTracing(const map3D *map) : Thread(), map(map)
 {
@@ -40,7 +41,7 @@ void RayTracing::onImageReady()
 void RayTracing::onGenerationFinished()
 {
     onImageReady();
-    dt.addValue("run", dt.getCurrent() - startRun);
+    // dt.addValue("run", dt.getCurrent() - startRun);
     // std::cout << "GUIWorker::run #end " << dt << std::endl;
 }
 
@@ -59,7 +60,7 @@ void RayTracing::onWorldChanged(const WorldChange &change)
 
 void RayTracing::updateImage()
 {
-    int64_t start = dt.getCurrent();
+    // int64_t start = dt.getCurrent();
     int x, y;
     const double totalLight = calcTotalLight(); // < 1 ms
 
@@ -94,7 +95,7 @@ void RayTracing::updateImage()
     }
 #endif
 
-    dt.addValue("updateImage", dt.getCurrent() - start);
+    // dt.addValue("updateImage", dt.getCurrent() - start);
 }
 
 RayTracingCPU::RayTracingCPU(const map3D *map) : RayTracing(map)
@@ -190,4 +191,34 @@ void RayTracingCPU::onAllWorkersFinished()
     workerDistributor->stop();
     updateImage();
     onGenerationFinished();
+}
+
+RayTracingGPU::RayTracingGPU(const map3D *map) : RayTracing(map)
+{
+    timerFinished.connectOnTimeout([this]() { this->onGenerationFinished(); });
+    timerFinished.setSingleShot(true);
+}
+
+RayTracingGPU::~RayTracingGPU()
+{
+    timerFinished.stop();
+}
+
+void RayTracingGPU::onSizeChanged()
+{
+}
+
+void RayTracingGPU::startGeneration()
+{
+    long long start = dt.getCurrent();
+    GPUCalls::calcImage(map, calcSize, image.data);
+    long long end = dt.getCurrent();
+    std::cout << "Image generated using GPU in " << (end - start) << " us" << std::endl;
+
+    timerFinished.start(1); // Call onGenerationFinished() after 1 ms
+}
+
+constexpr double RayTracingGPU::calcTotalLight() const
+{
+    return 1;
 }

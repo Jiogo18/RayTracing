@@ -1,5 +1,6 @@
 
 #include "GUI/fenetre.h"
+#include "RayTracing/GPUCalls.h"
 
 class Application
 {
@@ -27,6 +28,7 @@ private:
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv); // initialise GLUT
+    GPUCalls::init();
     std::cout << "[WinMain] starting..." << std::endl;
     Application app;
     std::cout << "[WinMain] Window created!" << std::endl;
