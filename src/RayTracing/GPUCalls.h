@@ -6,14 +6,16 @@
 
 namespace GPUCalls {
 
-    std::vector<int> hasIntersection(const map3D *map, SIZE screnSize);
+    void computeShader(SIZE screenSize, uchar *image, cl::Kernel &kernel);
 
     void fillImage(SIZE screenSize, uchar *image);
+    void fillRayTracing(SIZE screenSize, uchar *image, const map3D *map);
 
     void calcImage(const map3D *map, SIZE screenSize, uchar *image);
 
     void init();
     void resetQueue();
     void changeKernelFillImage(const std::string &functionName);
+    void changeKernelRayTracing(const std::string &functionName);
 
 }; // namespace GPUCalls

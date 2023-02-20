@@ -6,75 +6,107 @@
 #define CL_PERM_ALL CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR
 
 cl::Kernel kernelFillImage;
+cl::Kernel kernelRayTracing;
+
+typedef struct
+{
+    double x;
+    double y;
+    double z;
+} Point3D_t;
+
+typedef struct
+{
+    double x;
+    double y;
+} Rot3D_t;
+
+typedef struct
+{
+    unsigned long int solidsCount;
+    unsigned long int solidsOffset;
+} ChunkData_t;
+
+Point3D_t Point3DToStruct(const Point3D &point)
+{
+    return {(double)point.x(), (double)point.y(), (double)point.z()};
+}
+
+Rot3D_t Rot3DToStruct(const Rot3D &rot)
+{
+    return {rot.rX(), rot.rZ()};
+}
 
 namespace GPUCalls {
-
-    std::vector<int> hasIntersection(const map3D *map, SIZE screenSize)
-    {
-        const unsigned int pixelCount = screenSize.cx * screenSize.cy;
-
-        Size3D chunkSize = Chunk::getSize();
-        std::vector<Point3D> chunkPos;
-        const std::vector<Chunk *> &chunks = map->getWorld()->getChunks();
-        int chunkCount = chunks.size();
-        chunkPos.resize(chunks.size());
-        for (unsigned int i = 0; i < chunks.size(); i++) {
-            chunkPos[i] = chunks[i]->getMaxGeometry().getPointMin();
-        }
-
-        std::vector<int> solidsCountPerChunk;
-        std::vector<std::vector<Point3D>> solidsPointMin;
-        std::vector<std::vector<Point3D>> solidsPointMax;
-        solidsCountPerChunk.resize(chunks.size());
-        solidsPointMin.resize(chunks.size());
-        solidsPointMax.resize(chunks.size());
-        for (unsigned int i = 0; i < chunks.size(); i++) {
-            const std::vector<Solid *> solids = *chunks[i]->getSolids();
-            solidsCountPerChunk[i] = solids.size();
-            solidsPointMin[i].resize(solids.size());
-            solidsPointMax[i].resize(solids.size());
-            for (unsigned int j = 0; j < solids.size(); j++) {
-                solidsPointMin[i][j] = solids[j]->getMaxGeometry().getPointMin();
-                solidsPointMax[i][j] = solids[j]->getMaxGeometry().getPointMax();
-            }
-        }
-
-        // cl::Buffer camera_pos_buffer = ComputeShader::Buffer(map->getClient()->getPoint(), Permissions::Read);    // double[3]
-        // cl::Buffer camera_rot_buffer = ComputeShader::Buffer(map->getClient()->getRot(), Permissions::Read);      // double[2]
-        // cl::Buffer chunk_count_buffer = ComputeShader::Buffer(chunkCount, Permissions::Read);                     // int
-        // cl::Buffer chunk_pos_buffer = ComputeShader::Buffer(chunkPos, Permissions::Read);                         // double[chunkCount][3]
-        // cl::Buffer solids_count_per_chunk_buffer = ComputeShader::Buffer(solidsCountPerChunk, Permissions::Read); // int[chunkCount]
-        // cl::Buffer solids_min_buffer = ComputeShader::Buffer(solidsPointMin, Permissions::Read);                  // double[chunkCount][solidsCountPerChunk][3]
-        // cl::Buffer solids_max_buffer = ComputeShader::Buffer(solidsPointMax, Permissions::Read);                  // double[chunkCount][solidsCountPerChunk][3]
-
-        std::vector<int> results;
-        results.resize(pixelCount);
-        cl::Buffer result_buffer = ComputeShader::Buffer(results, Permissions::All); // bool[pixelCount]
-
-        // ComputeShader::launch("has_intersection", {&result_buffer, &camera_pos_buffer, &camera_rot_buffer, &chunk_count_buffer, &chunk_pos_buffer, &solids_count_per_chunk_buffer, &solids_min_buffer, &solids_max_buffer}, pixelCount);
-        ComputeShader::launch("test", {&result_buffer}, cl::NDRange(screenSize.cx, screenSize.cy));
-        ComputeShader::get_data(result_buffer, results);
-
-        return results;
-    }
-
     /**
-     * Fills the image using the function defined in kernelFillImage.
+     * Fills the image using the function defined in the kernel.
      * The function must have the following signature:
-     * __kernel void function_name(__global uchar *imageRGBA)
+     * __kernel void function_name(__global uchar *imageRGBA, ...)
      * The coordinates of the pixel are given by the global id (get_global_id(0) and get_global_id(1)).
+     * Don't use the first argument of the kernel, it is used to pass the image buffer.
      */
-    void fillImage(SIZE screenSize, uchar *image)
+    void computeShader(SIZE screenSize, uchar *image, cl::Kernel &kernel)
     {
         const unsigned int pixelCount = screenSize.cx * screenSize.cy;
         const unsigned int size = sizeof(uchar) * BytesPerPixel * pixelCount;
 
         cl::Buffer image_buffer(ComputeShader::context, CL_PERM_WRITE, size, image);
-        kernelFillImage.setArg(0, image_buffer);
+        kernel.setArg(0, image_buffer);
 
-        ComputeShader::queue.enqueueNDRangeKernel(kernelFillImage, cl::NullRange, cl::NDRange(screenSize.cx, screenSize.cy));
+        ComputeShader::queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(screenSize.cx, screenSize.cy));
 
         ComputeShader::queue.enqueueReadBuffer(image_buffer, CL_TRUE, 0, size, image);
+    }
+
+    void fillImage(SIZE screenSize, uchar *image)
+    {
+        computeShader(screenSize, image, kernelFillImage);
+    }
+
+    void fillRayTracing(SIZE screenSize, uchar *image, const map3D *map)
+    {
+        Point3D_t camera_pos = Point3DToStruct(map->getClient()->getPoint());
+        Rot3D_t camera_rot = Rot3DToStruct(map->getClient()->getRot());
+
+        std::vector<Point3D_t> chunkPos;
+        const std::vector<Chunk *> &chunks = map->getWorld()->getChunks();
+        int chunkCount = chunks.size();
+        chunkPos.resize(chunks.size());
+        for (unsigned int i = 0; i < chunks.size(); i++) {
+            chunkPos[i] = Point3DToStruct(chunks[i]->getMaxGeometry().getPointMin());
+        }
+
+        std::vector<ChunkData_t> chunkData;
+        std::vector<Point3D_t> solidsPointMin;
+        std::vector<Point3D_t> solidsPointMax;
+        chunkData.resize(chunks.size());
+        for (unsigned int i = 0; i < chunks.size(); i++) {
+            const std::vector<Solid *> solids = *chunks[i]->getSolids();
+            chunkData[i] = {(unsigned long int)solids.size(), (unsigned long int)solidsPointMin.size()};
+            for (const Solid *solid : solids) {
+                solidsPointMin.push_back(Point3DToStruct(solid->getMaxGeometry().getPointMin()));
+                solidsPointMax.push_back(Point3DToStruct(solid->getMaxGeometry().getPointMax()));
+            }
+        }
+
+        cl::Buffer camera_pos_buffer(ComputeShader::context, CL_PERM_READ, sizeof(Point3D_t), &camera_pos);                                   // double[3]
+        cl::Buffer camera_rot_buffer(ComputeShader::context, CL_PERM_READ, sizeof(Rot3D_t), &camera_rot);                                     // double[2]
+        cl::Buffer chunk_count_buffer(ComputeShader::context, CL_PERM_READ, sizeof(int), &chunkCount);                                        // int
+        cl::Buffer chunk_pos_buffer(ComputeShader::context, CL_PERM_READ, sizeof(Point3D_t) * chunkCount, chunkPos.data());                   // double[chunkCount][3]
+        cl::Buffer chunk_data_buffer(ComputeShader::context, CL_PERM_READ, sizeof(ChunkData_t) * chunkCount, chunkData.data());               // ulong[chunkCount][2]
+        cl::Buffer solids_min_buffer(ComputeShader::context, CL_PERM_READ, sizeof(Point3D_t) * solidsPointMin.size(), solidsPointMin.data()); // double[chunkCount][solidsCount][3]
+        cl::Buffer solids_max_buffer(ComputeShader::context, CL_PERM_READ, sizeof(Point3D_t) * solidsPointMax.size(), solidsPointMax.data()); // double[chunkCount][solidsCount][3]
+
+        // Argument 0 set to the image buffer (start at 1)
+        kernelRayTracing.setArg(1, camera_pos_buffer);
+        kernelRayTracing.setArg(2, camera_rot_buffer);
+        kernelRayTracing.setArg(3, chunk_count_buffer);
+        kernelRayTracing.setArg(4, chunk_pos_buffer);
+        kernelRayTracing.setArg(5, chunk_data_buffer);
+        kernelRayTracing.setArg(6, solids_min_buffer);
+        kernelRayTracing.setArg(7, solids_max_buffer);
+
+        computeShader(screenSize, image, kernelRayTracing);
     }
 
     void calcImage(const map3D *map, SIZE screenSize, uchar *image)
@@ -82,7 +114,8 @@ namespace GPUCalls {
         // image as {R, G, B, A} * pixelCount
         // r as {255*255*255} * pixelCount
 
-        fillImage(screenSize, image);
+        // fillImage(screenSize, image);
+        fillRayTracing(screenSize, image, map);
     }
 
     /**
@@ -92,6 +125,7 @@ namespace GPUCalls {
     {
         ComputeShader::init("shaders/compute_shader.cl");
         changeKernelFillImage("color_wheel");
+        changeKernelRayTracing("ray_tracing");
         resetQueue();
     }
 
@@ -112,6 +146,11 @@ namespace GPUCalls {
     void changeKernelFillImage(const std::string &functionName)
     {
         kernelFillImage = cl::Kernel(ComputeShader::program, functionName.c_str());
+    }
+
+    void changeKernelRayTracing(const std::string &functionName)
+    {
+        kernelRayTracing = cl::Kernel(ComputeShader::program, functionName.c_str());
     }
 
 }; // namespace GPUCalls
