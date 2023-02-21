@@ -230,6 +230,7 @@ int3 get_first_intersection(const double3 ray_pos, const double3 ray_vector,
                 continue;
 
             // We will assume they are all cubes for now
+            double3 solidSize = pMaxSolid - pMinSolid;
 
             for (unsigned int face_index = 0; face_index < 6; face_index++) {
                 // Plane equation for the faces using the vectors : x-, x+, y-, y+, z-, z+
@@ -241,8 +242,8 @@ int3 get_first_intersection(const double3 ray_pos, const double3 ray_vector,
                 // double plan_c = planAxeZ ? 1 : 0;
                 // double plan_d = ((face_index & 1) ? -1 : 0) - pMinSolid.x * plan_a - pMinSolid.y * plan_b - pMinSolid.z * plan_c;
 
-                double3 pMinFace = pMinSolid + (double3){face_index == 1, face_index == 3, face_index == 5};
-                double3 pMaxFace = pMaxSolid - (double3){face_index == 0, face_index == 2, face_index == 4};
+                double3 pMinFace = pMinSolid + (double3){face_index == 1, face_index == 3, face_index == 5} * solidSize;
+                double3 pMaxFace = pMaxSolid - (double3){face_index == 0, face_index == 2, face_index == 4} * solidSize;
                 double2 tMinMaxFace = pass_through(ray_pos, ray_vector, pMinFace, pMaxFace);
                 if (tMinMaxFace.y < 0)
                     continue;
@@ -256,7 +257,7 @@ int3 get_first_intersection(const double3 ray_pos, const double3 ray_vector,
                 double3 pMidSolid = (pMinSolid + pMaxSolid) / 2;
                 double distance_solid = length(pMidSolid - ray_pos);
 
-                if (best_face_index != -1 && best_distance_solid < distance_solid)
+                if (best_face_index != -1 && best_distance_solid < distance_solid && best_distance_face == distance)
                     continue;
 
                 best_chunk_index = chunk_index;
