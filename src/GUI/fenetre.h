@@ -24,7 +24,8 @@ namespace KEY {
         up_rot = (1 << 6),
         down_rot = (1 << 7),
         left_rot = (1 << 8),
-        right_rot = (1 << 9)
+        right_rot = (1 << 9),
+        ctrl = (1 << 10),
     };
     int getKeyAction(int key);
 } // namespace KEY

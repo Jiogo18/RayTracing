@@ -138,86 +138,138 @@ double3 extract_double3_from_array(const __global double *array, const int index
     return (double3){array[index * 3 + 0], array[index * 3 + 1], array[index * 3 + 2]};
 }
 
-/*
-// Get the intersection of a ray with an object
-double get_intersection(const double3 ray_pos, const double3 ray_vector, const double3 pMin, const double3 pMax)
-{
-    // // Voir #Intersection
-    // Size3D ABs(pA, pB);
-    // if (paralleleDroite(ABs)) return Point3DCancelable();
-    // doubli t = -(a * pA.x() + b * pA.y() + c * pA.z() + d)
-    //            / (a * ABs.dX() + b * ABs.dY() + c * ABs.dZ());
-    // if (t < 0) // derriere
-    //     return Point3DCancelable();
-    // return Point3DCancelable(pA + ABs * t);
-
-    const double3 ABs = ray_vector;
-    // paralleleDroite :
-    // return (a * vect.dX() + b * vect.dY() + c * vect.dZ()) == 0;
-    if ((ABs.x == 0 && ABs.y == 0 && ABs.z == 0))
-        return -1;
-}
-*/
-bool pass_through(const double3 pA, const double3 vDir, const double3 pMin, const double3 pMax)
+double2 pass_through(const double3 pA, const double3 vDir, const double3 pMin, const double3 pMax)
 {
     // est ce que la droite peut atteindre le block ?
     // voir # Calculs pour HRect3D::containsLine
     // https://github.com/Jiogo18/RayTracing/blob/master/tests/equations.txt
 
-    const double t1X = (pMin.x - pA.x) / vDir.x;
-    const double t2X = (pMax.x - pA.x) / vDir.x;
-    const double t1Y = (pMin.y - pA.y) / vDir.y;
-    const double t2Y = (pMax.y - pA.y) / vDir.y;
-    const double t1Z = (pMin.z - pA.z) / vDir.z;
-    const double t2Z = (pMax.z - pA.z) / vDir.z;
+    double3 vtMin = (pMin - pA) / vDir;
+    double3 vtMax = (pMax - pA) / vDir;
+    if (vtMin.x > vtMax.x) {
+        double t = vtMin.x;
+        vtMin.x = vtMax.x;
+        vtMax.x = t;
+    }
+    if (vtMin.y > vtMax.y) {
+        double t = vtMin.y;
+        vtMin.y = vtMax.y;
+        vtMax.y = t;
+    }
+    if (vtMin.z > vtMax.z) {
+        double t = vtMin.z;
+        vtMin.z = vtMax.z;
+        vtMax.z = t;
+    }
 
-    const double tMinX = min(t1X, t2X);
-    const double tMinY = min(t1Y, t2Y);
-    const double tMinZ = min(t1Z, t2Z);
-    const double tMin = max(tMinX, max(tMinY, tMinZ));
+    const double tMax = min(vtMax.x, min(vtMax.y, vtMax.z));
+    if (tMax < 0) return (double2){-1, -1}; // Intersection derrière la caméra
 
-    const double tMaxX = max(t1X, t2X);
-    const double tMaxY = max(t1Y, t2Y);
-    const double tMaxZ = max(t1Z, t2Z);
-    const double tMax = min(tMaxX, min(tMaxY, tMaxZ));
-    return tMin <= tMax; // si la droite ne passe pas dans le rectangle
-    // alors la droite rentre et sort du rectangle
-    // t \in [tMin;tMax] => avec un peu de chance (ça dépend de la forme) le tMin est celui d'une face
+    const double tMinX = vtMin.x;
+    const double tMinY = vtMin.y;
+    const double tMinZ = vtMin.z;
+    const double tMin = max(vtMin.x, max(vtMin.y, vtMin.z));
+    if (tMax < tMin) return (double2){-1, -1}; // Intersection derrière la caméra
+
+    return (double2){tMin, tMax};
+    // la droite rentre et sort du solide
+    // t \in [tMin;tMax] => pour les formes simples (cube) le tMin est celui de la première face
 }
 
-// Get the first intersection of a ray with a solid
-// Return the index of the chunk and the index of the solid
-int2 get_first_intersection(const double3 ray_pos, const double3 ray_vector,
+// Get whether a ray is parallel to a plan (no intersection)
+bool plan_parallele_point(const double3 point, const double3 vec, const double4 plan)
+{
+    return (plan.x * vec.x + plan.y * vec.y + plan.z * vec.z) == 0;
+}
+
+// Get the step (point + t * vector) for the intersection of a ray with a plan
+// t is the distance if vec is normalized
+double point_intersect_plan_distance(const double3 point, const double3 vec, const double4 plan)
+{
+    if (plan_parallele_point(point, vec, plan))
+        return -1;
+
+    double plan_point = -(plan.x * point.x + plan.y * point.y + plan.z * point.z + plan.w);
+    double plan_vec = plan.x * vec.x + plan.y * vec.y + plan.z * vec.z;
+
+    double t = plan_point / plan_vec;
+
+    if (t < 0) // derriere
+        return -1;
+    return t;
+}
+
+// Get the first intersection of a ray with a face
+// Return the index of the chunk, the index of the solid and the index of the face
+int3 get_first_intersection(const double3 ray_pos, const double3 ray_vector,
                             const __global int *chunk_count, const __global double3 *chunk_pos, const __global ulong2 *chunk_data,
-                            const __global double *solids_pMin, const __global double *solids_pMax)
+                            const __global double *solids_pMin, const __global double *solids_pMax,
+                            double *distance_face)
 {
     int solid_count, solid_index;
 
     int best_chunk_index = -1;
     int best_solid_index = -1;
-    double best_distance = 0;
+    int best_face_index = -1;
+    double best_distance_solid = 0;
+    double best_distance_face = 0;
 
     for (unsigned int chunk_index = 0; chunk_index < *chunk_count; chunk_index++) {
 
-        if (!pass_through(ray_pos, ray_vector, chunk_pos[chunk_index], chunk_pos[chunk_index] + (double3){CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE}))
+        if (pass_through(ray_pos, ray_vector, chunk_pos[chunk_index], chunk_pos[chunk_index] + (double3){CHUNK_SIZE, CHUNK_SIZE, CHUNK_SIZE}).y < 0)
             continue;
 
         solid_count = chunk_data[chunk_index].x;
         solid_index = chunk_data[chunk_index].y;
 
         for (unsigned int i = 0; i < solid_count; i++, solid_index++) {
-            double3 pMin = extract_double3_from_array(solids_pMin, solid_index);
-            double3 pMax = extract_double3_from_array(solids_pMax, solid_index);
-            if (!pass_through(ray_pos, ray_vector, pMin, pMax))
+            double3 pMinSolid = extract_double3_from_array(solids_pMin, solid_index);
+            double3 pMaxSolid = extract_double3_from_array(solids_pMax, solid_index);
+            double2 tMinMax = pass_through(ray_pos, ray_vector, pMinSolid, pMaxSolid);
+            if (tMinMax.y < 0)
                 continue;
 
-            return (int2){chunk_index, solid_index};
-            // double distance = get_intersection(ray_angle, ray_pos, solids_pMin[solid_index], solids_pMax[solid_index]);
             // We will assume they are all cubes for now
+
+            for (unsigned int face_index = 0; face_index < 6; face_index++) {
+                // Plane equation for the faces using the vectors : x-, x+, y-, y+, z-, z+
+                // bool planAxeX = face_index == 0 || face_index == 1;
+                // bool planAxeY = face_index == 2 || face_index == 3;
+                // bool planAxeZ = face_index == 4 || face_index == 5;
+                // double plan_a = planAxeX ? 1 : 0;
+                // double plan_b = planAxeY ? 1 : 0;
+                // double plan_c = planAxeZ ? 1 : 0;
+                // double plan_d = ((face_index & 1) ? -1 : 0) - pMinSolid.x * plan_a - pMinSolid.y * plan_b - pMinSolid.z * plan_c;
+
+                double3 pMinFace = pMinSolid + (double3){face_index == 1, face_index == 3, face_index == 5};
+                double3 pMaxFace = pMaxSolid - (double3){face_index == 0, face_index == 2, face_index == 4};
+                double2 tMinMaxFace = pass_through(ray_pos, ray_vector, pMinFace, pMaxFace);
+                if (tMinMaxFace.y < 0)
+                    continue;
+                double distance = tMinMaxFace.x;
+
+                double3 pInter = ray_pos + ray_vector * distance;
+
+                if (best_face_index != -1 && best_distance_face < distance)
+                    continue;
+
+                double3 pMidSolid = (pMinSolid + pMaxSolid) / 2;
+                double distance_solid = length(pMidSolid - ray_pos);
+
+                if (best_face_index != -1 && best_distance_solid < distance_solid)
+                    continue;
+
+                best_chunk_index = chunk_index;
+                best_solid_index = solid_index;
+                best_face_index = face_index;
+                best_distance_solid = distance_solid;
+                best_distance_face = distance;
+            }
         }
     }
 
-    return (int2){best_chunk_index, best_solid_index};
+    *distance_face = best_distance_face;
+    return (int3){best_chunk_index, best_solid_index, best_face_index};
 }
 
 // Fill the image using RayTracing
@@ -245,7 +297,8 @@ __kernel void ray_tracing(__global uchar *imageRGBA,
     // ray_tracing_test_angle(imageRGBA, index, ray_angle);
     // ray_tracing_test_vector(imageRGBA, index, ray_vector);
 
-    int2 chunk_solid_index = get_first_intersection(*camera_pos, ray_vector, chunk_count, chunk_pos, chunk_data, solids_pMin, solids_pMax);
+    double distance_face = 0;
+    int3 chunk_solid_index = get_first_intersection(*camera_pos, ray_vector, chunk_count, chunk_pos, chunk_data, solids_pMin, solids_pMax, &distance_face);
 
     if (chunk_solid_index.x == -1 || chunk_solid_index.y == -1) {
         imageRGBA[index * 4 + 0] = 0;
@@ -254,11 +307,14 @@ __kernel void ray_tracing(__global uchar *imageRGBA,
         imageRGBA[index * 4 + 3] = 255;
         return;
     } else {
-        int code = chunk_solid_index.y % 7 + 1;
-        imageRGBA[index * 4 + 0] = code & 0b001 ? 255 : 0;
-        imageRGBA[index * 4 + 1] = code & 0b010 ? 255 : 0;
-        imageRGBA[index * 4 + 2] = code & 0b100 ? 255 : 0;
-        // imageRGBA[index * 4 + 2] = clamp(chunk_solid_index.y + 128, 0, 255);
+        int code = chunk_solid_index.z % 7 + 1;
+        int teinte = 255 - clamp((int)(distance_face * 32), 0, 255);
+        imageRGBA[index * 4 + 0] = code & 0b001 ? teinte : 0;
+        imageRGBA[index * 4 + 1] = code & 0b010 ? teinte : 0;
+        imageRGBA[index * 4 + 2] = code & 0b100 ? teinte : 0;
+        // imageRGBA[index * 4 + 0] = clamp(chunk_solid_index.z, 0, 255);
+        // imageRGBA[index * 4 + 1] = clamp(chunk_solid_index.y, 0, 255);
+        // imageRGBA[index * 4 + 2] = 0;
         imageRGBA[index * 4 + 3] = 255;
         // imageRGBA[index * 4 + 0] = min(chunk_solid_index.y * 32, 255);
         // imageRGBA[index * 4 + 1] = 0;

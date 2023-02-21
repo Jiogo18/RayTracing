@@ -17,5 +17,6 @@ namespace GPUCalls {
     void resetQueue();
     void changeKernelFillImage(const std::string &functionName);
     void changeKernelRayTracing(const std::string &functionName);
+    void switchGPUMode();
 
 }; // namespace GPUCalls

@@ -7,6 +7,7 @@
 
 cl::Kernel kernelFillImage;
 cl::Kernel kernelRayTracing;
+int gpuMode = 1;
 
 typedef struct
 {
@@ -114,8 +115,14 @@ namespace GPUCalls {
         // image as {R, G, B, A} * pixelCount
         // r as {255*255*255} * pixelCount
 
-        // fillImage(screenSize, image);
-        fillRayTracing(screenSize, image, map);
+        switch (gpuMode) {
+        case 0:
+            fillImage(screenSize, image);
+            break;
+        case 1:
+            fillRayTracing(screenSize, image, map);
+            break;
+        }
     }
 
     /**
@@ -151,6 +158,27 @@ namespace GPUCalls {
     void changeKernelRayTracing(const std::string &functionName)
     {
         kernelRayTracing = cl::Kernel(ComputeShader::program, functionName.c_str());
+    }
+
+    /**
+     * Reload the OpenCL program and recreate the kernels.
+     * Switch between the kernels to render the image.
+     */
+    void switchGPUMode()
+    {
+        gpuMode++;
+        if (gpuMode > 1) {
+            gpuMode = 0;
+        }
+        switch (gpuMode) {
+        case 0:
+            changeKernelFillImage("color_wheel");
+            break;
+        case 1:
+            changeKernelRayTracing("ray_tracing");
+            break;
+        }
+        resetQueue();
     }
 
 }; // namespace GPUCalls

@@ -31,6 +31,8 @@ int KEY::getKeyAction(int key)
         return KEY::keyAction::down_rot;
     case VK_RIGHT:
         return KEY::keyAction::right_rot;
+    case VK_CONTROL:
+        return KEY::keyAction::ctrl;
     default:
         return 0;
     }
@@ -105,6 +107,9 @@ void fenetre::keyPressEvent(int key, int status)
         case 0x70: // Left Shift
             keysPressed |= KEY::getKeyAction(VK_SHIFT);
             break;
+        case 0x72: // Left Ctrl
+            keysPressed |= KEY::getKeyAction(VK_CONTROL);
+            break;
         case GLUT_KEY_F5:
             refresh();
             break;
@@ -116,6 +121,16 @@ void fenetre::keyPressEvent(int key, int status)
             break;
         case GLUT_KEY_F8:
             loadMapFile();
+            break;
+        case GLUT_KEY_F9:
+            if (keysPressed & KEY::getKeyAction(VK_CONTROL)) {
+                GPUCalls::init();
+                std::cout << "GPU mode initialized" << std::endl;
+            } else {
+                GPUCalls::switchGPUMode();
+                std::cout << "GPU mode switched" << std::endl;
+            }
+            refresh();
             break;
         }
     }
@@ -142,6 +157,9 @@ void fenetre::keyReleaseEvent(int key, int status)
             break;
         case 0x70: // Left Shift
             kA = KEY::getKeyAction(VK_SHIFT);
+            break;
+        case 0x72: // Left Ctrl
+            kA = KEY::getKeyAction(VK_CONTROL);
             break;
         default:
             return;

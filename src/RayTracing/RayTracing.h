@@ -3,12 +3,15 @@
 
 #include "Worker.h"
 #include "../utils/Timer.h"
+#include "GPUCalls.h"
 
 class RayTracing : public Thread
 {
 public:
     RayTracing(const map3D *map);
     ~RayTracing();
+
+    virtual bool isRunning() const { return Thread::isRunning(); }
 
     RayTracing *setSize(SIZE size)
     {
@@ -53,6 +56,8 @@ class RayTracingCPU : public RayTracing
 public:
     RayTracingCPU(const map3D *map);
     ~RayTracingCPU();
+
+    virtual bool isRunning() const override { return Thread::isRunning() || workerDistributor->isRunning(); }
 
 protected:
     void onSizeChanged() override;

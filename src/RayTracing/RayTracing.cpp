@@ -1,5 +1,4 @@
 #include "RayTracing.h"
-#include "GPUCalls.h"
 
 RayTracing::RayTracing(const map3D *map) : Thread(), map(map)
 {

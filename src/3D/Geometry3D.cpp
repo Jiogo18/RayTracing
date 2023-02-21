@@ -26,21 +26,21 @@ bool HRect3D::containsLine(const Point3D &pA, const Vec3D &vDir, const doubli &d
     const doubli t1Z = (pMin.z() - pA.z()) / vDir.z();
     const doubli t2Z = (pMax.z() - pA.z()) / vDir.z();
 
-    const doubli tMinX = maths3D::min(t1X, t2X);
-    const doubli tMinY = maths3D::min(t1Y, t2Y);
-    const doubli tMinZ = maths3D::min(t1Z, t2Z);
-    const doubli tMin = maths3D::max(tMinX, tMinY, tMinZ);
-    if (dMax < tMin) return false;
-    // si la droite rentre dans un rect plus tôt
-    // si la droite rentre après la view distance
-
     const doubli tMaxX = maths3D::max(t1X, t2X);
     const doubli tMaxY = maths3D::max(t1Y, t2Y);
     const doubli tMaxZ = maths3D::max(t1Z, t2Z);
     const doubli tMax = maths3D::min(tMaxX, tMaxY, tMaxZ);
-    return tMin <= tMax; // si la droite ne passe pas dans le rectangle
-    // alors la droite rentre et sort du rectangle
-    // t \in [tMin;tMax] => avec un peu de chance (ça dépend de la forme) le tMin est celui d'une face
+    if (tMax < 0) return false; // Intersection derrière la caméra
+
+    const doubli tMinX = maths3D::min(t1X, t2X);
+    const doubli tMinY = maths3D::min(t1Y, t2Y);
+    const doubli tMinZ = maths3D::min(t1Z, t2Z);
+    const doubli tMin = maths3D::max(tMinX, tMinY, tMinZ);
+    if (dMax < tMin) return false; // si la droite rentre après la view distance
+
+    return tMin <= tMax;
+    // la droite rentre et sort du solide
+    // t \in [tMin;tMax] => pour les formes simples (cube) le tMin est celui de la première face
 }
 
 std::ostream &operator<<(std::ostream &os, const HRect3D &rect)
@@ -153,7 +153,7 @@ void Plan::calcEquation(const Point3D &pB, const Point3D &pC)
     c = 0;
     d = 0;
     if ((xAB == 0 && yAB == 0 && zAB == 0) || (xAC == 0 && yAC == 0 && zAC == 0)) {
-        //std::cout << "ERROR Plan vecteur nul" << std::endl;
+        // std::cout << "ERROR Plan vecteur nul" << std::endl;
         return;
     }
     doubli nOfb = yAB / yAC, nOfc = zAB / zAC;
